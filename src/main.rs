@@ -6,13 +6,24 @@ use macroquad::prelude::*;
 use player::*;
 
 const S: f32 = 3.0;
-const OX: f32 = 340.0;
-const OY: f32 = 80.0;
 const POST_H: f32 = 14.0;
 const TILE: f32 = 20.0;
 
+thread_local! {
+    static CAM: std::cell::Cell<Vec2> = const { std::cell::Cell::new(Vec2::ZERO) };
+}
+
 fn proj(v: Vec2) -> Vec2 {
-    vec2(OX + v.x * S, OY + v.y * S)
+    v * S - CAM.with(|c| c.get())
+}
+
+fn update_camera(players: &[Player; 2]) {
+    let mid = (players[0].pos + players[1].pos) / 2.0 * S;
+    let half = vec2(screen_width(), screen_height()) / 2.0;
+    let lo = vec2(-40.0, -POST_H * S - 40.0);
+    let hi = vec2(ARENA * S + 40.0, ARENA * S + 40.0) - half * 2.0;
+    let target = mid - half;
+    CAM.with(|c| c.set(vec2(target.x.clamp(lo.x, hi.x.max(lo.x)), target.y.clamp(lo.y, hi.y.max(lo.y)))));
 }
 
 fn window_conf() -> Conf {
@@ -41,8 +52,12 @@ fn resolve_hits(players: &mut [Player; 2], anims: &Anims) {
     let mut hits = [false; 2];
     for a in 0..2 {
         let p = &players[a];
-        let target = players[1 - a].pos;
-        hits[a] = !p.has_hit && p.current(anims).hit.iter().any(|s| p.hits(s, target));
+        let hurt = players[1 - a].hurtboxes(anims);
+        hits[a] = !p.has_hit
+            && p.current(anims)
+                .hit
+                .iter()
+                .any(|s| hurt.iter().any(|(c, r)| p.hits(s, *c, *r)));
     }
     for a in 0..2 {
         if hits[a] {
@@ -130,28 +145,36 @@ fn draw_player(p: &Player, anims: &Anims, debug: bool) {
     for shape in &p.current(anims).hit {
         match *shape {
             Shape::Cone { r, half } => draw_cone(p, r, half, Color::new(1.0, 0.27, 0.2, 0.45)),
-            Shape::Circle { fwd, side, r } => {
-                let f = p.facing();
-                let c = proj(p.pos + f * fwd + f.perp() * side);
-                draw_circle(c.x, c.y, r * S, Color::new(1.0, 0.27, 0.2, 0.45));
+            Shape::Circle(c) => {
+                let at = proj(p.place(&c));
+                draw_circle(at.x, at.y, c.r * S, Color::new(1.0, 0.27, 0.2, 0.45));
             }
         }
     }
     if debug {
-        draw_circle_lines(s.x, s.y, RADIUS * S, 1.5, Color::from_rgba(90, 209, 255, 255));
+        for (c, r) in p.hurtboxes(anims) {
+            let c = proj(c);
+            draw_circle(c.x, c.y, r * S, Color::new(0.35, 0.82, 1.0, 0.2));
+            draw_circle_lines(c.x, c.y, r * S, 1.5, Color::from_rgba(90, 209, 255, 255));
+        }
     }
 
     let col = if p.state == State::Hit { WHITE } else { p.color };
     let px = |x: f32, y: f32, w: f32, h: f32, c: Color| {
         draw_rectangle(s.x.round() + x * S, s.y.round() + y * S, w * S, h * S, c);
     };
-    px(-4.0, -13.0, 8.0, 11.0, col);
-    px(-3.0, -18.0, 6.0, 5.0, col);
     let dark = Color::from_rgba(26, 28, 36, 255);
-    px(-4.0, -2.0, 3.0, 2.0, dark);
-    px(1.0, -2.0, 3.0, 2.0, dark);
     let f = p.facing();
-    if f.y > -0.3 {
+    if p.state == State::Roll {
+        px(-6.0, -11.0, 12.0, 10.0, col);
+        px(-3.0, -8.0, 6.0, 4.0, dark);
+    } else {
+        px(-4.0, -13.0, 8.0, 11.0, col);
+        px(-3.0, -18.0, 6.0, 5.0, col);
+        px(-4.0, -2.0, 3.0, 2.0, dark);
+        px(1.0, -2.0, 3.0, 2.0, dark);
+    }
+    if p.state != State::Roll && f.y > -0.3 {
         let ex = (f.x * 2.0).round();
         px(ex - 1.0, -16.0, 1.0, 1.0, dark);
         px(ex + 1.0, -16.0, 1.0, 1.0, dark);
@@ -183,7 +206,7 @@ async fn main() {
     let anims = Anims::new();
     let mut players = [
         Player::new(
-            vec2(50.0, 100.0),
+            vec2(100.0, 200.0),
             0.0,
             SKYBLUE,
             Controls {
@@ -192,10 +215,11 @@ async fn main() {
                 left: KeyCode::A,
                 right: KeyCode::D,
                 attack: KeyCode::F,
+                dodge: KeyCode::LeftShift,
             },
         ),
         Player::new(
-            vec2(150.0, 100.0),
+            vec2(300.0, 200.0),
             std::f32::consts::PI,
             ORANGE,
             Controls {
@@ -204,6 +228,7 @@ async fn main() {
                 left: KeyCode::Left,
                 right: KeyCode::Right,
                 attack: KeyCode::Enter,
+                dodge: KeyCode::RightShift,
             },
         ),
     ];
@@ -219,6 +244,7 @@ async fn main() {
             let r = players[i].controls.read();
             pending[i].dir = r.dir;
             pending[i].attack |= r.attack;
+            pending[i].dodge |= r.dodge;
         }
 
         acc += get_frame_time().min(0.25);
@@ -226,12 +252,14 @@ async fn main() {
             for i in 0..2 {
                 players[i].step(pending[i], &anims);
                 pending[i].attack = false;
+                pending[i].dodge = false;
             }
             resolve_push(&mut players);
             resolve_hits(&mut players, &anims);
             acc -= DT;
         }
 
+        update_camera(&players);
         clear_background(Color::from_rgba(13, 15, 22, 255));
         draw_floor();
         draw_cage(false);
@@ -243,7 +271,7 @@ async fn main() {
         draw_cage(true);
         draw_hud(&players);
         draw_text(
-            "P1: WASD + F    P2: Arrows + Enter    Tab: toggle boxes",
+            "P1: WASD, F attack, LShift roll    P2: Arrows, Enter attack, RShift roll    Tab: boxes",
             40.0,
             screen_height() - 20.0,
             24.0,

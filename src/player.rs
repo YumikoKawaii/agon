@@ -2,10 +2,11 @@ use crate::anim::*;
 use macroquad::prelude::*;
 use std::f32::consts::PI;
 
-pub const ARENA: f32 = 200.0;
+pub const ARENA: f32 = 400.0;
 pub const RADIUS: f32 = 6.0;
 pub const DT: f32 = 1.0 / 60.0;
 const SPEED: f32 = 72.0;
+const ROLL_SPEED: f32 = 160.0;
 const MAX_HP: i32 = 100;
 
 pub struct Controls {
@@ -14,12 +15,14 @@ pub struct Controls {
     pub left: KeyCode,
     pub right: KeyCode,
     pub attack: KeyCode,
+    pub dodge: KeyCode,
 }
 
 #[derive(Default, Clone, Copy)]
 pub struct Input {
     pub dir: Vec2,
     pub attack: bool,
+    pub dodge: bool,
 }
 
 impl Controls {
@@ -28,6 +31,7 @@ impl Controls {
         Input {
             dir: vec2(axis(self.left, self.right), axis(self.up, self.down)),
             attack: is_key_pressed(self.attack),
+            dodge: is_key_pressed(self.dodge),
         }
     }
 }
@@ -102,9 +106,20 @@ impl Player {
                     self.set_state(State::Idle);
                 }
             }
+            State::Roll => {
+                self.pos += self.facing() * ROLL_SPEED * DT;
+                if self.finished {
+                    self.set_state(State::Idle);
+                }
+            }
             _ => {
                 let dir = input.dir.normalize_or_zero();
-                if input.attack {
+                if input.dodge {
+                    if dir != Vec2::ZERO {
+                        self.ang = dir.y.atan2(dir.x);
+                    }
+                    self.set_state(State::Roll);
+                } else if input.attack {
                     self.set_state(State::Attack);
                 } else if dir != Vec2::ZERO {
                     self.pos += dir * SPEED * DT;
@@ -145,17 +160,26 @@ impl Player {
         &anims.get(self.state).frames[self.frame]
     }
 
-    pub fn hits(&self, shape: &Shape, target: Vec2) -> bool {
-        match *shape {
-            Shape::Circle { fwd, side, r } => {
-                let f = self.facing();
-                let c = self.pos + f * fwd + f.perp() * side;
-                c.distance(target) < r + RADIUS
-            }
+    pub fn place(&self, c: &Circ) -> Vec2 {
+        let f = self.facing();
+        self.pos + f * c.fwd + f.perp() * c.side
+    }
+
+    pub fn hurtboxes(&self, anims: &Anims) -> Vec<(Vec2, f32)> {
+        self.current(anims)
+            .hurt
+            .iter()
+            .map(|c| (self.place(c), c.r))
+            .collect()
+    }
+
+    pub fn hits(&self, shape: &Shape, target: Vec2, target_r: f32) -> bool {
+        match shape {
+            Shape::Circle(c) => self.place(c).distance(target) < c.r + target_r,
             Shape::Cone { r, half } => {
                 let to = target - self.pos;
                 let da = self.facing().angle_between(to).abs();
-                to.length() < r + RADIUS && da < half
+                to.length() < r + target_r && da < *half
             }
         }
     }
