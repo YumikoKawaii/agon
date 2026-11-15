@@ -27,10 +27,9 @@ impl Sprites {
                 let mut frames = Vec::new();
                 for i in 0.. {
                     let path = format!("{root}/animations/{name}/{d}/frame_{i:03}.png");
-                    if !std::path::Path::new(&path).exists() {
+                    let Ok(t) = load_texture(&path).await else {
                         break;
-                    }
-                    let t = load_texture(&path).await.unwrap();
+                    };
                     t.set_filter(FilterMode::Nearest);
                     frames.push(t);
                 }

@@ -1,0 +1,33 @@
+syntax = "proto3";
+
+package agon.v1;
+
+option go_package = "github.com/yumikokawaii/agon/gen/agon/v1;agonv1";
+
+service MatchService {
+  rpc GetEndpoint(GetEndpointRequest) returns (GetEndpointResponse);
+  rpc GetResult(GetResultRequest) returns (GetResultResponse);
+}
+
+message GetEndpointRequest {
+  string match_id = 1;
+}
+
+message GetEndpointResponse {
+  string url = 1;
+  string cert_hash = 2;
+  string ticket = 3;
+  int32 seat = 4;
+}
+
+message GetResultRequest {
+  string match_id = 1;
+}
+
+message GetResultResponse {
+  string match_id = 1;
+  string winner = 2;
+  int32 host_deaths = 3;
+  int32 guest_deaths = 4;
+  bool finished = 5;
+}

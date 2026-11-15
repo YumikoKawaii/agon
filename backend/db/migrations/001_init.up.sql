@@ -1,0 +1,39 @@
+CREATE TABLE users (
+    id BIGINT AUTO_INCREMENT PRIMARY KEY,
+    name VARCHAR(16) NOT NULL,
+    password_hash VARCHAR(72) NOT NULL,
+    kit INT NOT NULL DEFAULT 0,
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    UNIQUE KEY idx_users_name (name)
+) CHARACTER SET utf8mb4 COLLATE utf8mb4_0900_ai_ci;
+
+CREATE TABLE rooms (
+    id CHAR(6) PRIMARY KEY,
+    host_id BIGINT NOT NULL,
+    guest_id BIGINT NULL,
+    host_ready BOOLEAN NOT NULL DEFAULT FALSE,
+    guest_ready BOOLEAN NOT NULL DEFAULT FALSE,
+    state INT NOT NULL DEFAULT 1,
+    match_id VARCHAR(16) NOT NULL DEFAULT '',
+    created_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    updated_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3) ON UPDATE CURRENT_TIMESTAMP(3),
+    CONSTRAINT fk_rooms_host FOREIGN KEY (host_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_rooms_guest FOREIGN KEY (guest_id) REFERENCES users (id) ON DELETE SET NULL
+);
+
+CREATE TABLE matches (
+    id VARCHAR(16) PRIMARY KEY,
+    room_id CHAR(6) NOT NULL,
+    host_id BIGINT NOT NULL,
+    guest_id BIGINT NOT NULL,
+    winner_id BIGINT NULL,
+    host_deaths INT NOT NULL DEFAULT 0,
+    guest_deaths INT NOT NULL DEFAULT 0,
+    started_at DATETIME(3) NOT NULL DEFAULT CURRENT_TIMESTAMP(3),
+    ended_at DATETIME(3) NULL,
+    KEY idx_matches_room (room_id),
+    CONSTRAINT fk_matches_host FOREIGN KEY (host_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_matches_guest FOREIGN KEY (guest_id) REFERENCES users (id) ON DELETE CASCADE,
+    CONSTRAINT fk_matches_winner FOREIGN KEY (winner_id) REFERENCES users (id) ON DELETE SET NULL
+);

@@ -1,0 +1,26 @@
+syntax = "proto3";
+
+package agon.v1;
+
+import "agon/v1/common.proto";
+
+option go_package = "github.com/yumikokawaii/agon/gen/agon/v1;agonv1";
+
+service UserService {
+  rpc GetMe(GetMeRequest) returns (GetMeResponse);
+  rpc SetKit(SetKitRequest) returns (SetKitResponse);
+}
+
+message GetMeRequest {}
+
+message GetMeResponse {
+  User user = 1;
+}
+
+message SetKitRequest {
+  int32 kit = 1;
+}
+
+message SetKitResponse {
+  User user = 1;
+}

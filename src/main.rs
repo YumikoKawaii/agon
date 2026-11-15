@@ -2,6 +2,8 @@ mod anim;
 mod player;
 mod skills;
 mod sprite;
+mod net;
+mod ui;
 
 use anim::*;
 use macroquad::prelude::*;
@@ -59,7 +61,7 @@ fn resolve_push(players: &mut [Player; 2]) {
     }
 }
 
-fn resolve_hits(players: &mut [Player; 2], anims: &Anims) {
+fn resolve_hits(players: &mut [Player; 2], anims: &Anims) -> [bool; 2] {
     let mut hits = [false; 2];
     for a in 0..2 {
         let p = &players[a];
@@ -77,8 +79,92 @@ fn resolve_hits(players: &mut [Player; 2], anims: &Anims) {
             players[1 - a].take_hit(dir, 10);
         }
     }
-    if players.iter().any(|p| p.hp <= 0) {
-        players.iter_mut().filter(|p| p.hp <= 0).for_each(|p| p.respawn());
+    let died = [players[0].hp <= 0, players[1].hp <= 0];
+    players.iter_mut().filter(|p| p.hp <= 0).for_each(|p| p.respawn());
+    died
+}
+
+const LEFT: (Vec2, f32) = (vec2(120.0, 200.0), 0.0);
+const RIGHT: (Vec2, f32) = (vec2(280.0, 200.0), std::f32::consts::PI);
+
+#[derive(Default)]
+struct Sync {
+    tick: u32,
+    deaths: u32,
+    cast_seq: u16,
+    cast_slot: u8,
+    dodge_seq: u8,
+    remote: Option<net::Packet>,
+    seen_cast: u16,
+    seen_dodge: u8,
+    foe_deaths: u32,
+}
+
+impl Sync {
+    fn pull(&mut self, o: &ui::Online) {
+        let mut buf = [0u8; net::PACKET];
+        loop {
+            let n = o.wt.recv(&mut buf);
+            if n == 0 {
+                break;
+            }
+            if let Some(p) = net::Packet::decode(&buf[..n]) {
+                if self.remote.is_none_or(|r| p.tick > r.tick) {
+                    if self.remote.is_none() {
+                        self.seen_cast = p.cast_seq;
+                        self.seen_dodge = p.dodge_seq;
+                    }
+                    self.remote = Some(p);
+                    self.foe_deaths = self.foe_deaths.max(p.deaths);
+                }
+            }
+        }
+    }
+
+    fn remote_input(&mut self) -> Input {
+        let Some(p) = self.remote else { return Input::default() };
+        let mut i = Input { dir: Vec2::from(p.dir), aim: Vec2::from(p.aim), slot: None, dodge: false };
+        if p.cast_seq != self.seen_cast {
+            self.seen_cast = p.cast_seq;
+            i.slot = Some(p.cast_slot as usize);
+        }
+        if p.dodge_seq != self.seen_dodge {
+            self.seen_dodge = p.dodge_seq;
+            i.dodge = true;
+        }
+        i
+    }
+
+    fn correct(&self, foe: &mut Player) {
+        if let Some(p) = self.remote {
+            foe.pos = foe.pos.lerp(Vec2::from(p.pos), 0.5);
+            foe.ang = p.ang;
+            foe.hp = p.hp;
+        }
+    }
+
+    fn push(&mut self, o: &ui::Online, input: &Input, me: &Player) {
+        self.tick += 1;
+        if let Some(s) = input.slot {
+            self.cast_seq = self.cast_seq.wrapping_add(1);
+            self.cast_slot = s as u8;
+        }
+        if input.dodge {
+            self.dodge_seq = self.dodge_seq.wrapping_add(1);
+        }
+        let p = net::Packet {
+            tick: self.tick,
+            dir: input.dir.into(),
+            aim: input.aim.into(),
+            pos: me.pos.into(),
+            ang: me.ang,
+            hp: me.hp,
+            deaths: self.deaths,
+            cast_seq: self.cast_seq,
+            cast_slot: self.cast_slot,
+            dodge_seq: self.dodge_seq,
+        };
+        o.wt.send(&p.encode());
     }
 }
 
@@ -252,17 +338,82 @@ async fn main() {
     let mut acc = 0.0;
     let mut world = World::default();
     let mut debug = false;
+    let mut ui = ui::Ui::new();
+    let mut in_game = false;
+    let mut sync = Sync::default();
 
     loop {
+        if !matches!(ui.screen, ui::Screen::Game) {
+            in_game = false;
+            show_mouse(true);
+            ui.draw(&skins);
+            if ui.quit {
+                break;
+            }
+            next_frame().await;
+            continue;
+        }
+        ui.tick();
+        if !in_game {
+            in_game = true;
+            show_mouse(false);
+            skin[0] = ui.kit;
+            players[0].set_kit(ui.kit);
+            let foe_kit = ui.online.as_ref().map_or(1, |o| o.foe_kit);
+            let (mine, theirs) = if ui.online.as_ref().is_some_and(|o| o.seat == 1) { (RIGHT, LEFT) } else { (LEFT, RIGHT) };
+            players[0].set_spawn(mine.0, mine.1);
+            players[1].set_spawn(theirs.0, theirs.1);
+            players[0].respawn();
+            players[1].dummy = ui.online.is_none();
+            skin[1] = foe_kit;
+            players[1].set_kit(foe_kit);
+            world = World::default();
+            pending = Input::default();
+            sync = Sync::default();
+            acc = 0.0;
+        }
+        let online = ui.online.is_some();
+        if is_key_pressed(KeyCode::Escape) {
+            if online {
+                ui.leave();
+            } else {
+                ui.screen = ui::Screen::Menu;
+            }
+            next_frame().await;
+            continue;
+        }
+        if let Some(o) = ui.online.as_mut() {
+            while let Some(line) = o.wt.line() {
+                if line == "start" {
+                    o.started = true;
+                } else if let Some(w) = line.strip_prefix("end ") {
+                    o.result = Some((w.to_string(), 3.0));
+                }
+            }
+            let mut back = o.result.is_none() && o.wt.state() == net::Link::Closed;
+            if let Some((_, t)) = o.result.as_mut() {
+                *t -= get_frame_time();
+                back |= *t <= 0.0;
+            }
+            if back {
+                ui.online = None;
+                ui.screen = ui::Screen::Lobby;
+                next_frame().await;
+                continue;
+            }
+        }
+        let live = ui.online.as_ref().is_none_or(|o| o.started && o.result.is_none());
         if is_key_pressed(KeyCode::Tab) {
             debug = !debug;
         }
-        for (k, n) in [(KeyCode::Key1, 0), (KeyCode::Key2, 1), (KeyCode::Key3, 2)] {
-            if is_key_pressed(k) && skin[0] != n {
-                skin[0] = n;
-                players[0].set_kit(n);
-                world = World::default();
-                players[1].untargetable = false;
+        if !online {
+            for (k, n) in [(KeyCode::Key1, 0), (KeyCode::Key2, 1), (KeyCode::Key3, 2)] {
+                if is_key_pressed(k) && skin[0] != n {
+                    skin[0] = n;
+                    players[0].set_kit(n);
+                    world = World::default();
+                    players[1].untargetable = false;
+                }
             }
         }
         let r = read_input(mouse_world());
@@ -272,20 +423,38 @@ async fn main() {
         pending.dodge |= r.dodge;
 
         acc += get_frame_time().min(0.25);
+        if let Some(o) = ui.online.as_ref() {
+            sync.pull(o);
+        }
         while acc >= DT {
-            for i in 0..2 {
-                let input = if players[i].dummy { Input::default() } else { pending };
-                players[i].step(input, &anims);
-                world.cast(&mut players, i, &anims);
+            acc -= DT;
+            if !live {
+                pending.slot = None;
+                pending.dodge = false;
+                continue;
+            }
+            let foe_input = if online { sync.remote_input() } else { Input::default() };
+            players[0].step(pending, &anims);
+            world.cast(&mut players, 0, &anims);
+            players[1].step(foe_input, &anims);
+            world.cast(&mut players, 1, &anims);
+            if online {
+                sync.correct(&mut players[1]);
+            } else {
+                let to = players[0].pos - players[1].pos;
+                players[1].ang = to.y.atan2(to.x);
+            }
+            resolve_push(&mut players);
+            world.update(&mut players, &anims);
+            let died = resolve_hits(&mut players, &anims);
+            if died[0] {
+                sync.deaths += 1;
+            }
+            if let Some(o) = ui.online.as_ref() {
+                sync.push(o, &pending, &players[0]);
             }
             pending.slot = None;
             pending.dodge = false;
-            let to = players[0].pos - players[1].pos;
-            players[1].ang = to.y.atan2(to.x);
-            resolve_push(&mut players);
-            world.update(&mut players, &anims);
-            resolve_hits(&mut players, &anims);
-            acc -= DT;
         }
 
         update_camera(&players, world.shake);
@@ -318,6 +487,22 @@ async fn main() {
         draw_circle(m.x, m.y, 2.0, WHITE);
         world.draw_flash();
         draw_hud(&players);
+        let tag = match (ui.online.as_ref(), ui.room.as_ref()) {
+            (Some(o), Some(r)) => format!("room {}   {} {} - {} {}   first to {} kills   Esc forfeit", r.id, ui.user, sync.foe_deaths, sync.deaths, o.foe, 3),
+            _ => "practice   Esc menu".to_string(),
+        };
+        let tw = measure_text(&tag, None, 20, 1.0).width;
+        draw_text(&tag, (screen_width() - tw) / 2.0, 20.0, 20.0, LIGHTGRAY);
+        if let Some(o) = ui.online.as_ref() {
+            let msg = match &o.result {
+                Some((w, _)) if *w == o.seat.to_string() => "VICTORY".to_string(),
+                Some(_) => format!("{} wins", o.foe),
+                None if o.started => String::new(),
+                None if o.wt.state() == net::Link::Connecting => "connecting...".to_string(),
+                None => "waiting for opponent...".to_string(),
+            };
+            ui::center_text(&msg, screen_height() / 2.0 - 120.0, 64, WHITE);
+        }
         draw_text(
             "WASD move   Mouse aim   RMB roll   1/2/3 character   Tab boxes",
             40.0,

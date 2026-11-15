@@ -1,0 +1,10 @@
+syntax = "proto3";
+
+package agon.v1;
+
+option go_package = "github.com/yumikokawaii/agon/gen/agon/v1;agonv1";
+
+message User {
+  string username = 1;
+  int32 kit = 2;
+}

@@ -184,6 +184,10 @@ impl Player {
         self.respawn();
     }
 
+    pub fn set_spawn(&mut self, pos: Vec2, ang: f32) {
+        self.spawn = (pos, ang);
+    }
+
     pub fn respawn(&mut self) {
         self.pos = self.spawn.0;
         self.ang = self.spawn.1;
