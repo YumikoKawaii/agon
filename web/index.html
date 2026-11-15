@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Agon</title>
+    <style>
+        html, body, canvas {
+            margin: 0;
+            padding: 0;
+            width: 100%;
+            height: 100%;
+            overflow: hidden;
+            position: absolute;
+            background: #14141c;
+            z-index: 0;
+        }
+    </style>
+</head>
+<body>
+    <canvas id="glcanvas" tabindex="1"></canvas>
+    <script>
+        document.getElementById("glcanvas").addEventListener("contextmenu", e => e.preventDefault());
+    </script>
+    <script src="mq_js_bundle.js"></script>
+    <script src="agon_net.js"></script>
+    <script>load("agon.wasm");</script>
+</body>
+</html>

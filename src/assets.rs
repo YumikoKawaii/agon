@@ -1,10 +1,14 @@
-use std::sync::OnceLock;
+use std::sync::{
+    atomic::{AtomicUsize, Ordering},
+    Arc, Mutex, OnceLock,
+};
 
-use macroquad::texture::{load_texture, FilterMode, Texture2D};
+use macroquad::{experimental::coroutines::start_coroutine, prelude::*};
 
 use crate::{
     core::{anim::State, KITS},
     error::{AResult, AgonError},
+    ui,
 };
 
 const DIRS: [&str; 8] = ["east", "south-east", "south", "south-west", "west", "north-west", "north", "north-east"];
@@ -16,12 +20,28 @@ pub struct Skin {
     clips: Vec<Vec<Vec<Texture2D>>>,
 }
 
+const BAR_W: f32 = 360.0;
+const BAR_H: f32 = 10.0;
+
+const TOTAL_STEPS: usize = KITS.len() * CLIPS.len() * DIRS.len() + 1;
+
+fn draw_progress(done: usize) {
+    clear_background(ui::BG);
+    ui::text_centered("AGON", screen_height() / 2.0 - 40.0, ui::TITLE, ui::ACCENT);
+    let r = ui::centered(BAR_W, screen_height() / 2.0 + 10.0, BAR_H);
+    draw_rectangle(r.x, r.y, r.w, r.h, ui::PANEL);
+    draw_rectangle(r.x, r.y, r.w * done as f32 / TOTAL_STEPS as f32, r.h, ui::ACCENT);
+    draw_rectangle_lines(r.x, r.y, r.w, r.h, 1.0, ui::EDGE);
+    ui::text_centered(&format!("loading {}%", done * 100 / TOTAL_STEPS), r.y + 40.0, ui::SMALL, ui::DIM);
+}
+
 impl Skin {
-    async fn load(name: &str) -> AResult<Skin> {
+    async fn load(name: &str, progress: &AtomicUsize) -> AResult<Skin> {
         let mut clips = Vec::new();
         for clip in CLIPS {
             let mut dirs = Vec::new();
             for dir in DIRS {
+                progress.fetch_add(1, Ordering::Relaxed);
                 let mut frames = Vec::new();
                 for i in 0.. {
                     let path = format!("assets/{name}/animations/{clip}/{dir}/frame_{i:03}.png");
@@ -69,14 +89,33 @@ async fn texture(path: &str) -> AResult<Texture2D> {
     Ok(t)
 }
 
-pub async fn load() -> AResult {
+async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     let mut skins = Vec::new();
     for kit in &KITS {
-        skins.push(Skin::load(kit.skin).await?);
+        skins.push(Skin::load(kit.skin, progress).await?);
     }
+    progress.fetch_add(1, Ordering::Relaxed);
     let spirit_sword = texture("assets/sword/spirit_sword.png").await?;
-    let _ = INSTANCE.set(Assets { skins, spirit_sword });
-    Ok(())
+    Ok(Assets { skins, spirit_sword })
+}
+
+pub async fn load() -> AResult {
+    let progress = Arc::new(AtomicUsize::new(0));
+    let result = Arc::new(Mutex::new(None));
+    let (p, r) = (progress.clone(), result.clone());
+    start_coroutine(async move {
+        let loaded = load_all(&p).await;
+        *r.lock().expect("asset result lock") = Some(loaded);
+    });
+    loop {
+        let loaded = result.lock().expect("asset result lock").take();
+        if let Some(loaded) = loaded {
+            let _ = INSTANCE.set(loaded?);
+            return Ok(());
+        }
+        draw_progress(progress.load(Ordering::Relaxed));
+        next_frame().await;
+    }
 }
 
 pub fn get() -> &'static Assets {

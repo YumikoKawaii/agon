@@ -6,12 +6,9 @@ edition = "2021"
 [dependencies]
 macroquad = "0.4"
 nanoserde = "0.2.1"
-tokio = { version = "1.54.1", features = ["rt-multi-thread", "sync"] }
-ureq = "3.5.2"
-wtransport = "0.7.2"
 
 [profile.release]
-opt-level = 3
+opt-level = "z"
 lto = true
 codegen-units = 1
 panic = "abort"

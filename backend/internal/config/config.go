@@ -12,6 +12,7 @@ type Config struct {
 	DBPassword string
 	DBName     string
 	ServerPort string
+	StaticDir  string
 	JWTSecret  string
 	WTPort     string
 	WTHost     string
@@ -25,6 +26,7 @@ func Load() *Config {
 		DBPassword: getEnv("DB_PASSWORD", "agon"),
 		DBName:     getEnv("DB_NAME", "agon"),
 		ServerPort: getEnv("SERVER_PORT", "7777"),
+		StaticDir:  getEnv("STATIC_DIR", "./static"),
 		JWTSecret:  getEnv("JWT_SECRET", "change-me-in-production"),
 		WTPort:     getEnv("WT_PORT", "4433"),
 		WTHost:     getEnv("WT_HOST", "localhost"),

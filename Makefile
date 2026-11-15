@@ -1,6 +1,6 @@
 -include .env
 
-.PHONY: up down build logs gen client play
+.PHONY: up down build logs gen client
 
 up:
 	docker compose up --build -d
@@ -18,7 +18,4 @@ gen:
 	buf generate
 
 client:
-	cargo build --release
-
-play:
-	cargo run --release
+	./build.sh

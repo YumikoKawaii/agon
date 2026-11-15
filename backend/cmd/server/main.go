@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"strings"
 	"time"
 
 	"connectrpc.com/connect"
@@ -73,6 +74,7 @@ func main() {
 	mux.Handle(agonv1connect.NewUserServiceHandler(rpchandler.NewUserServiceHandler(userSvc), interceptor))
 	mux.Handle(agonv1connect.NewRoomServiceHandler(rpchandler.NewRoomServiceHandler(roomSvc), interceptor))
 	mux.Handle(agonv1connect.NewMatchServiceHandler(rpchandler.NewMatchServiceHandler(matchSvc), interceptor))
+	mux.Handle("/", static(cfg.StaticDir))
 
 	addr := fmt.Sprintf(":%s", cfg.ServerPort)
 	log.Printf("server listening on %s", addr)
@@ -83,6 +85,17 @@ func main() {
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatalf("server failed: %v", err)
 	}
+}
+
+func static(dir string) http.Handler {
+	files := http.FileServer(http.Dir(dir))
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if strings.HasSuffix(r.URL.Path, ".wasm") {
+			w.Header().Set("Content-Type", "application/wasm")
+		}
+		w.Header().Set("Cache-Control", "no-cache")
+		files.ServeHTTP(w, r)
+	})
 }
 
 func runMigrations(cfg *config.Config) error {
