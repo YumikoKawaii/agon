@@ -4,15 +4,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"strings"
 	"time"
 
 	"connectrpc.com/connect"
 	"github.com/golang-migrate/migrate/v4"
 	_ "github.com/golang-migrate/migrate/v4/database/mysql"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"golang.org/x/net/http2"
-	"golang.org/x/net/http2/h2c"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
@@ -76,24 +73,16 @@ func main() {
 	mux.Handle(agonv1connect.NewUserServiceHandler(rpchandler.NewUserServiceHandler(userSvc), interceptor))
 	mux.Handle(agonv1connect.NewRoomServiceHandler(rpchandler.NewRoomServiceHandler(roomSvc), interceptor))
 	mux.Handle(agonv1connect.NewMatchServiceHandler(rpchandler.NewMatchServiceHandler(matchSvc), interceptor))
-	mux.Handle("/", static(cfg.StaticDir))
 
 	addr := fmt.Sprintf(":%s", cfg.ServerPort)
 	log.Printf("server listening on %s", addr)
-	if err := http.ListenAndServe(addr, h2c.NewHandler(mux, &http2.Server{})); err != nil {
+	var protocols http.Protocols
+	protocols.SetHTTP1(true)
+	protocols.SetUnencryptedHTTP2(true)
+	srv := &http.Server{Addr: addr, Handler: mux, Protocols: &protocols}
+	if err := srv.ListenAndServe(); err != nil {
 		log.Fatalf("server failed: %v", err)
 	}
-}
-
-func static(dir string) http.Handler {
-	files := http.FileServer(http.Dir(dir))
-	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if strings.HasSuffix(r.URL.Path, ".wasm") {
-			w.Header().Set("Content-Type", "application/wasm")
-		}
-		w.Header().Set("Cache-Control", "no-cache")
-		files.ServeHTTP(w, r)
-	})
 }
 
 func runMigrations(cfg *config.Config) error {

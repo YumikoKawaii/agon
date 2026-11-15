@@ -2,7 +2,7 @@ use std::marker::PhantomData;
 
 use nanoserde::{DeJson, SerJson};
 
-use crate::net::ffi::{Fetch, Stream, StreamItem};
+use crate::net::native::{Fetch, Stream, StreamItem};
 
 #[derive(Debug, Clone)]
 pub struct ApiError {

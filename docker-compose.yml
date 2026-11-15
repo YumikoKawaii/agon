@@ -12,8 +12,10 @@ services:
       WT_HOST: ${WT_HOST:-localhost}
       WT_PORT: "4433"
     ports:
-      - "127.0.0.1:${SERVER_PORT:-8080}:8080/tcp"
-      - "${WT_BIND:-127.0.0.1}:4433:4433/udp"
+      - "127.0.0.1:${SERVER_PORT:-7777}:7777/tcp"
+      - "[::1]:${SERVER_PORT:-7777}:7777/tcp"
+      - "127.0.0.1:4433:4433/udp"
+      - "[::1]:4433:4433/udp"
     depends_on:
       mysql:
         condition: service_healthy

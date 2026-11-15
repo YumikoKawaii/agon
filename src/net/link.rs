@@ -1,4 +1,7 @@
-use crate::net::{ffi::Transport, packet::{Packet, PACKET_LEN}};
+use crate::net::{
+    native::Transport,
+    packet::{Packet, PACKET_LEN},
+};
 
 #[derive(PartialEq, Eq, Clone, Copy, Debug)]
 pub enum LinkState {
