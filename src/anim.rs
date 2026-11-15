@@ -66,9 +66,9 @@ impl Anims {
             },
             attack: Anim {
                 frames: vec![
-                    f(6, &[BODY], &[]),
-                    f(4, &[BODY, circ(12.0, 0.0, 4.0)], &[Shape::Cone { r: 26.0, half: 0.9 }]),
-                    f(10, &[BODY, circ(8.0, 0.0, 4.0)], &[]),
+                    f(4, &[BODY], &[]),
+                    f(4, &[BODY], &[]),
+                    f(10, &[BODY], &[]),
                 ],
                 looping: false,
             },

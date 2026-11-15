@@ -9,30 +9,40 @@ const SPEED: f32 = 72.0;
 const ROLL_SPEED: f32 = 160.0;
 const MAX_HP: i32 = 100;
 
-pub struct Controls {
-    pub up: KeyCode,
-    pub down: KeyCode,
-    pub left: KeyCode,
-    pub right: KeyCode,
-    pub attack: KeyCode,
-    pub dodge: KeyCode,
+const BLINK: f32 = 70.0;
+
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Skill {
+    Bolt,
+    Orb,
+    Blink,
+    Star,
 }
+
+pub const SKILLS: [Skill; 4] = [Skill::Bolt, Skill::Orb, Skill::Blink, Skill::Star];
+pub const COOLDOWN: [f32; 4] = [0.35, 3.0, 4.0, 10.0];
 
 #[derive(Default, Clone, Copy)]
 pub struct Input {
     pub dir: Vec2,
-    pub attack: bool,
+    pub aim: Vec2,
+    pub skill: Option<Skill>,
     pub dodge: bool,
 }
 
-impl Controls {
-    pub fn read(&self) -> Input {
-        let axis = |neg: KeyCode, pos: KeyCode| is_key_down(pos) as i32 as f32 - is_key_down(neg) as i32 as f32;
-        Input {
-            dir: vec2(axis(self.left, self.right), axis(self.up, self.down)),
-            attack: is_key_pressed(self.attack),
-            dodge: is_key_pressed(self.dodge),
-        }
+pub fn read_input(aim: Vec2) -> Input {
+    let axis = |neg: KeyCode, pos: KeyCode| is_key_down(pos) as i32 as f32 - is_key_down(neg) as i32 as f32;
+    let pressed = [
+        is_mouse_button_pressed(MouseButton::Left),
+        is_key_pressed(KeyCode::Q),
+        is_key_pressed(KeyCode::E),
+        is_key_pressed(KeyCode::R),
+    ];
+    Input {
+        dir: vec2(axis(KeyCode::A, KeyCode::D), axis(KeyCode::W, KeyCode::S)),
+        aim,
+        skill: (0..4).find(|i| pressed[*i]).map(|i| SKILLS[i]),
+        dodge: is_mouse_button_pressed(MouseButton::Right),
     }
 }
 
@@ -46,15 +56,19 @@ pub struct Player {
     timer: u32,
     finished: bool,
     pub age: u32,
+    pub cd: [f32; 4],
+    pub cast: Option<Skill>,
+    pub blink_from: Option<Vec2>,
     pub has_hit: bool,
     pub color: Color,
     pub tint: Color,
-    pub controls: Controls,
+    pub dummy: bool,
+    pub target: Vec2,
     spawn: (Vec2, f32),
 }
 
 impl Player {
-    pub fn new(pos: Vec2, ang: f32, color: Color, controls: Controls) -> Self {
+    pub fn new(pos: Vec2, ang: f32, color: Color, dummy: bool) -> Self {
         Player {
             pos,
             ang,
@@ -65,10 +79,14 @@ impl Player {
             timer: 0,
             finished: false,
             age: 0,
+            cd: [0.0; 4],
+            cast: None,
+            blink_from: None,
             has_hit: false,
-            tint: if color == ORANGE { Color::new(1.0, 0.85, 0.75, 1.0) } else { WHITE },
+            tint: if dummy { Color::new(0.75, 0.75, 0.8, 1.0) } else { WHITE },
             color,
-            controls,
+            dummy,
+            target: pos,
             spawn: (pos, ang),
         }
     }
@@ -78,6 +96,7 @@ impl Player {
         self.ang = self.spawn.1;
         self.knock = Vec2::ZERO;
         self.hp = MAX_HP;
+        self.cd = [0.0; 4];
         self.reset_to(State::Idle);
     }
 
@@ -105,6 +124,8 @@ impl Player {
     }
 
     pub fn step(&mut self, input: Input, anims: &Anims) {
+        self.cd.iter_mut().for_each(|c| *c = (*c - DT).max(0.0));
+        let ready = input.skill.filter(|k| self.cd[*k as usize] <= 0.0);
         match self.state {
             State::Hit | State::Attack => {
                 if self.finished {
@@ -120,11 +141,24 @@ impl Player {
             _ => {
                 let dir = input.dir.normalize_or_zero();
                 if input.dodge {
-                    if dir != Vec2::ZERO {
-                        self.ang = dir.y.atan2(dir.x);
+                    let to = input.aim - self.pos;
+                    if to.length() > 0.5 {
+                        self.ang = to.y.atan2(to.x);
                     }
                     self.set_state(State::Roll);
-                } else if input.attack {
+                } else if let Some(k) = ready {
+                    let to = input.aim - self.pos;
+                    if to.length() > 0.5 {
+                        self.ang = to.y.atan2(to.x);
+                    }
+                    self.target = input.aim;
+                    if k == Skill::Blink {
+                        self.blink_from = Some(self.pos);
+                        self.pos += self.facing() * to.length().min(BLINK);
+                        self.clamp();
+                    }
+                    self.cd[k as usize] = COOLDOWN[k as usize];
+                    self.cast = Some(k);
                     self.set_state(State::Attack);
                 } else if dir != Vec2::ZERO {
                     self.pos += dir * SPEED * DT;
