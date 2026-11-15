@@ -18,32 +18,31 @@ extern "C" {
     fn agon_wt_close(id: i32);
 }
 
-pub struct Req {
+#[cfg(not(target_arch = "wasm32"))]
+const OFFLINE: &str = "{\"code\":\"unavailable\",\"message\":\"online features need the web build\"}";
+
+pub struct Fetch {
     #[cfg(target_arch = "wasm32")]
     id: i32,
     #[cfg(not(target_arch = "wasm32"))]
     done: Option<(i32, String)>,
 }
 
-#[cfg(not(target_arch = "wasm32"))]
-const OFFLINE: &str = "{\"code\":\"unavailable\",\"message\":\"online features need the web build\"}";
-
-pub fn call(rpc: &str, body: &str, token: &str) -> Req {
-    let url = format!("/agon.v1.{rpc}");
-    #[cfg(target_arch = "wasm32")]
-    {
-        let m = "POST";
-        let id = unsafe { agon_fetch(m.as_ptr(), m.len(), url.as_ptr(), url.len(), body.as_ptr(), body.len(), token.as_ptr(), token.len()) };
-        Req { id }
+impl Fetch {
+    pub fn post(url: &str, body: &str, token: &str) -> Fetch {
+        #[cfg(target_arch = "wasm32")]
+        {
+            let m = "POST";
+            let id = unsafe { agon_fetch(m.as_ptr(), m.len(), url.as_ptr(), url.len(), body.as_ptr(), body.len(), token.as_ptr(), token.len()) };
+            Fetch { id }
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let _ = (url, body, token);
+            Fetch { done: Some((-1, OFFLINE.to_string())) }
+        }
     }
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        let _ = (url, body, token);
-        Req { done: Some((-1, OFFLINE.to_string())) }
-    }
-}
 
-impl Req {
     pub fn poll(&mut self) -> Option<(i32, String)> {
         #[cfg(target_arch = "wasm32")]
         {
@@ -62,54 +61,53 @@ impl Req {
     }
 }
 
-pub enum Next {
+pub enum StreamItem {
     Msg(String),
-    Wait,
+    Empty,
     Closed,
 }
 
-pub struct Watch {
+pub struct Stream {
     #[cfg(target_arch = "wasm32")]
     id: i32,
 }
 
-pub fn watch(rpc: &str, body: &str, token: &str) -> Watch {
-    let url = format!("/agon.v1.{rpc}");
-    #[cfg(target_arch = "wasm32")]
-    {
-        let id = unsafe { agon_watch(url.as_ptr(), url.len(), body.as_ptr(), body.len(), token.as_ptr(), token.len()) };
-        Watch { id }
+impl Stream {
+    pub fn open(url: &str, body: &str, token: &str) -> Stream {
+        #[cfg(target_arch = "wasm32")]
+        {
+            let id = unsafe { agon_watch(url.as_ptr(), url.len(), body.as_ptr(), body.len(), token.as_ptr(), token.len()) };
+            Stream { id }
+        }
+        #[cfg(not(target_arch = "wasm32"))]
+        {
+            let _ = (url, body, token);
+            Stream {}
+        }
     }
-    #[cfg(not(target_arch = "wasm32"))]
-    {
-        let _ = (url, body, token);
-        Watch {}
-    }
-}
 
-impl Watch {
-    pub fn next(&mut self) -> Next {
+    pub fn next(&mut self) -> StreamItem {
         #[cfg(target_arch = "wasm32")]
         {
             let n = unsafe { agon_watch_next(self.id) };
             if n == -1 {
-                return Next::Wait;
+                return StreamItem::Empty;
             }
             if n < 0 {
-                return Next::Closed;
+                return StreamItem::Closed;
             }
             let mut buf = vec![0u8; n as usize];
             unsafe { agon_watch_copy(self.id, buf.as_mut_ptr()) };
-            Next::Msg(String::from_utf8_lossy(&buf).into_owned())
+            StreamItem::Msg(String::from_utf8_lossy(&buf).into_owned())
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
-            Next::Closed
+            StreamItem::Closed
         }
     }
 }
 
-impl Drop for Watch {
+impl Drop for Stream {
     fn drop(&mut self) {
         #[cfg(target_arch = "wasm32")]
         unsafe {
@@ -118,44 +116,33 @@ impl Drop for Watch {
     }
 }
 
-#[derive(PartialEq, Eq, Clone, Copy)]
-pub enum Link {
-    Connecting,
-    Open,
-    Closed,
-}
-
-pub struct Wt {
+pub struct Transport {
     #[cfg(target_arch = "wasm32")]
     id: i32,
 }
 
-impl Wt {
-    pub fn open(url: &str, hash: &str) -> Wt {
+impl Transport {
+    pub fn open(url: &str, hash: &str) -> Transport {
         #[cfg(target_arch = "wasm32")]
         {
             let id = unsafe { agon_wt_open(url.as_ptr(), url.len(), hash.as_ptr(), hash.len()) };
-            Wt { id }
+            Transport { id }
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
             let _ = (url, hash);
-            Wt {}
+            Transport {}
         }
     }
 
-    pub fn state(&self) -> Link {
+    pub fn state(&self) -> i32 {
         #[cfg(target_arch = "wasm32")]
         {
-            match unsafe { agon_wt_state(self.id) } {
-                0 => Link::Connecting,
-                1 => Link::Open,
-                _ => Link::Closed,
-            }
+            unsafe { agon_wt_state(self.id) }
         }
         #[cfg(not(target_arch = "wasm32"))]
         {
-            Link::Closed
+            2
         }
     }
 
@@ -198,64 +185,11 @@ impl Wt {
     }
 }
 
-impl Drop for Wt {
+impl Drop for Transport {
     fn drop(&mut self) {
         #[cfg(target_arch = "wasm32")]
         unsafe {
             agon_wt_close(self.id)
         };
-    }
-}
-
-pub const PACKET: usize = 44;
-
-#[derive(Clone, Copy, Default)]
-pub struct Packet {
-    pub tick: u32,
-    pub dir: [f32; 2],
-    pub aim: [f32; 2],
-    pub pos: [f32; 2],
-    pub ang: f32,
-    pub hp: i32,
-    pub deaths: u32,
-    pub cast_seq: u16,
-    pub cast_slot: u8,
-    pub dodge_seq: u8,
-}
-
-impl Packet {
-    pub fn encode(&self) -> [u8; PACKET] {
-        let mut b = [0u8; PACKET];
-        let f = [self.dir[0], self.dir[1], self.aim[0], self.aim[1], self.pos[0], self.pos[1], self.ang];
-        b[0..4].copy_from_slice(&self.tick.to_le_bytes());
-        for (i, v) in f.iter().enumerate() {
-            b[4 + i * 4..8 + i * 4].copy_from_slice(&v.to_le_bytes());
-        }
-        b[32..36].copy_from_slice(&self.hp.to_le_bytes());
-        b[36..40].copy_from_slice(&self.deaths.to_le_bytes());
-        b[40..42].copy_from_slice(&self.cast_seq.to_le_bytes());
-        b[42] = self.cast_slot;
-        b[43] = self.dodge_seq;
-        b
-    }
-
-    pub fn decode(b: &[u8]) -> Option<Packet> {
-        if b.len() != PACKET {
-            return None;
-        }
-        let u = |i: usize| u32::from_le_bytes(b[i..i + 4].try_into().unwrap());
-        let f = |i: usize| f32::from_bits(u(i));
-        Some(Packet {
-            tick: u(0),
-            dir: [f(4), f(8)],
-            aim: [f(12), f(16)],
-            pos: [f(20), f(24)],
-            ang: f(28),
-            hp: u(32) as i32,
-            deaths: u(36),
-            cast_seq: u16::from_le_bytes([b[40], b[41]]),
-            cast_slot: b[42],
-            dodge_seq: b[43],
-        })
     }
 }
