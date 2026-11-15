@@ -10,7 +10,7 @@ use crate::core::{
     Skill, RADIUS,
 };
 
-pub const SPAWNS: [(Vec2, f32); 2] = [(vec2(120.0, 200.0), 0.0), (vec2(280.0, 200.0), PI)];
+pub const SPAWNS: [(Vec2, f32); 2] = [(vec2(140.0, 120.0), 0.0), (vec2(340.0, 120.0), PI)];
 
 pub struct Battle {
     pub players: [Player; 2],

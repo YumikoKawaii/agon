@@ -17,7 +17,13 @@ mod spells;
 mod sync;
 mod view;
 
-use self::{fx::Fx, sync::Sync, view::Camera};
+use self::{
+    fx::Fx,
+    sync::Sync,
+    view::{letterbox, Camera, VIEW},
+};
+
+const BARS: Color = Color::new(0.0, 0.0, 0.0, 1.0);
 
 const PRACTICE_FOE_KIT: usize = 1;
 const KIT_KEYS: [KeyCode; 3] = [KeyCode::Key1, KeyCode::Key2, KeyCode::Key3];
@@ -35,6 +41,7 @@ pub struct Battle {
     pending: Input,
     acc: f32,
     debug: bool,
+    canvas: RenderTarget,
 }
 
 fn read_input(aim: Vec2) -> Input {
@@ -50,7 +57,9 @@ fn read_input(aim: Vec2) -> Input {
 
 impl Battle {
     fn new(core: core::Battle, mode: Mode) -> Self {
-        Battle { core, fx: Fx::default(), cam: Camera::default(), mode, pending: Input::default(), acc: 0.0, debug: false }
+        let canvas = render_target(VIEW.x as u32, VIEW.y as u32);
+        canvas.texture.set_filter(FilterMode::Nearest);
+        Battle { core, fx: Fx::default(), cam: Camera::default(), mode, pending: Input::default(), acc: 0.0, debug: false, canvas }
     }
 
     pub fn practice(kit: usize) -> Self {
@@ -121,7 +130,7 @@ impl Screen for Battle {
                 sync.live()
             }
         };
-        self.cam.follow(self.core.players[0].pos, self.fx.shake);
+        self.cam.shake(self.fx.shake);
         let r = read_input(self.cam.mouse_world());
         self.pending.dir = r.dir;
         self.pending.aim = r.aim;
@@ -142,6 +151,27 @@ impl Screen for Battle {
     }
 
     fn draw(&self, ctx: &Context) {
+        set_camera(&Camera2D {
+            zoom: vec2(2.0 / VIEW.x, 2.0 / VIEW.y),
+            target: VIEW / 2.0,
+            render_target: Some(self.canvas.clone()),
+            ..Default::default()
+        });
+        clear_background(ui::BG);
+        self.draw_view(ctx);
+        set_default_camera();
+        clear_background(BARS);
+        let l = letterbox();
+        draw_texture_ex(&self.canvas.texture, l.offset.x, l.offset.y, WHITE, DrawTextureParams { dest_size: Some(VIEW * l.scale), ..Default::default() });
+    }
+
+    fn shows_cursor(&self) -> bool {
+        false
+    }
+}
+
+impl Battle {
+    fn draw_view(&self, ctx: &Context) {
         let cam = &self.cam;
         let b = &self.core;
         view::draw_floor(cam);
@@ -159,20 +189,18 @@ impl Screen for Battle {
         self.fx.draw_numbers(cam);
         view::draw_cage(cam, true);
         spells::draw_aim(b, cam);
-        view::draw_cursor();
+        view::draw_cursor(cam);
         self.fx.draw_flash();
         view::draw_hud(&b.players);
-        let tag = self.scoreline(ctx);
-        let tw = measure_text(&tag, None, 20, 1.0).width;
-        draw_text(&tag, (screen_width() - tw) / 2.0, 20.0, 20.0, LIGHTGRAY);
+        let centered = |t: &str, y: f32, size: u16, c: Color| {
+            let w = measure_text(t, None, size, 1.0).width;
+            draw_text(t, (VIEW.x - w) / 2.0, y, size as f32, c);
+        };
+        centered(&self.scoreline(ctx), 20.0, 20, LIGHTGRAY);
         if let Mode::Online(sync) = &self.mode {
-            ui::text_centered(&sync.banner(), screen_height() / 2.0 - 120.0, 64, WHITE);
+            centered(&sync.banner(), VIEW.y / 2.0 - 120.0, 64, WHITE);
         }
-        draw_text("WASD move   Mouse aim   RMB roll   Tab boxes", 40.0, screen_height() - 46.0, 24.0, LIGHTGRAY);
-        draw_text(KITS[b.players[0].kit].hint, 40.0, screen_height() - 20.0, 24.0, LIGHTGRAY);
-    }
-
-    fn shows_cursor(&self) -> bool {
-        false
+        draw_text("WASD move   Mouse aim   RMB roll   Tab boxes", 40.0, VIEW.y - 34.0, 22.0, LIGHTGRAY);
+        draw_text(KITS[b.players[0].kit].hint, 40.0, VIEW.y - 10.0, 22.0, LIGHTGRAY);
     }
 }

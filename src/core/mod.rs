@@ -10,9 +10,9 @@ pub use battle::Battle;
 pub use kit::{Skill, KITS};
 pub use player::{Input, Player};
 
-use macroquad::math::Vec2;
+use macroquad::math::{vec2, Vec2};
 
-pub const ARENA: f32 = 400.0;
+pub const ARENA: Vec2 = vec2(480.0, 240.0);
 pub const RADIUS: f32 = 6.0;
 pub const DT: f32 = 1.0 / 60.0;
 pub const DEATHS_TO_WIN: u32 = 3;
@@ -24,5 +24,5 @@ pub fn seg_dist(p: Vec2, a: Vec2, b: Vec2) -> f32 {
 }
 
 pub fn inside(p: Vec2, margin: f32) -> Vec2 {
-    p.clamp(Vec2::splat(margin), Vec2::splat(ARENA - margin))
+    p.clamp(Vec2::splat(margin), ARENA - margin)
 }

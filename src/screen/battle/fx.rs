@@ -12,7 +12,7 @@ use crate::{
         sword::{FORM_N, FORM_R, LUNGE_REACH},
         Battle, Player,
     },
-    screen::battle::view::{alpha, draw_sprite, glow, Camera, AQUA, CHEST, GOLD, ICE, PALE, S},
+    screen::battle::view::{alpha, draw_sprite, glow, Camera, AQUA, CHEST, GOLD, ICE, PALE, S, VIEW},
 };
 
 const SHAKE_DECAY: f32 = 0.86;
@@ -383,7 +383,7 @@ impl Fx {
 
     pub fn draw_flash(&self) {
         if self.flash > 0.0 {
-            draw_rectangle(0.0, 0.0, screen_width(), screen_height(), alpha(Color::new(1.0, 0.97, 0.9, 1.0), self.flash * 1.5));
+            draw_rectangle(0.0, 0.0, VIEW.x, VIEW.y, alpha(Color::new(1.0, 0.97, 0.9, 1.0), self.flash * 1.5));
         }
     }
 }

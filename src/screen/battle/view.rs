@@ -13,8 +13,9 @@ pub const FOOT: f32 = 9.0;
 pub const CHEST: f32 = 9.0;
 const POST_H: f32 = 14.0;
 const TILE: f32 = 20.0;
-const CAM_MARGIN: f32 = 40.0;
 const HIT_FLASH_TICKS: u32 = 4;
+pub const VIEW: Vec2 = vec2(1500.0, 900.0);
+const ORIGIN: Vec2 = vec2(30.0, 120.0);
 
 pub const ICE: Color = Color::new(0.55, 0.85, 1.0, 1.0);
 pub const PALE: Color = Color::new(0.88, 0.97, 1.0, 1.0);
@@ -25,31 +26,43 @@ const FLOOR: [Color; 2] = [Color::new(0.2, 0.22, 0.29, 1.0), Color::new(0.227, 0
 const CAGE: Color = Color::new(0.541, 0.565, 0.651, 1.0);
 const HIT_TINT: Color = Color::new(1.0, 0.6, 0.6, 1.0);
 
+pub struct Letterbox {
+    pub scale: f32,
+    pub offset: Vec2,
+}
+
+pub fn letterbox() -> Letterbox {
+    let screen = vec2(screen_width(), screen_height());
+    let fit = (screen.x / VIEW.x).min(screen.y / VIEW.y);
+    let scale = if fit >= 1.0 { fit.floor() } else { fit };
+    Letterbox { scale, offset: ((screen - VIEW * scale) / 2.0).round() }
+}
+
 #[derive(Default)]
 pub struct Camera {
-    offset: Vec2,
+    jitter: Vec2,
 }
 
 impl Camera {
-    pub fn follow(&mut self, target: Vec2, shake: f32) {
-        let half = vec2(screen_width(), screen_height()) / 2.0;
-        let lo = vec2(-CAM_MARGIN, -POST_H * S - CAM_MARGIN);
-        let hi = Vec2::splat(ARENA * S + CAM_MARGIN) - half * 2.0;
-        let jitter = vec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)) * shake;
-        let t = target * S - half + jitter;
-        self.offset = vec2(t.x.clamp(lo.x, hi.x.max(lo.x)), t.y.clamp(lo.y, hi.y.max(lo.y)));
+    pub fn shake(&mut self, amount: f32) {
+        self.jitter = vec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)) * amount;
     }
 
     pub fn proj(&self, v: Vec2) -> Vec2 {
-        v * S - self.offset
+        ORIGIN + v * S + self.jitter
     }
 
     pub fn air(&self, v: Vec2, z: f32) -> Vec2 {
         self.proj(v) - vec2(0.0, z * S)
     }
 
+    pub fn mouse_view(&self) -> Vec2 {
+        let l = letterbox();
+        (Vec2::from(mouse_position()) - l.offset) / l.scale
+    }
+
     pub fn mouse_world(&self) -> Vec2 {
-        (Vec2::from(mouse_position()) + self.offset + vec2(0.0, FOOT * S)) / S
+        (self.mouse_view() - ORIGIN + vec2(0.0, FOOT * S)) / S
     }
 }
 
@@ -91,9 +104,9 @@ pub fn draw_sprite(tex: &Texture2D, at: Vec2, tint: Color) {
 }
 
 pub fn draw_floor(cam: &Camera) {
-    let n = (ARENA / TILE) as i32;
-    for i in 0..n {
-        for j in 0..n {
+    let (nx, ny) = ((ARENA.x / TILE) as i32, (ARENA.y / TILE) as i32);
+    for i in 0..nx {
+        for j in 0..ny {
             let p = cam.proj(vec2(i as f32 * TILE, j as f32 * TILE));
             draw_rectangle(p.x, p.y, TILE * S, TILE * S, FLOOR[((i + j) % 2) as usize]);
         }
@@ -101,18 +114,18 @@ pub fn draw_floor(cam: &Camera) {
 }
 
 pub fn draw_cage(cam: &Camera, front: bool) {
-    let n = (ARENA / TILE) as i32;
-    for k in 0..=n {
-        let t = k as f32 * TILE;
-        for w in [vec2(t, 0.0), vec2(t, ARENA), vec2(0.0, t), vec2(ARENA, t)] {
-            if (w.y == ARENA) == front {
-                let p = cam.proj(w);
-                draw_line(p.x, p.y, p.x, p.y - POST_H * S, 2.0, CAGE);
-            }
+    let (nx, ny) = ((ARENA.x / TILE) as i32, (ARENA.y / TILE) as i32);
+    let along_x = (0..=nx).flat_map(|k| [vec2(k as f32 * TILE, 0.0), vec2(k as f32 * TILE, ARENA.y)]);
+    let along_y = (0..=ny).flat_map(|k| [vec2(0.0, k as f32 * TILE), vec2(ARENA.x, k as f32 * TILE)]);
+    for w in along_x.chain(along_y) {
+        if (w.y == ARENA.y) == front {
+            let p = cam.proj(w);
+            draw_line(p.x, p.y, p.x, p.y - POST_H * S, 2.0, CAGE);
         }
     }
-    let back = [(vec2(0.0, 0.0), vec2(ARENA, 0.0)), (vec2(0.0, 0.0), vec2(0.0, ARENA)), (vec2(ARENA, 0.0), vec2(ARENA, ARENA))];
-    let fore = [(vec2(0.0, ARENA), vec2(ARENA, ARENA))];
+    let (w, h) = (ARENA.x, ARENA.y);
+    let back = [(vec2(0.0, 0.0), vec2(w, 0.0)), (vec2(0.0, 0.0), vec2(0.0, h)), (vec2(w, 0.0), vec2(w, h))];
+    let fore = [(vec2(0.0, h), vec2(w, h))];
     let edges: &[(Vec2, Vec2)] = if front { &fore } else { &back };
     for (a, b) in edges {
         let (a, b) = (cam.proj(*a), cam.proj(*b));
@@ -146,7 +159,7 @@ pub fn draw_hud(players: &[Player; 2]) {
     let w = 300.0;
     let slot = Color::from_rgba(34, 38, 52, 255);
     for (i, p) in players.iter().enumerate() {
-        let x = if i == 0 { 40.0 } else { screen_width() - 40.0 - w };
+        let x = if i == 0 { 40.0 } else { VIEW.x - 40.0 - w };
         draw_rectangle(x, 24.0, w, 14.0, slot);
         let fill = w * p.hp.max(0) as f32 / p.max_hp() as f32;
         draw_rectangle(if i == 0 { x } else { x + w - fill }, 24.0, fill, 14.0, SEAT_COLORS[i]);
@@ -164,8 +177,8 @@ pub fn draw_hud(players: &[Player; 2]) {
     }
 }
 
-pub fn draw_cursor() {
-    let m = Vec2::from(mouse_position());
+pub fn draw_cursor(cam: &Camera) {
+    let m = cam.mouse_view();
     draw_circle_lines(m.x, m.y, 8.0, 1.5, WHITE);
     draw_circle(m.x, m.y, 2.0, WHITE);
 }

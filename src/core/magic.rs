@@ -146,7 +146,7 @@ impl Spells {
                 players[t].take_hit(s.vel.normalize_or_zero(), NEEDLE_DMG);
                 events.push(Event::Hit { pos: s.pos, element: Element::Frost, dmg: NEEDLE_DMG, big: false });
             }
-            let alive = s.pos.cmpge(Vec2::ZERO).all() && s.pos.cmple(Vec2::splat(ARENA)).all();
+            let alive = s.pos.cmpge(Vec2::ZERO).all() && s.pos.cmple(ARENA).all();
             !hit && s.life > 0.0 && alive
         });
     }

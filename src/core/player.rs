@@ -149,7 +149,7 @@ impl Player {
 
     pub fn clamp(&mut self) {
         let m = RADIUS + 2.0;
-        self.pos = self.pos.clamp(vec2(m, m), vec2(ARENA - m, ARENA - m));
+        self.pos = self.pos.clamp(vec2(m, m), ARENA - m);
     }
 
     pub fn step(&mut self, input: Input) {
