@@ -13,14 +13,14 @@ pub enum Skill {
 impl Skill {
     pub fn cooldown(self) -> f32 {
         match self {
-            Skill::Needle => 0.3,
-            Skill::Ray => 4.0,
-            Skill::Ward => 6.0,
-            Skill::Judgement => 12.0,
-            Skill::Cut => 0.22,
-            Skill::Swallow => 4.0,
-            Skill::WindStep => 3.0,
-            Skill::Formation => 14.0,
+            Skill::Needle => 0.8,
+            Skill::Ray => 2.5,
+            Skill::Ward => 4.0,
+            Skill::Judgement => 7.0,
+            Skill::Cut => 0.6,
+            Skill::Swallow => 2.5,
+            Skill::WindStep => 2.0,
+            Skill::Formation => 8.0,
         }
     }
 

@@ -10,10 +10,13 @@ use crate::core::{
 
 const SPEED: f32 = 72.0;
 const ROLL_SPEED: f32 = 160.0;
+pub const DASH_CHARGES: u32 = 2;
+pub const DASH_GAP: f32 = 2.0;
+pub const DASH_RECHARGE: f32 = 10.0;
 const KNOCK_DECAY: f32 = 0.85;
 const QUICK_CAST_AGE: u32 = 6;
-const COMBO_WINDOW: f32 = 0.7;
-const COMBO_FINISHER_CD: f32 = 0.45;
+const COMBO_WINDOW: f32 = 1.0;
+const COMBO_FINISHER_CD: f32 = 1.0;
 
 #[derive(Default, Clone, Copy, Debug)]
 pub struct Input {
@@ -36,6 +39,9 @@ pub struct Player {
     pub lock: u32,
     pub combo: u32,
     pub charges: u32,
+    pub dashes: u32,
+    pub dash_gap: f32,
+    pub dash_cd: f32,
     pub untargetable: bool,
     pub target: Vec2,
     pub(crate) cast: Option<Skill>,
@@ -61,6 +67,9 @@ impl Player {
             lock: 0,
             combo: 0,
             charges: WIND_CHARGES,
+            dashes: DASH_CHARGES,
+            dash_gap: 0.0,
+            dash_cd: 0.0,
             untargetable: false,
             target: spawn.0,
             cast: None,
@@ -91,6 +100,9 @@ impl Player {
         self.lock = 0;
         self.combo = 0;
         self.charges = WIND_CHARGES;
+        self.dashes = DASH_CHARGES;
+        self.dash_gap = 0.0;
+        self.dash_cd = 0.0;
         self.untargetable = false;
         self.cast = None;
         self.reset_to(State::Idle);
@@ -130,6 +142,10 @@ impl Player {
         } else {
             self.cd[slot] <= 0.0
         }
+    }
+
+    pub fn can_dash(&self) -> bool {
+        self.dashes > 0 && self.dash_gap <= 0.0
     }
 
     pub fn cooldown_frac(&self, slot: usize) -> f32 {
@@ -182,7 +198,12 @@ impl Player {
 
     fn act(&mut self, input: Input, ready: Option<usize>) {
         let dir = input.dir.normalize_or_zero();
-        if input.dodge {
+        if input.dodge && self.can_dash() {
+            self.dashes -= 1;
+            self.dash_gap = DASH_GAP;
+            if self.dash_cd <= 0.0 {
+                self.dash_cd = DASH_RECHARGE;
+            }
             self.face(input.aim);
             self.set_state(State::Roll);
         } else if let Some(slot) = ready {
@@ -238,6 +259,16 @@ impl Player {
             }
         }
         self.combo_timer = (self.combo_timer - DT).max(0.0);
+        self.dash_gap = (self.dash_gap - DT).max(0.0);
+        if self.dashes < DASH_CHARGES {
+            self.dash_cd = (self.dash_cd - DT).max(0.0);
+            if self.dash_cd <= 0.0 {
+                self.dashes += 1;
+                if self.dashes < DASH_CHARGES {
+                    self.dash_cd = DASH_RECHARGE;
+                }
+            }
+        }
         if self.combo_timer <= 0.0 {
             self.combo = 0;
         }

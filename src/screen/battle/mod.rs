@@ -26,10 +26,11 @@ use self::{
 const BARS: Color = Color::new(0.0, 0.0, 0.0, 1.0);
 
 const PRACTICE_FOE_KIT: usize = 1;
+const LEVEL_KEYS: [KeyCode; 3] = [KeyCode::Key4, KeyCode::Key5, KeyCode::Key6];
 const KIT_KEYS: [KeyCode; 3] = [KeyCode::Key1, KeyCode::Key2, KeyCode::Key3];
 
 enum Mode {
-    Practice(Bot),
+    Practice(Bot, usize),
     Online(Sync),
 }
 
@@ -63,7 +64,7 @@ impl Battle {
     }
 
     pub fn practice(kit: usize) -> Self {
-        Self::new(core::Battle::new([kit, PRACTICE_FOE_KIT], 0), Mode::Practice(Bot::new(bot::NORMAL, 1)))
+        Self::new(core::Battle::new([kit, PRACTICE_FOE_KIT], 0), Mode::Practice(Bot::new(bot::EASY, 1), 0))
     }
 
     pub fn online(kit: usize, foe: Seat, endpoint: Endpoint) -> Self {
@@ -73,21 +74,35 @@ impl Battle {
     }
 
     fn switch_kit(&mut self) {
-        let Mode::Practice(_) = self.mode else { return };
-        if let Some(kit) = KIT_KEYS.iter().position(|k| is_key_pressed(*k)).filter(|k| *k != self.core.players[0].kit) {
-            self.core = core::Battle::new([kit, PRACTICE_FOE_KIT], 0);
-            self.fx = Fx::default();
+        let Mode::Practice(_, level) = self.mode else { return };
+        let Some(kit) = KIT_KEYS.iter().position(|k| is_key_pressed(*k)) else { return };
+        let foe = is_key_down(KeyCode::LeftShift) || is_key_down(KeyCode::RightShift);
+        let mut kits = [self.core.players[0].kit, self.core.players[1].kit];
+        if kits[foe as usize] == kit {
+            return;
+        }
+        kits[foe as usize] = kit;
+        self.core = core::Battle::new(kits, 0);
+        self.mode = Mode::Practice(Bot::new(bot::LEVELS[level].1, 1), level);
+        self.fx = Fx::default();
+    }
+
+    fn switch_level(&mut self) {
+        let Mode::Practice(bot, level) = &mut self.mode else { return };
+        if let Some(i) = LEVEL_KEYS.iter().position(|k| is_key_pressed(*k)) {
+            bot.level = bot::LEVELS[i].1;
+            *level = i;
         }
     }
 
     fn step(&mut self) {
         let foe_input = match &mut self.mode {
-            Mode::Practice(bot) => bot.think(&self.core),
+            Mode::Practice(bot, _) => bot.think(&self.core),
             Mode::Online(sync) => sync.remote_input(),
         };
         self.core.tick([self.pending, foe_input]);
         match &mut self.mode {
-            Mode::Practice(_) => {}
+            Mode::Practice(..) => {}
             Mode::Online(sync) => {
                 sync.correct(&mut self.core.players[1]);
                 sync.push(&self.pending, &self.core.players[0], self.core.deaths[0]);
@@ -102,7 +117,7 @@ impl Battle {
 
     fn scoreline(&self, ctx: &Context) -> String {
         match &self.mode {
-            Mode::Practice(_) => "practice   1/2/3 character   Esc menu".to_string(),
+            Mode::Practice(_, level) => format!("practice   1/2/3 character   Shift+1/2/3 bot   4/5/6 difficulty: {}   Esc menu", bot::LEVELS[*level].0),
             Mode::Online(s) => format!("{} {} - {} {}   first to {} kills   Esc forfeit", ctx.user.username, s.foe_deaths, self.core.deaths[0], s.foe, DEATHS_TO_WIN),
         }
     }
@@ -117,8 +132,9 @@ impl Screen for Battle {
             self.debug = !self.debug;
         }
         self.switch_kit();
+        self.switch_level();
         let live = match &mut self.mode {
-            Mode::Practice(_) => true,
+            Mode::Practice(..) => true,
             Mode::Online(sync) => {
                 if sync.finished(dt) {
                     return StackCommand::Pop;

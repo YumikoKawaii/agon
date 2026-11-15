@@ -25,6 +25,7 @@ pub struct Level {
 pub const EASY: Level = Level { reaction_ticks: 24, aim_error: 26.0, lead: 0.0, dodge_read: 0.15, hesitate: 0.08, aggression: 0.35 };
 pub const NORMAL: Level = Level { reaction_ticks: 15, aim_error: 14.0, lead: 0.5, dodge_read: 0.45, hesitate: 0.03, aggression: 0.6 };
 pub const HARD: Level = Level { reaction_ticks: 9, aim_error: 6.0, lead: 1.0, dodge_read: 0.8, hesitate: 0.01, aggression: 0.85 };
+pub const LEVELS: [(&str, Level); 3] = [("easy", EASY), ("normal", NORMAL), ("hard", HARD)];
 
 #[derive(Clone, Copy)]
 struct Seen {
@@ -33,7 +34,7 @@ struct Seen {
 }
 
 pub struct Bot {
-    level: Level,
+    pub level: Level,
     seat: usize,
     memory: VecDeque<Seen>,
     last: Option<Vec2>,
@@ -82,7 +83,7 @@ impl Bot {
                 if let Some(slot) = self.slot_of(b, Skill::WindStep) {
                     return Input { aim: me.pos + side * 60.0, slot: Some(slot), ..Input::default() };
                 }
-                return Input { dir: side, aim: me.pos + side * 40.0, dodge: true, ..Input::default() };
+                return Input { dir: side, aim: me.pos + side * 40.0, dodge: me.can_dash(), ..Input::default() };
             }
         }
 

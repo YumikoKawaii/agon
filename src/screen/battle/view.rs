@@ -2,6 +2,7 @@ use std::f32::consts::{PI, TAU};
 
 use macroquad::{prelude::*, rand::gen_range};
 
+use crate::core::player::{DASH_CHARGES, DASH_RECHARGE};
 use crate::{
     assets,
     core::{anim::State, Player, ARENA, RADIUS},
@@ -173,6 +174,23 @@ pub fn draw_hud(players: &[Player; 2]) {
             draw_rectangle(bx, 44.0, 48.0 * (1.0 - p.cooldown_frac(k)), 22.0, col);
             let text = if p.kit().skills[k].charged() { format!("{key} {}", p.charges) } else { key.to_string() };
             draw_text(&text, bx + 6.0, 61.0, 20.0, Color::from_rgba(20, 20, 28, 255));
+            if p.cd[k] > 0.0 {
+                let left = if p.cd[k] < 1.0 { format!("{:.1}", p.cd[k]) } else { format!("{}", p.cd[k].ceil() as i32) };
+                let tw = measure_text(&left, None, 18, 1.0).width;
+                draw_text(&left, bx + 48.0 - tw - 3.0, 61.0, 18.0, WHITE);
+            }
+        }
+        let bx = if i == 0 { x + 4.0 * 52.0 } else { x + w - 48.0 - 4.0 * 52.0 };
+        draw_rectangle(bx, 44.0, 48.0, 22.0, slot);
+        let col = if p.can_dash() { ICE } else { Color::from_rgba(70, 76, 98, 255) };
+        let frac = if p.dashes >= DASH_CHARGES { 1.0 } else { 1.0 - p.dash_cd / DASH_RECHARGE };
+        draw_rectangle(bx, 44.0, 48.0 * frac, 22.0, col);
+        draw_text(&format!("RMB {}", p.dashes), bx + 4.0, 61.0, 18.0, Color::from_rgba(20, 20, 28, 255));
+        let wait = if p.dash_gap > 0.0 { p.dash_gap } else if p.dashes == 0 { p.dash_cd } else { 0.0 };
+        if wait > 0.0 {
+            let left = if wait < 1.0 { format!("{:.1}", wait) } else { format!("{}", wait.ceil() as i32) };
+            let tw = measure_text(&left, None, 16, 1.0).width;
+            draw_text(&left, bx + 48.0 - tw - 2.0, 40.0, 16.0, WHITE);
         }
     }
 }
