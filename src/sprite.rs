@@ -12,7 +12,7 @@ const DIRS: [&str; 8] = [
     "north-east",
 ];
 
-const CLIPS: [(&str, usize); 4] = [("idle", 4), ("walk", 6), ("cast", 7), ("hurt", 5)];
+const CLIPS: [&str; 4] = ["idle", "walk", "cast", "hurt"];
 
 pub struct Sprites {
     clips: Vec<Vec<Vec<Texture2D>>>,
@@ -21,12 +21,15 @@ pub struct Sprites {
 impl Sprites {
     pub async fn load(root: &str) -> Self {
         let mut clips = Vec::new();
-        for (name, n) in CLIPS {
+        for name in CLIPS {
             let mut dirs = Vec::new();
             for d in DIRS {
                 let mut frames = Vec::new();
-                for i in 0..n {
+                for i in 0.. {
                     let path = format!("{root}/animations/{name}/{d}/frame_{i:03}.png");
+                    if !std::path::Path::new(&path).exists() {
+                        break;
+                    }
                     let t = load_texture(&path).await.unwrap();
                     t.set_filter(FilterMode::Nearest);
                     frames.push(t);

@@ -1,10 +1,12 @@
 mod anim;
 mod player;
+mod skills;
 mod sprite;
 
 use anim::*;
 use macroquad::prelude::*;
 use player::*;
+use skills::*;
 use sprite::*;
 
 const S: f32 = 3.0;
@@ -25,12 +27,13 @@ fn mouse_world() -> Vec2 {
     (Vec2::from(mouse_position()) + CAM.with(|c| c.get()) + vec2(0.0, 9.0 * S)) / S
 }
 
-fn update_camera(players: &[Player; 2]) {
+fn update_camera(players: &[Player; 2], shake: f32) {
     let mid = players[0].pos * S;
     let half = vec2(screen_width(), screen_height()) / 2.0;
     let lo = vec2(-40.0, -POST_H * S - 40.0);
     let hi = vec2(ARENA * S + 40.0, ARENA * S + 40.0) - half * 2.0;
-    let target = mid - half;
+    let jitter = vec2(rand::gen_range(-1.0, 1.0), rand::gen_range(-1.0, 1.0)) * shake;
+    let target = mid - half + jitter;
     CAM.with(|c| c.set(vec2(target.x.clamp(lo.x, hi.x.max(lo.x)), target.y.clamp(lo.y, hi.y.max(lo.y)))));
 }
 
@@ -79,157 +82,6 @@ fn resolve_hits(players: &mut [Player; 2], anims: &Anims) {
     }
 }
 
-const STAR_R: f32 = 40.0;
-const STAR_T: f32 = 0.8;
-const STAR_RANGE: f32 = 110.0;
-const MINT: Color = Color::new(0.66, 0.96, 0.75, 1.0);
-const LAV: Color = Color::new(0.85, 0.62, 0.95, 1.0);
-const GOLD: Color = Color::new(1.0, 0.86, 0.45, 1.0);
-
-struct Shot {
-    pos: Vec2,
-    vel: Vec2,
-    r: f32,
-    dmg: i32,
-    owner: usize,
-    life: f32,
-    big: bool,
-}
-
-struct Star {
-    pos: Vec2,
-    t: f32,
-    owner: usize,
-}
-
-enum FxKind {
-    Ring(f32, Color),
-    Trail(Vec2),
-}
-
-struct Fx {
-    pos: Vec2,
-    t: f32,
-    max: f32,
-    kind: FxKind,
-}
-
-#[derive(Default)]
-struct World {
-    shots: Vec<Shot>,
-    stars: Vec<Star>,
-    fx: Vec<Fx>,
-}
-
-impl World {
-    fn ring(&mut self, pos: Vec2, r: f32, c: Color, max: f32) {
-        self.fx.push(Fx { pos, t: max, max, kind: FxKind::Ring(r, c) });
-    }
-
-    fn cast(&mut self, p: &mut Player, i: usize) {
-        let Some(k) = p.cast.take() else { return };
-        let f = p.facing();
-        let o = p.pos + f * 8.0;
-        match k {
-            Skill::Bolt => self.shots.push(Shot { pos: o, vel: f * 240.0, r: 3.0, dmg: 6, owner: i, life: 0.7, big: false }),
-            Skill::Orb => self.shots.push(Shot { pos: o, vel: f * 80.0, r: 8.0, dmg: 16, owner: i, life: 3.0, big: true }),
-            Skill::Blink => {
-                if let Some(from) = p.blink_from.take() {
-                    self.fx.push(Fx { pos: from, t: 0.35, max: 0.35, kind: FxKind::Trail(p.pos) });
-                    self.ring(from, 12.0, LAV, 0.3);
-                    self.ring(p.pos, 12.0, MINT, 0.3);
-                }
-            }
-            Skill::Star => {
-                let m = STAR_R * 0.5;
-                let at = (p.pos + (p.target - p.pos).clamp_length_max(STAR_RANGE)).clamp(vec2(m, m), vec2(ARENA - m, ARENA - m));
-                self.stars.push(Star { pos: at, t: STAR_T, owner: i });
-            }
-        }
-    }
-
-    fn update(&mut self, players: &mut [Player; 2], anims: &Anims) {
-        let mut rings = Vec::new();
-        self.shots.retain_mut(|s| {
-            s.pos += s.vel * DT;
-            s.life -= DT;
-            let t = 1 - s.owner;
-            let hit = players[t].hurtboxes(anims).iter().any(|(c, r)| c.distance(s.pos) < r + s.r);
-            if hit {
-                players[t].take_hit(s.vel.normalize_or_zero(), s.dmg);
-                rings.push((s.pos, s.r * 2.5, if s.big { LAV } else { MINT }));
-            }
-            let inside = s.pos.cmpge(Vec2::ZERO).all() && s.pos.cmple(Vec2::splat(ARENA)).all();
-            !hit && s.life > 0.0 && inside
-        });
-        self.stars.retain_mut(|s| {
-            s.t -= DT;
-            if s.t > 0.0 {
-                return true;
-            }
-            let t = 1 - s.owner;
-            let d = players[t].pos - s.pos;
-            if !players[t].hurtboxes(anims).is_empty() && d.length() < STAR_R + RADIUS {
-                players[t].take_hit(d.normalize_or(Vec2::X) * 2.0, 25);
-            }
-            rings.push((s.pos, STAR_R, GOLD));
-            false
-        });
-        for (p, r, c) in rings {
-            self.ring(p, r, c, 0.35);
-        }
-        self.fx.retain_mut(|f| {
-            f.t -= DT;
-            f.t > 0.0
-        });
-    }
-
-    fn draw_ground(&self) {
-        for s in &self.stars {
-            let c = proj(s.pos);
-            let k = 1.0 - s.t / STAR_T;
-            draw_circle(c.x, c.y, STAR_R * S, Color::new(1.0, 0.86, 0.45, 0.08 + 0.2 * k));
-            draw_circle_lines(c.x, c.y, STAR_R * S, 2.0, GOLD);
-            draw_circle_lines(c.x, c.y, STAR_R * S * k, 2.0, Color::new(1.0, 0.86, 0.45, 0.6));
-        }
-        for s in &self.shots {
-            let c = proj(s.pos);
-            draw_circle(c.x, c.y, s.r * S * 0.8, Color::new(0.0, 0.0, 0.0, 0.3));
-        }
-    }
-
-    fn draw_air(&self) {
-        for s in &self.shots {
-            let c = proj(s.pos) - vec2(0.0, 9.0 * S);
-            let (core, glow) = if s.big { (WHITE, LAV) } else { (WHITE, MINT) };
-            let pulse = 1.0 + (get_time() as f32 * 12.0).sin() * 0.1;
-            draw_circle(c.x, c.y, s.r * S * 1.6 * pulse, Color::new(glow.r, glow.g, glow.b, 0.3));
-            draw_circle(c.x, c.y, s.r * S, glow);
-            draw_circle(c.x, c.y, s.r * S * 0.45, core);
-        }
-        for s in &self.stars {
-            let c = proj(s.pos);
-            let h = s.t / STAR_T * 80.0 * S;
-            let rot = get_time() as f32 * 360.0;
-            draw_poly(c.x, c.y - h, 5, 6.0 * S, rot, GOLD);
-            draw_poly(c.x, c.y - h, 5, 3.0 * S, rot, WHITE);
-        }
-        for f in &self.fx {
-            let k = f.t / f.max;
-            let c = proj(f.pos);
-            match f.kind {
-                FxKind::Ring(r, col) => {
-                    let rr = r * S * (1.2 - k * 0.6);
-                    draw_circle_lines(c.x, c.y - 4.0 * S, rr, 3.0, Color::new(col.r, col.g, col.b, k));
-                }
-                FxKind::Trail(to) => {
-                    let e = proj(to);
-                    draw_line(c.x, c.y - 9.0 * S, e.x, e.y - 9.0 * S, 6.0 * k, Color::new(0.85, 0.62, 0.95, k));
-                }
-            }
-        }
-    }
-}
 
 fn draw_floor() {
     let n = (ARENA / TILE) as i32;
@@ -319,7 +171,11 @@ fn draw_player(p: &Player, anims: &Anims, sprites: &Sprites, debug: bool) {
         }
     }
 
-    let total: u32 = anims.get(p.state).frames.iter().map(|f| f.ticks).sum();
+    let total: u32 = if p.state == State::Attack {
+        p.cast_ticks
+    } else {
+        anims.get(p.state).frames.iter().map(|f| f.ticks).sum()
+    };
     let tex = sprites.frame(p.state, p.dir8(), p.age, total);
     let size = vec2(tex.width(), tex.height()) * SPRITE * S;
     let tint = if p.state == State::Hit && p.age < 4 { Color::new(1.0, 0.6, 0.6, 1.0) } else { p.tint };
@@ -348,7 +204,7 @@ fn draw_hud(players: &[Player; 2]) {
             let bx = if i == 0 { x + k as f32 * 52.0 } else { x + w - 48.0 - k as f32 * 52.0 };
             draw_rectangle(bx, 44.0, 48.0, 22.0, Color::from_rgba(34, 38, 52, 255));
             let frac = p.cd[k] / COOLDOWN[k];
-            let col = if frac <= 0.0 { MINT } else { Color::from_rgba(70, 76, 98, 255) };
+            let col = if frac <= 0.0 { ICE } else { Color::from_rgba(70, 76, 98, 255) };
             draw_rectangle(bx, 44.0, 48.0 * (1.0 - frac), 22.0, col);
             draw_text(name, bx + 6.0, 61.0, 20.0, Color::from_rgba(20, 20, 28, 255));
         }
@@ -358,7 +214,7 @@ fn draw_hud(players: &[Player; 2]) {
 #[macroquad::main(window_conf)]
 async fn main() {
     let anims = Anims::new();
-    let sprites = Sprites::load("assets/witch").await;
+    let skins = [Sprites::load("assets/elf").await, Sprites::load("assets/witch").await];
     let mut players = [
         Player::new(vec2(120.0, 200.0), 0.0, SKYBLUE, false),
         Player::new(vec2(280.0, 200.0), std::f32::consts::PI, ORANGE, true),
@@ -366,7 +222,7 @@ async fn main() {
     let mut pending = Input::default();
     let mut acc = 0.0;
     let mut world = World::default();
-    let mut debug = true;
+    let mut debug = false;
 
     loop {
         if is_key_pressed(KeyCode::Tab) {
@@ -387,13 +243,15 @@ async fn main() {
             }
             pending.skill = None;
             pending.dodge = false;
+            let to = players[0].pos - players[1].pos;
+            players[1].ang = to.y.atan2(to.x);
             resolve_push(&mut players);
             world.update(&mut players, &anims);
             resolve_hits(&mut players, &anims);
             acc -= DT;
         }
 
-        update_camera(&players);
+        update_camera(&players, world.shake);
         clear_background(Color::from_rgba(13, 15, 22, 255));
         draw_floor();
         draw_cage(false);
@@ -401,22 +259,28 @@ async fn main() {
         let mut order = [0, 1];
         order.sort_by(|a, b| players[*a].pos.y.total_cmp(&players[*b].pos.y));
         for i in order {
-            draw_player(&players[i], &anims, &sprites, debug);
+            draw_player(&players[i], &anims, &skins[i], debug);
         }
-        world.draw_air();
+        world.draw_air(&players);
         draw_cage(true);
         let me = proj(players[0].pos);
         let aim = proj(mouse_world());
         if is_key_down(KeyCode::R) {
-            draw_circle_lines(me.x, me.y, STAR_RANGE * S, 1.5, Color::new(1.0, 0.86, 0.45, 0.35));
+            draw_circle_lines(me.x, me.y, JUDGE_RANGE * S, 1.5, Color::new(1.0, 0.86, 0.45, 0.35));
+        }
+        if is_key_down(KeyCode::Q) {
+            let d = (mouse_world() - players[0].pos).normalize_or(Vec2::X);
+            let e = proj(players[0].pos + d * RAY_LEN);
+            draw_line(me.x, me.y - 9.0 * S, e.x, e.y - 9.0 * S, 2.0, Color::new(0.55, 0.85, 1.0, 0.3));
         }
         draw_line(me.x, me.y - 9.0 * S, aim.x, aim.y - 9.0 * S, 1.0, Color::new(1.0, 1.0, 1.0, 0.15));
         let m = Vec2::from(mouse_position());
         draw_circle_lines(m.x, m.y, 8.0, 1.5, WHITE);
         draw_circle(m.x, m.y, 2.0, WHITE);
+        world.draw_flash();
         draw_hud(&players);
         draw_text(
-            "WASD move   Mouse aim   LMB bolt   RMB roll   Q orb   E blink   R star   Tab boxes",
+            "WASD move   Mouse aim   LMB needle   RMB roll   Q piercing ray   E ward shell   R judgement circle   Tab boxes",
             40.0,
             screen_height() - 20.0,
             24.0,

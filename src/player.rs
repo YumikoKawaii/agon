@@ -9,18 +9,18 @@ const SPEED: f32 = 72.0;
 const ROLL_SPEED: f32 = 160.0;
 const MAX_HP: i32 = 100;
 
-const BLINK: f32 = 70.0;
-
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Skill {
-    Bolt,
-    Orb,
-    Blink,
-    Star,
+    Needle,
+    Ray,
+    Ward,
+    Judgement,
 }
 
-pub const SKILLS: [Skill; 4] = [Skill::Bolt, Skill::Orb, Skill::Blink, Skill::Star];
-pub const COOLDOWN: [f32; 4] = [0.35, 3.0, 4.0, 10.0];
+pub const SKILLS: [Skill; 4] = [Skill::Needle, Skill::Ray, Skill::Ward, Skill::Judgement];
+pub const COOLDOWN: [f32; 4] = [0.3, 4.0, 6.0, 12.0];
+const CAST_TICKS: [u32; 4] = [18, 36, 20, 40];
+const LOCK_TICKS: [u32; 4] = [0, 30, 0, 24];
 
 #[derive(Default, Clone, Copy)]
 pub struct Input {
@@ -58,7 +58,8 @@ pub struct Player {
     pub age: u32,
     pub cd: [f32; 4],
     pub cast: Option<Skill>,
-    pub blink_from: Option<Vec2>,
+    pub cast_ticks: u32,
+    pub lock: u32,
     pub has_hit: bool,
     pub color: Color,
     pub tint: Color,
@@ -81,9 +82,10 @@ impl Player {
             age: 0,
             cd: [0.0; 4],
             cast: None,
-            blink_from: None,
+            cast_ticks: 18,
+            lock: 0,
             has_hit: false,
-            tint: if dummy { Color::new(0.75, 0.75, 0.8, 1.0) } else { WHITE },
+            tint: WHITE,
             color,
             dummy,
             target: pos,
@@ -126,6 +128,14 @@ impl Player {
     pub fn step(&mut self, input: Input, anims: &Anims) {
         self.cd.iter_mut().for_each(|c| *c = (*c - DT).max(0.0));
         let ready = input.skill.filter(|k| self.cd[*k as usize] <= 0.0);
+        if self.lock > 0 {
+            self.lock -= 1;
+            self.pos += self.knock;
+            self.knock *= 0.85;
+            self.clamp();
+            self.advance(anims);
+            return;
+        }
         match self.state {
             State::Hit | State::Attack => {
                 if self.finished {
@@ -152,11 +162,8 @@ impl Player {
                         self.ang = to.y.atan2(to.x);
                     }
                     self.target = input.aim;
-                    if k == Skill::Blink {
-                        self.blink_from = Some(self.pos);
-                        self.pos += self.facing() * to.length().min(BLINK);
-                        self.clamp();
-                    }
+                    self.cast_ticks = CAST_TICKS[k as usize];
+                    self.lock = LOCK_TICKS[k as usize];
                     self.cd[k as usize] = COOLDOWN[k as usize];
                     self.cast = Some(k);
                     self.set_state(State::Attack);
@@ -226,6 +233,7 @@ impl Player {
 
     pub fn take_hit(&mut self, dir: Vec2, dmg: i32) {
         self.reset_to(State::Hit);
+        self.lock = 0;
         self.knock = dir * 3.0;
         self.hp -= dmg;
     }
