@@ -1,0 +1,235 @@
+{
+ "frames": [
+  {
+   "filename": "witch-broom-poof 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 62,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 62,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 62,
+    "h": 62
+   },
+   "pivot": {
+    "x": 0.532258064516129,
+    "y": 0.5483870967741935
+   },
+   "duration": 100
+  },
+  {
+   "filename": "witch-broom-poof 1.png",
+   "frame": {
+    "x": 62,
+    "y": 0,
+    "w": 62,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 62,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 62,
+    "h": 62
+   },
+   "pivot": {
+    "x": 0.532258064516129,
+    "y": 0.5483870967741935
+   },
+   "duration": 100
+  },
+  {
+   "filename": "witch-broom-poof 2.png",
+   "frame": {
+    "x": 124,
+    "y": 0,
+    "w": 62,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 62,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 62,
+    "h": 62
+   },
+   "pivot": {
+    "x": 0.532258064516129,
+    "y": 0.5483870967741935
+   },
+   "duration": 100
+  },
+  {
+   "filename": "witch-broom-poof 3.png",
+   "frame": {
+    "x": 0,
+    "y": 62,
+    "w": 62,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 62,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 62,
+    "h": 62
+   },
+   "pivot": {
+    "x": 0.532258064516129,
+    "y": 0.5483870967741935
+   },
+   "duration": 100
+  },
+  {
+   "filename": "witch-broom-poof 4.png",
+   "frame": {
+    "x": 62,
+    "y": 62,
+    "w": 62,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 62,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 62,
+    "h": 62
+   },
+   "pivot": {
+    "x": 0.532258064516129,
+    "y": 0.5483870967741935
+   },
+   "duration": 100
+  },
+  {
+   "filename": "witch-broom-poof 5.png",
+   "frame": {
+    "x": 124,
+    "y": 62,
+    "w": 62,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 62,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 62,
+    "h": 62
+   },
+   "pivot": {
+    "x": 0.532258064516129,
+    "y": 0.5483870967741935
+   },
+   "duration": 100
+  },
+  {
+   "filename": "witch-broom-poof 6.png",
+   "frame": {
+    "x": 0,
+    "y": 124,
+    "w": 62,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 62,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 62,
+    "h": 62
+   },
+   "pivot": {
+    "x": 0.532258064516129,
+    "y": 0.5483870967741935
+   },
+   "duration": 100
+  },
+  {
+   "filename": "witch-broom-poof 7.png",
+   "frame": {
+    "x": 62,
+    "y": 124,
+    "w": 62,
+    "h": 62
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 62,
+    "h": 62
+   },
+   "sourceSize": {
+    "w": 62,
+    "h": 62
+   },
+   "pivot": {
+    "x": 0.532258064516129,
+    "y": 0.5483870967741935
+   },
+   "duration": 100
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "witch-broom-poof.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 186,
+   "h": 186
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 33,
+   "y": 34
+  },
+  "frameTags": [
+   {
+    "name": "witch-broom-poof",
+    "from": 0,
+    "to": 7,
+    "direction": "forward"
+   }
+  ]
+ }
+}

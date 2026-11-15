@@ -1,0 +1,339 @@
+{
+ "frames": [
+  {
+   "filename": "witch-cauldron-sigil 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-sigil 1.png",
+   "frame": {
+    "x": 120,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-sigil 2.png",
+   "frame": {
+    "x": 240,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-sigil 3.png",
+   "frame": {
+    "x": 360,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-sigil 4.png",
+   "frame": {
+    "x": 0,
+    "y": 123,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-sigil 5.png",
+   "frame": {
+    "x": 120,
+    "y": 123,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-sigil 6.png",
+   "frame": {
+    "x": 240,
+    "y": 123,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-sigil 7.png",
+   "frame": {
+    "x": 360,
+    "y": 123,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-sigil 8.png",
+   "frame": {
+    "x": 0,
+    "y": 246,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-sigil 9.png",
+   "frame": {
+    "x": 120,
+    "y": 246,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-sigil 10.png",
+   "frame": {
+    "x": 240,
+    "y": 246,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-sigil 11.png",
+   "frame": {
+    "x": 360,
+    "y": 246,
+    "w": 120,
+    "h": 123
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 120,
+    "h": 123
+   },
+   "sourceSize": {
+    "w": 120,
+    "h": 123
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5121951219512195
+   },
+   "duration": 83
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "witch-cauldron-sigil.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 480,
+   "h": 369
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 60,
+   "y": 63
+  },
+  "frameTags": [
+   {
+    "name": "witch-cauldron-sigil",
+    "from": 0,
+    "to": 11,
+    "direction": "forward"
+   }
+  ]
+ }
+}

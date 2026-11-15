@@ -1,12 +1,14 @@
 use macroquad::prelude::*;
 
 use crate::{
+    assets,
     core::{
         magic::{JUDGE_R, JUDGE_RANGE, NEEDLE_R, RAY_CHARGE, RAY_LEN, RAY_SHOW, RAY_W, WARD_OFF, WARD_T},
+        hex::{BOLT_R, CAULDRON_R, CAULDRON_RANGE, POTION_R, POTION_RANGE},
         sword::{Formation, FORM_APPEAR, FORM_HOVER, FORM_N, FORM_R, FORM_RANGE, FORM_STAB, LUNGE_REACH},
         Battle, Skill,
     },
-    screen::battle::view::{alpha, glow, magic_circle, Camera, AQUA, CHEST, FOOT, GOLD, ICE, PALE, S},
+    screen::battle::view::{alpha, glow, magic_circle, Camera, AQUA, CHEST, FOOT, GOLD, ICE, LILAC, PALE, S},
 };
 
 fn draw_sword(tex: &Texture2D, at: Vec2, ang: f32, scale: f32, a: f32) {
@@ -32,6 +34,27 @@ pub fn draw_ground(b: &Battle, cam: &Camera) {
         magic_circle(c, r, time * (1.0 + k * 3.0), GOLD, 0.5 + 0.5 * k, 3.0);
         let pulse = (k * 6.0 * std::f32::consts::TAU).sin().abs();
         draw_circle_lines(c.x, c.y, r * (1.0 - k), 2.0, alpha(WHITE, 0.4 + 0.4 * pulse));
+    }
+    for c in &b.hexes.cauldrons {
+        let k = c.charge();
+        let g = cam.proj(c.pos);
+        let r = CAULDRON_R * S * (0.3 + 0.7 * (k * 3.0).min(1.0));
+        let sig = &assets::get().witch.sigil;
+        sig.draw(sig.frame_at(time, true).unwrap_or(0), g, r / (CAULDRON_R * S) * 0.8 * S, 0.6 + 0.4 * k);
+        let bub = (k * 8.0 * std::f32::consts::TAU).sin().abs();
+        draw_circle_lines(g.x, g.y, r * (1.0 - k), 2.0, alpha(WHITE, 0.3 + 0.4 * bub));
+    }
+    for p in &b.hexes.potions {
+        let g = cam.proj(p.to);
+        let r = POTION_R * S;
+        draw_circle(g.x, g.y, r, alpha(LILAC, 0.06 + 0.14 * p.k()));
+        draw_circle_lines(g.x, g.y, r, 1.5, alpha(LILAC, 0.5 + 0.4 * p.k()));
+        let s = cam.proj(p.from.lerp(p.to, p.k()));
+        draw_circle(s.x, s.y, 3.0 * S, Color::new(0.0, 0.0, 0.0, 0.3));
+    }
+    for bo in &b.hexes.bolts {
+        let c = cam.proj(bo.pos);
+        draw_circle(c.x, c.y, BOLT_R * S * 0.8, Color::new(0.0, 0.0, 0.0, 0.3));
     }
     for s in &b.spells.shots {
         let c = cam.proj(s.pos);
@@ -60,6 +83,20 @@ pub fn draw_air(b: &Battle, cam: &Camera, sword: &Texture2D) {
         let tail = cam.air(s.pos - s.vel.normalize_or_zero() * NEEDLE_R * 4.0, CHEST);
         draw_line(tail.x, tail.y, c.x, c.y, NEEDLE_R * S * 1.2, alpha(ICE, 0.5));
         glow(c, NEEDLE_R * S, ICE, 1.0);
+    }
+    for bo in &b.hexes.bolts {
+        let c = cam.air(bo.pos, CHEST);
+        let tail = cam.air(bo.pos - bo.vel.normalize_or_zero() * BOLT_R * 3.0, CHEST);
+        draw_line(tail.x, tail.y, c.x, c.y, BOLT_R * S, alpha(LILAC, 0.4));
+        let sh = &assets::get().witch.bolt;
+        sh.draw(sh.frame_at(time, true).unwrap_or(0), c, 0.5 * S, 1.0);
+    }
+    for p in &b.hexes.potions {
+        let k = p.k();
+        let h = CHEST + (k * std::f32::consts::PI).sin() * 50.0;
+        let c = cam.air(p.from.lerp(p.to, k), h);
+        glow(c, 3.5 * S, LILAC, 1.0);
+        draw_circle(c.x, c.y, 2.0 * S, alpha(PALE, 0.9));
     }
     for r in &b.spells.rays {
         let a = cam.air(r.tip(), CHEST);
@@ -131,8 +168,15 @@ pub fn draw_aim(b: &Battle, cam: &Camera) {
     let mouse = cam.mouse_world();
     let skills = me.kit().skills;
     if is_key_down(KeyCode::R) {
-        let (r, c) = if skills[3] == Skill::Judgement { (JUDGE_RANGE, alpha(GOLD, 0.35)) } else { (FORM_RANGE, alpha(AQUA, 0.35)) };
+        let (r, c) = match skills[3] {
+            Skill::Judgement => (JUDGE_RANGE, alpha(GOLD, 0.35)),
+            Skill::Cauldron => (CAULDRON_RANGE, alpha(LILAC, 0.35)),
+            _ => (FORM_RANGE, alpha(AQUA, 0.35)),
+        };
         draw_circle_lines(at.x, at.y, r * S, 1.5, c);
+    }
+    if skills[1] == Skill::Potion && is_key_down(KeyCode::Q) {
+        draw_circle_lines(at.x, at.y, POTION_RANGE * S, 1.5, alpha(LILAC, 0.35));
     }
     if skills[1] == Skill::Ray && is_key_down(KeyCode::Q) {
         let d = (mouse - me.pos).normalize_or(Vec2::X);

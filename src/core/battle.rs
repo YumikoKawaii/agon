@@ -7,6 +7,7 @@ use crate::core::{
     magic::Spells,
     player::{Input, Player},
     sword::Blades,
+    hex::Hexes,
     Skill, RADIUS,
 };
 
@@ -16,6 +17,7 @@ pub struct Battle {
     pub players: [Player; 2],
     pub spells: Spells,
     pub blades: Blades,
+    pub hexes: Hexes,
     pub deaths: [u32; 2],
     events: Vec<Event>,
 }
@@ -28,6 +30,7 @@ impl Battle {
             players: [Player::new(mine, kits[0]), Player::new(theirs, kits[1])],
             spells: Spells::default(),
             blades: Blades::default(),
+            hexes: Hexes::default(),
             deaths: [0; 2],
             events: Vec::new(),
         }
@@ -47,6 +50,7 @@ impl Battle {
         self.push_apart();
         self.spells.update(&mut self.players, &mut self.events);
         self.blades.update(&mut self.players, &mut self.events);
+        self.hexes.update(&mut self.players, &mut self.events);
         for seat in 0..2 {
             if self.players[seat].hp <= 0 {
                 self.players[seat].respawn();
@@ -62,6 +66,9 @@ impl Battle {
             }
             Skill::Cut | Skill::Swallow | Skill::WindStep | Skill::Formation => {
                 self.blades.cast(&mut self.players, i, skill, &mut self.events)
+            }
+            Skill::Hex | Skill::Potion | Skill::Broom | Skill::Cauldron => {
+                self.hexes.cast(&mut self.players, i, skill, &mut self.events)
             }
         }
     }

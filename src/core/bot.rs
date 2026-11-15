@@ -6,6 +6,7 @@ use macroquad::{
 };
 
 use crate::core::{
+    hex::{BOLT_SPEED, CAULDRON_R, CAULDRON_RANGE, POTION_R, POTION_RANGE, POTION_T},
     magic::{JUDGE_R, JUDGE_RANGE, RAY_LEN, RAY_W},
     seg_dist,
     sword::{FORM_R, FORM_RANGE},
@@ -80,6 +81,9 @@ impl Bot {
                 if let Some(slot) = self.slot_of(b, Skill::Ward) {
                     return Input { aim: me.pos - threat * 20.0, slot: Some(slot), ..Input::default() };
                 }
+                if let Some(slot) = self.slot_of(b, Skill::Broom) {
+                    return Input { aim: me.pos + side * 80.0, slot: Some(slot), ..Input::default() };
+                }
                 if let Some(slot) = self.slot_of(b, Skill::WindStep) {
                     return Input { aim: me.pos + side * 60.0, slot: Some(slot), ..Input::default() };
                 }
@@ -142,12 +146,21 @@ impl Bot {
                 Skill::WindStep => dist > 80.0 && me.charges > 1 && gen_range(0.0, 1.0) < self.level.aggression * 0.02,
                 Skill::Formation => dist < FORM_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.03,
                 Skill::Ward => false,
+                Skill::Hex => dist < 200.0,
+                Skill::Potion => dist < POTION_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.06,
+                Skill::Cauldron => dist < CAULDRON_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
+                Skill::Broom => false,
             }
         };
         let order = [3, 1, 2, 0];
         order.into_iter().filter(|i| me.ready(*i)).map(|i| (i, me.kit().skills[i])).find(|(_, s)| wants(*s)).map(|(i, s)| {
+            let cast_t = |s: Skill| match s {
+                Skill::Potion => cast_t(s) + POTION_T,
+                _ => cast_t(s),
+            };
             let speed = match s {
                 Skill::Needle => Some(crate::core::magic::NEEDLE_SPEED),
+                Skill::Hex => Some(BOLT_SPEED),
                 _ => None,
             };
             (i, self.aim_at(b, seen, speed, cast_t(s)))
@@ -172,6 +185,21 @@ impl Bot {
         for j in b.spells.judges.iter().filter(|j| j.owner == foe) {
             if me.pos.distance(j.pos) < JUDGE_R + RADIUS {
                 return Some((me.pos - j.pos).normalize_or_zero().perp());
+            }
+        }
+        for bo in b.hexes.bolts.iter().filter(|s| s.owner == foe) {
+            if seg_dist(me.pos, bo.pos, bo.pos + bo.vel * 0.4) < pad + 2.0 {
+                return Some(bo.vel.normalize_or_zero());
+            }
+        }
+        for p in b.hexes.potions.iter().filter(|p| p.owner == foe) {
+            if me.pos.distance(p.to) < POTION_R + RADIUS {
+                return Some((me.pos - p.to).normalize_or_zero().perp());
+            }
+        }
+        for c in b.hexes.cauldrons.iter().filter(|c| c.owner == foe) {
+            if me.pos.distance(c.pos) < CAULDRON_R + RADIUS {
+                return Some((me.pos - c.pos).normalize_or_zero().perp());
             }
         }
         for f in b.blades.forms.iter().filter(|f| f.owner == foe) {

@@ -8,6 +8,10 @@ pub enum Skill {
     Swallow,
     WindStep,
     Formation,
+    Hex,
+    Potion,
+    Broom,
+    Cauldron,
 }
 
 impl Skill {
@@ -21,6 +25,10 @@ impl Skill {
             Skill::Swallow => 2.5,
             Skill::WindStep => 2.0,
             Skill::Formation => 8.0,
+            Skill::Hex => 0.8,
+            Skill::Potion => 2.5,
+            Skill::Broom => 3.5,
+            Skill::Cauldron => 8.0,
         }
     }
 
@@ -34,6 +42,10 @@ impl Skill {
             Skill::Swallow => 14,
             Skill::WindStep => 10,
             Skill::Formation => 30,
+            Skill::Hex => 18,
+            Skill::Potion => 20,
+            Skill::Broom => 10,
+            Skill::Cauldron => 36,
         }
     }
 
@@ -43,6 +55,7 @@ impl Skill {
             Skill::Judgement => 24,
             Skill::Formation => 26,
             Skill::Swallow => 12,
+            Skill::Cauldron => 20,
             _ => 0,
         }
     }
@@ -62,10 +75,12 @@ pub struct Kit {
 
 const MAGE: [Skill; 4] = [Skill::Needle, Skill::Ray, Skill::Ward, Skill::Judgement];
 const MAGE_HINT: &str = "LMB needle   Q piercing ray   E ward shell   R judgement circle";
+const WITCH: [Skill; 4] = [Skill::Hex, Skill::Potion, Skill::Broom, Skill::Cauldron];
+const WITCH_HINT: &str = "LMB hex bolt   Q potion toss   E broom dash   R cauldron burst";
 
 pub const KITS: [Kit; 3] = [
     Kit { name: "Elf Mage", skin: "elf", skills: MAGE, hp: 100, hint: MAGE_HINT },
-    Kit { name: "Witch", skin: "witch", skills: MAGE, hp: 100, hint: MAGE_HINT },
+    Kit { name: "Witch", skin: "witch", skills: WITCH, hp: 100, hint: WITCH_HINT },
     Kit {
         name: "Sword Cultivator",
         skin: "sword",

@@ -5,6 +5,7 @@ pub enum Element {
     Frost,
     Holy,
     Blade,
+    Hex,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -22,5 +23,10 @@ pub enum Event {
     Ghost { seat: usize, pos: Vec2, ang: f32, life: f32 },
     FormCast { caster: Vec2, center: Vec2 },
     FormBurst { center: Vec2, base: f32 },
+    HexCast { tip: Vec2 },
+    PotionBurst { pos: Vec2 },
+    Broom { from: Vec2, to: Vec2, dir: Vec2 },
+    CauldronCast { caster: Vec2, at: Vec2 },
+    CauldronBurst { pos: Vec2 },
     Hit { pos: Vec2, element: Element, dmg: i32, big: bool },
 }

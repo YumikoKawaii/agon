@@ -76,9 +76,52 @@ impl Skin {
     }
 }
 
+pub struct Sheet {
+    tex: Texture2D,
+    w: f32,
+    h: f32,
+    cols: usize,
+    pub frames: usize,
+    pub fps: f32,
+}
+
+impl Sheet {
+    async fn load(path: &str, w: f32, h: f32, frames: usize, fps: f32) -> AResult<Sheet> {
+        let tex = texture(path).await?;
+        let cols = (tex.width() / w) as usize;
+        Ok(Sheet { tex, w, h, cols, frames, fps })
+    }
+
+    pub fn frame_at(&self, t: f32, looping: bool) -> Option<usize> {
+        let i = (t * self.fps) as usize;
+        if looping {
+            Some(i % self.frames)
+        } else if i < self.frames {
+            Some(i)
+        } else {
+            None
+        }
+    }
+
+    pub fn draw(&self, i: usize, at: Vec2, scale: f32, a: f32) {
+        let src = Rect::new((i % self.cols) as f32 * self.w, (i / self.cols) as f32 * self.h, self.w, self.h);
+        let size = vec2(self.w, self.h) * scale;
+        draw_texture_ex(&self.tex, at.x - size.x / 2.0, at.y - size.y / 2.0, Color::new(1.0, 1.0, 1.0, a), DrawTextureParams { source: Some(src), dest_size: Some(size), ..Default::default() });
+    }
+}
+
+pub struct WitchFx {
+    pub bolt: Sheet,
+    pub potion: Sheet,
+    pub burst: Sheet,
+    pub sigil: Sheet,
+    pub poof: Sheet,
+}
+
 pub struct Assets {
     pub skins: Vec<Skin>,
     pub spirit_sword: Texture2D,
+    pub witch: WitchFx,
 }
 
 static INSTANCE: OnceLock<Assets> = OnceLock::new();
@@ -96,7 +139,14 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     }
     progress.fetch_add(1, Ordering::Relaxed);
     let spirit_sword = texture("assets/sword/spirit_sword.png").await?;
-    Ok(Assets { skins, spirit_sword })
+    let witch = WitchFx {
+        bolt: Sheet::load("assets/witch/fx/hex_bolt.png", 48.0, 48.0, 8, 12.0).await?,
+        potion: Sheet::load("assets/witch/fx/potion_burst.png", 76.0, 80.0, 8, 12.0).await?,
+        burst: Sheet::load("assets/witch/fx/cauldron_burst.png", 118.0, 129.0, 8, 12.0).await?,
+        sigil: Sheet::load("assets/witch/fx/cauldron_sigil.png", 120.0, 123.0, 12, 12.0).await?,
+        poof: Sheet::load("assets/witch/fx/broom_poof.png", 62.0, 62.0, 6, 12.0).await?,
+    };
+    Ok(Assets { skins, spirit_sword, witch })
 }
 
 pub async fn load() -> AResult {

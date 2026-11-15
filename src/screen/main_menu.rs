@@ -11,14 +11,16 @@ use crate::{
 enum Item {
     Online,
     Practice,
+    Training,
     Characters,
     SignOut,
     Quit,
 }
 
-const ITEMS: [(Item, &str); 5] = [
+const ITEMS: [(Item, &str); 6] = [
     (Item::Online, "Play online"),
-    (Item::Practice, "Practice"),
+    (Item::Practice, "Vs Bot"),
+    (Item::Training, "Training"),
     (Item::Characters, "Characters"),
     (Item::SignOut, "Sign out"),
     (Item::Quit, "Quit"),
@@ -44,6 +46,7 @@ impl Screen for MainMenu {
         match item {
             Item::Online => StackCommand::Push(Box::new(Rooms::new())),
             Item::Practice => StackCommand::Push(Box::new(Battle::practice(ctx.user.kit))),
+            Item::Training => StackCommand::Push(Box::new(Battle::training(ctx.user.kit))),
             Item::Characters => StackCommand::Push(Box::new(Characters::new(ctx.user.kit))),
             Item::SignOut => {
                 drop(ctx.api.logout());

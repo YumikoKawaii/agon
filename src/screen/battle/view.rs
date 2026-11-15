@@ -22,6 +22,7 @@ pub const ICE: Color = Color::new(0.55, 0.85, 1.0, 1.0);
 pub const PALE: Color = Color::new(0.88, 0.97, 1.0, 1.0);
 pub const GOLD: Color = Color::new(1.0, 0.86, 0.45, 1.0);
 pub const AQUA: Color = Color::new(0.45, 1.0, 0.92, 1.0);
+pub const LILAC: Color = Color::new(0.78, 0.55, 1.0, 1.0);
 pub const SEAT_COLORS: [Color; 2] = [SKYBLUE, ORANGE];
 const FLOOR: [Color; 2] = [Color::new(0.2, 0.22, 0.29, 1.0), Color::new(0.227, 0.247, 0.322, 1.0)];
 const CAGE: Color = Color::new(0.541, 0.565, 0.651, 1.0);

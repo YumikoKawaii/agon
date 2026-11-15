@@ -1,0 +1,287 @@
+{
+ "frames": [
+  {
+   "filename": "witch-cauldron-burst 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "sourceSize": {
+    "w": 118,
+    "h": 129
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.4573643410852713
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-burst 1.png",
+   "frame": {
+    "x": 118,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "sourceSize": {
+    "w": 118,
+    "h": 129
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.4573643410852713
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-burst 2.png",
+   "frame": {
+    "x": 236,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "sourceSize": {
+    "w": 118,
+    "h": 129
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.4573643410852713
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-burst 3.png",
+   "frame": {
+    "x": 354,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "sourceSize": {
+    "w": 118,
+    "h": 129
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.4573643410852713
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-burst 4.png",
+   "frame": {
+    "x": 0,
+    "y": 129,
+    "w": 118,
+    "h": 129
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "sourceSize": {
+    "w": 118,
+    "h": 129
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.4573643410852713
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-burst 5.png",
+   "frame": {
+    "x": 118,
+    "y": 129,
+    "w": 118,
+    "h": 129
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "sourceSize": {
+    "w": 118,
+    "h": 129
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.4573643410852713
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-burst 6.png",
+   "frame": {
+    "x": 236,
+    "y": 129,
+    "w": 118,
+    "h": 129
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "sourceSize": {
+    "w": 118,
+    "h": 129
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.4573643410852713
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-burst 7.png",
+   "frame": {
+    "x": 354,
+    "y": 129,
+    "w": 118,
+    "h": 129
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "sourceSize": {
+    "w": 118,
+    "h": 129
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.4573643410852713
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-burst 8.png",
+   "frame": {
+    "x": 0,
+    "y": 258,
+    "w": 118,
+    "h": 129
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "sourceSize": {
+    "w": 118,
+    "h": 129
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.4573643410852713
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-cauldron-burst 9.png",
+   "frame": {
+    "x": 118,
+    "y": 258,
+    "w": 118,
+    "h": 129
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 118,
+    "h": 129
+   },
+   "sourceSize": {
+    "w": 118,
+    "h": 129
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.4573643410852713
+   },
+   "duration": 83
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "witch-cauldron-burst.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 472,
+   "h": 387
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 59,
+   "y": 59
+  },
+  "frameTags": [
+   {
+    "name": "witch-cauldron-burst",
+    "from": 0,
+    "to": 9,
+    "direction": "forward"
+   }
+  ]
+ }
+}

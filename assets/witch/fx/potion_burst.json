@@ -1,0 +1,287 @@
+{
+ "frames": [
+  {
+   "filename": "witch-potion-burst 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 80
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.475
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-potion-burst 1.png",
+   "frame": {
+    "x": 76,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 80
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.475
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-potion-burst 2.png",
+   "frame": {
+    "x": 152,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 80
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.475
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-potion-burst 3.png",
+   "frame": {
+    "x": 228,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 80
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.475
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-potion-burst 4.png",
+   "frame": {
+    "x": 0,
+    "y": 80,
+    "w": 76,
+    "h": 80
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 80
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.475
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-potion-burst 5.png",
+   "frame": {
+    "x": 76,
+    "y": 80,
+    "w": 76,
+    "h": 80
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 80
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.475
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-potion-burst 6.png",
+   "frame": {
+    "x": 152,
+    "y": 80,
+    "w": 76,
+    "h": 80
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 80
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.475
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-potion-burst 7.png",
+   "frame": {
+    "x": 228,
+    "y": 80,
+    "w": 76,
+    "h": 80
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 80
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.475
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-potion-burst 8.png",
+   "frame": {
+    "x": 0,
+    "y": 160,
+    "w": 76,
+    "h": 80
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 80
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.475
+   },
+   "duration": 83
+  },
+  {
+   "filename": "witch-potion-burst 9.png",
+   "frame": {
+    "x": 76,
+    "y": 160,
+    "w": 76,
+    "h": 80
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 80
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 80
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.475
+   },
+   "duration": 83
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "witch-potion-burst.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 304,
+   "h": 240
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 38,
+   "y": 38
+  },
+  "frameTags": [
+   {
+    "name": "witch-potion-burst",
+    "from": 0,
+    "to": 9,
+    "direction": "forward"
+   }
+  ]
+ }
+}

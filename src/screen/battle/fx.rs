@@ -8,11 +8,12 @@ use crate::{
         anim::State,
         event::{Element, Event},
         magic::{ward_segment, JUDGE_R, NEEDLE_R},
+        hex::{CAULDRON_R, POTION_R},
         player::dir8,
         sword::{FORM_N, FORM_R, LUNGE_REACH},
         Battle, Player,
     },
-    screen::battle::view::{alpha, draw_sprite, glow, Camera, AQUA, CHEST, GOLD, ICE, PALE, S, VIEW},
+    screen::battle::view::{alpha, draw_sprite, glow, Camera, AQUA, CHEST, GOLD, ICE, LILAC, PALE, S, VIEW},
 };
 
 const SHAKE_DECAY: f32 = 0.86;
@@ -84,6 +85,7 @@ fn element_color(e: Element) -> Color {
         Element::Frost => ICE,
         Element::Holy => GOLD,
         Element::Blade => AQUA,
+        Element::Hex => LILAC,
     }
 }
 
@@ -91,8 +93,31 @@ fn pick(a: Color, b: Color) -> Color {
     if gen_range(0, 2) == 0 { a } else { b }
 }
 
+#[derive(Clone, Copy)]
+enum Kind {
+    Potion,
+    Burst,
+    Poof,
+}
+
+struct Sprite {
+    kind: Kind,
+    pos: Vec2,
+    t: f32,
+}
+
+fn sheet(kind: Kind) -> (&'static assets::Sheet, f32) {
+    let w = &assets::get().witch;
+    match kind {
+        Kind::Potion => (&w.potion, 0.7),
+        Kind::Burst => (&w.burst, 0.85),
+        Kind::Poof => (&w.poof, 0.6),
+    }
+}
+
 #[derive(Default)]
 pub struct Fx {
+    sprites: Vec<Sprite>,
     parts: Vec<Part>,
     rings: Vec<Ring>,
     arcs: Vec<Arc>,
@@ -215,6 +240,38 @@ impl Fx {
                 self.burst(center, CHEST, 50, 180.0, 0.6, 2.6, AQUA);
                 self.kick(9.0, 0.18);
             }
+            Event::HexCast { tip } => {
+                self.burst(tip, CHEST, 8, 50.0, 0.3, 1.8, LILAC);
+            }
+            Event::PotionBurst { pos } => {
+                self.sprites.push(Sprite { kind: Kind::Potion, pos, t: 0.0 });
+                self.ring(pos, 0.0, 4.0, POTION_R * 1.6, 0.4, LILAC, 5.0);
+                self.burst(pos, 6.0, 40, 150.0, 0.5, 2.4, LILAC);
+                self.burst(pos, 6.0, 14, 90.0, 0.4, 1.6, WHITE);
+                self.kick(5.0, 0.0);
+            }
+            Event::Broom { from, to, dir } => {
+                self.sprites.push(Sprite { kind: Kind::Poof, pos: from, t: 0.0 });
+                self.sprites.push(Sprite { kind: Kind::Poof, pos: to, t: 0.0 });
+                for _ in 0..18 {
+                    let p = from.lerp(to, gen_range(0.0, 1.0));
+                    self.part(p, CHEST + gen_range(-6.0, 6.0), dir.perp() * gen_range(-50.0, 50.0) - dir * 30.0, gen_range(0.0, 30.0), 0.4, 1.8, pick(LILAC, GOLD), 0.88);
+                }
+            }
+            Event::CauldronCast { caster, at } => {
+                self.ring(at, 0.0, CAULDRON_R * 1.6, CAULDRON_R, 0.4, LILAC, 3.0);
+                self.burst(caster, CHEST + 8.0, 20, 70.0, 0.5, 2.0, LILAC);
+            }
+            Event::CauldronBurst { pos } => {
+                self.sprites.push(Sprite { kind: Kind::Burst, pos, t: 0.0 });
+                self.ring(pos, 0.0, 4.0, CAULDRON_R * 1.8, 0.5, LILAC, 6.0);
+                self.ring(pos, 0.0, 4.0, CAULDRON_R * 1.2, 0.35, WHITE, 4.0);
+                for _ in 0..80 {
+                    let v = Vec2::from_angle(gen_range(0.0, TAU)) * gen_range(50.0, 200.0);
+                    self.part(pos, gen_range(0.0, 8.0), v, gen_range(40.0, 220.0), gen_range(0.4, 0.9), gen_range(1.5, 3.5), pick(LILAC, AQUA), 0.92);
+                }
+                self.kick(12.0, 0.25);
+            }
             Event::Hit { pos, element, dmg, big } => {
                 let col = element_color(element);
                 let n = if big { 30 } else { 10 };
@@ -270,6 +327,10 @@ impl Fx {
     }
 
     pub fn update(&mut self, dt: f32) {
+        self.sprites.retain_mut(|s| {
+            s.t += dt;
+            sheet(s.kind).0.frame_at(s.t, false).is_some()
+        });
         self.parts.retain_mut(|p| {
             p.pos += p.vel * dt;
             p.z = (p.z + p.vz * dt).max(0.0);
@@ -325,6 +386,12 @@ impl Fx {
     }
 
     pub fn draw_air(&self, cam: &Camera, players: &[Player; 2]) {
+        for s in &self.sprites {
+            let (sh, k) = sheet(s.kind);
+            if let Some(i) = sh.frame_at(s.t, false) {
+                sh.draw(i, cam.air(s.pos, 8.0), k * S, 1.0);
+            }
+        }
         for p in &self.parts {
             let k = p.life / p.max;
             let c = cam.air(p.pos, p.z);
