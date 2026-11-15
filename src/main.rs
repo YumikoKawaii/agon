@@ -1,11 +1,15 @@
 mod anim;
 mod player;
+mod sprite;
 
 use anim::*;
 use macroquad::prelude::*;
 use player::*;
+use sprite::*;
 
 const S: f32 = 3.0;
+const SPRITE: f32 = 0.5;
+const FOOT: f32 = 9.0;
 const POST_H: f32 = 14.0;
 const TILE: f32 = 20.0;
 
@@ -130,7 +134,7 @@ fn draw_cone(p: &Player, r: f32, half: f32, fill: Color) {
     }
 }
 
-fn draw_player(p: &Player, anims: &Anims, debug: bool) {
+fn draw_player(p: &Player, anims: &Anims, sprites: &Sprites, debug: bool) {
     let s = proj(p.pos);
     draw_circle(s.x, s.y, RADIUS * S, Color::new(0.0, 0.0, 0.0, 0.45));
 
@@ -159,31 +163,17 @@ fn draw_player(p: &Player, anims: &Anims, debug: bool) {
         }
     }
 
-    let col = if p.state == State::Hit { WHITE } else { p.color };
-    let px = |x: f32, y: f32, w: f32, h: f32, c: Color| {
-        draw_rectangle(s.x.round() + x * S, s.y.round() + y * S, w * S, h * S, c);
-    };
-    let dark = Color::from_rgba(26, 28, 36, 255);
-    let f = p.facing();
-    if p.state == State::Roll {
-        px(-6.0, -11.0, 12.0, 10.0, col);
-        px(-3.0, -8.0, 6.0, 4.0, dark);
-    } else {
-        px(-4.0, -13.0, 8.0, 11.0, col);
-        px(-3.0, -18.0, 6.0, 5.0, col);
-        px(-4.0, -2.0, 3.0, 2.0, dark);
-        px(1.0, -2.0, 3.0, 2.0, dark);
-    }
-    if p.state != State::Roll && f.y > -0.3 {
-        let ex = (f.x * 2.0).round();
-        px(ex - 1.0, -16.0, 1.0, 1.0, dark);
-        px(ex + 1.0, -16.0, 1.0, 1.0, dark);
-    }
-    if p.state == State::Attack && p.frame == 1 {
-        let a = vec2(s.x, s.y - 8.5 * S);
-        let b = a + f * 12.0 * S;
-        draw_line(a.x, a.y, b.x, b.y, S, Color::from_rgba(233, 237, 245, 255));
-    }
+    let total: u32 = anims.get(p.state).frames.iter().map(|f| f.ticks).sum();
+    let tex = sprites.frame(p.state, p.dir8(), p.age, total);
+    let size = vec2(tex.width(), tex.height()) * SPRITE * S;
+    let tint = if p.state == State::Hit && p.age < 4 { Color::new(1.0, 0.6, 0.6, 1.0) } else { p.tint };
+    draw_texture_ex(
+        tex,
+        (s.x - size.x / 2.0).round(),
+        (s.y - size.y / 2.0 - FOOT * S).round(),
+        tint,
+        DrawTextureParams { dest_size: Some(size), ..Default::default() },
+    );
     if debug {
         let label = format!("{:?} {} d{}", p.state, p.frame, p.dir8());
         draw_text(&label, s.x - 40.0, s.y - 22.0 * S, 20.0, WHITE);
@@ -204,6 +194,7 @@ fn draw_hud(players: &[Player; 2]) {
 #[macroquad::main(window_conf)]
 async fn main() {
     let anims = Anims::new();
+    let sprites = Sprites::load("assets/witch").await;
     let mut players = [
         Player::new(
             vec2(100.0, 200.0),
@@ -266,7 +257,7 @@ async fn main() {
         let mut order = [0, 1];
         order.sort_by(|a, b| players[*a].pos.y.total_cmp(&players[*b].pos.y));
         for i in order {
-            draw_player(&players[i], &anims, debug);
+            draw_player(&players[i], &anims, &sprites, debug);
         }
         draw_cage(true);
         draw_hud(&players);

@@ -45,8 +45,10 @@ pub struct Player {
     pub frame: usize,
     timer: u32,
     finished: bool,
+    pub age: u32,
     pub has_hit: bool,
     pub color: Color,
+    pub tint: Color,
     pub controls: Controls,
     spawn: (Vec2, f32),
 }
@@ -62,7 +64,9 @@ impl Player {
             frame: 0,
             timer: 0,
             finished: false,
+            age: 0,
             has_hit: false,
+            tint: if color == ORANGE { Color::new(1.0, 0.85, 0.75, 1.0) } else { WHITE },
             color,
             controls,
             spawn: (pos, ang),
@@ -82,6 +86,7 @@ impl Player {
         self.frame = 0;
         self.timer = 0;
         self.finished = false;
+        self.age = 0;
         self.has_hit = false;
     }
 
@@ -143,6 +148,7 @@ impl Player {
 
     fn advance(&mut self, anims: &Anims) {
         let anim = anims.get(self.state);
+        self.age += 1;
         self.timer += 1;
         if self.timer >= anim.frames[self.frame].ticks {
             self.timer = 0;
