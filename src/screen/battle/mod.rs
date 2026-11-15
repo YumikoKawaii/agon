@@ -3,7 +3,7 @@ use macroquad::prelude::*;
 use crate::{
     assets,
     context::Context,
-    core::{self, Input, DEATHS_TO_WIN, DT, KITS},
+    core::{self, bot::{self, Bot}, Input, DEATHS_TO_WIN, DT, KITS},
     net::{
         api::{Endpoint, Seat},
         Link,
@@ -29,7 +29,7 @@ const PRACTICE_FOE_KIT: usize = 1;
 const KIT_KEYS: [KeyCode; 3] = [KeyCode::Key1, KeyCode::Key2, KeyCode::Key3];
 
 enum Mode {
-    Practice,
+    Practice(Bot),
     Online(Sync),
 }
 
@@ -63,7 +63,7 @@ impl Battle {
     }
 
     pub fn practice(kit: usize) -> Self {
-        Self::new(core::Battle::new([kit, PRACTICE_FOE_KIT], 0), Mode::Practice)
+        Self::new(core::Battle::new([kit, PRACTICE_FOE_KIT], 0), Mode::Practice(Bot::new(bot::NORMAL, 1)))
     }
 
     pub fn online(kit: usize, foe: Seat, endpoint: Endpoint) -> Self {
@@ -73,7 +73,7 @@ impl Battle {
     }
 
     fn switch_kit(&mut self) {
-        let Mode::Practice = self.mode else { return };
+        let Mode::Practice(_) = self.mode else { return };
         if let Some(kit) = KIT_KEYS.iter().position(|k| is_key_pressed(*k)).filter(|k| *k != self.core.players[0].kit) {
             self.core = core::Battle::new([kit, PRACTICE_FOE_KIT], 0);
             self.fx = Fx::default();
@@ -82,15 +82,12 @@ impl Battle {
 
     fn step(&mut self) {
         let foe_input = match &mut self.mode {
-            Mode::Practice => Input::default(),
+            Mode::Practice(bot) => bot.think(&self.core),
             Mode::Online(sync) => sync.remote_input(),
         };
         self.core.tick([self.pending, foe_input]);
         match &mut self.mode {
-            Mode::Practice => {
-                let to = self.core.players[0].pos - self.core.players[1].pos;
-                self.core.players[1].ang = to.y.atan2(to.x);
-            }
+            Mode::Practice(_) => {}
             Mode::Online(sync) => {
                 sync.correct(&mut self.core.players[1]);
                 sync.push(&self.pending, &self.core.players[0], self.core.deaths[0]);
@@ -105,7 +102,7 @@ impl Battle {
 
     fn scoreline(&self, ctx: &Context) -> String {
         match &self.mode {
-            Mode::Practice => "practice   1/2/3 character   Esc menu".to_string(),
+            Mode::Practice(_) => "practice   1/2/3 character   Esc menu".to_string(),
             Mode::Online(s) => format!("{} {} - {} {}   first to {} kills   Esc forfeit", ctx.user.username, s.foe_deaths, self.core.deaths[0], s.foe, DEATHS_TO_WIN),
         }
     }
@@ -121,7 +118,7 @@ impl Screen for Battle {
         }
         self.switch_kit();
         let live = match &mut self.mode {
-            Mode::Practice => true,
+            Mode::Practice(_) => true,
             Mode::Online(sync) => {
                 if sync.finished(dt) {
                     return StackCommand::Pop;
