@@ -1,4 +1,4 @@
-use crate::anim::Anims;
+use crate::anim::{Anims, State};
 use crate::player::*;
 use crate::{proj, S};
 use macroquad::prelude::*;
@@ -8,7 +8,17 @@ use std::f32::consts::{PI, TAU};
 pub const ICE: Color = Color::new(0.55, 0.85, 1.0, 1.0);
 pub const PALE: Color = Color::new(0.88, 0.97, 1.0, 1.0);
 pub const GOLD: Color = Color::new(1.0, 0.86, 0.45, 1.0);
-pub const ROSE: Color = Color::new(1.0, 0.55, 0.75, 1.0);
+pub const AQUA: Color = Color::new(0.45, 1.0, 0.92, 1.0);
+pub const FORM_RANGE: f32 = 130.0;
+const FORM_N: usize = 8;
+const FORM_R: f32 = 36.0;
+const FORM_APPEAR: f32 = 0.35;
+const FORM_HOVER: f32 = 0.6;
+const FORM_GAP: f32 = 0.06;
+const FORM_STAB: f32 = 0.14;
+const LUNGE_TICKS: u32 = 9;
+const LUNGE_DIST: f32 = 52.0;
+const WIND_DIST: f32 = 65.0;
 
 pub const JUDGE_RANGE: f32 = 130.0;
 pub const RAY_LEN: f32 = 280.0;
@@ -35,6 +45,23 @@ fn glow(c: Vec2, r: f32, col: Color, a: f32) {
 
 fn air(p: Vec2, z: f32) -> Vec2 {
     proj(p) - vec2(0.0, z * S)
+}
+
+fn draw_sword(tex: &Texture2D, at: Vec2, ang: f32, scale: f32, a: f32) {
+    let size = vec2(tex.width(), tex.height()) * 0.5 * S * scale;
+    draw_texture_ex(
+        tex,
+        at.x - size.x / 2.0,
+        at.y - size.y / 2.0,
+        Color::new(1.0, 1.0, 1.0, a.clamp(0.0, 1.0)),
+        DrawTextureParams { dest_size: Some(size), rotation: ang, ..Default::default() },
+    );
+}
+
+impl Lunge {
+    fn ang(&self) -> f32 {
+        self.dir.y.atan2(self.dir.x)
+    }
 }
 
 fn seg_dist(p: Vec2, a: Vec2, b: Vec2) -> f32 {
@@ -100,6 +127,41 @@ struct Ring {
     w: f32,
 }
 
+struct Arc {
+    owner: usize,
+    ang: f32,
+    r: f32,
+    half: f32,
+    side: f32,
+    t: f32,
+    max: f32,
+    big: bool,
+}
+
+struct Slash {
+    a: Vec2,
+    b: Vec2,
+    t: f32,
+    max: f32,
+    w: f32,
+}
+
+struct Lunge {
+    owner: usize,
+    dir: Vec2,
+    tick: u32,
+    hit: bool,
+}
+
+struct Formation {
+    owner: usize,
+    center: Vec2,
+    t: f32,
+    base: f32,
+    hit: [bool; FORM_N],
+    done: bool,
+}
+
 struct Num {
     pos: Vec2,
     t: f32,
@@ -116,6 +178,10 @@ pub struct World {
     parts: Vec<Part>,
     rings: Vec<Ring>,
     nums: Vec<Num>,
+    arcs: Vec<Arc>,
+    slashes: Vec<Slash>,
+    lunges: Vec<Lunge>,
+    forms: Vec<Formation>,
     pub shake: f32,
     pub flash: f32,
 }
@@ -147,13 +213,14 @@ impl World {
         self.shake = self.shake.max(if big { 7.0 } else { 3.0 });
     }
 
-    pub fn enemy_shot(&mut self, from: Vec2, to: Vec2, owner: usize) {
-        let d = (to - from).normalize_or(Vec2::X);
-        self.shots.push(Shot { pos: from + d * 8.0, vel: d * 150.0, r: 3.5, dmg: 5, owner, life: 2.5, col: ROSE });
-    }
 
-    pub fn cast(&mut self, p: &mut Player, i: usize) {
-        let Some(k) = p.cast.take() else { return };
+    pub fn cast(&mut self, players: &mut [Player; 2], i: usize, anims: &Anims) {
+        let Some(k) = players[i].cast.take() else { return };
+        if matches!(k, Skill::Cut | Skill::Swallow | Skill::WindStep | Skill::Formation) {
+            self.cast_sword(players, i, k, anims);
+            return;
+        }
+        let p = &mut players[i];
         let f = p.facing();
         let tip = p.pos + f * 8.0;
         match k {
@@ -178,6 +245,77 @@ impl World {
                 self.ring(at, 0.0, JUDGE_R * 1.6, JUDGE_R, 0.4, GOLD, 3.0);
                 self.burst(p.pos, CHEST + 8.0, 20, 70.0, 0.5, 2.0, GOLD);
             }
+            _ => {}
+        }
+    }
+
+    fn strike(&mut self, players: &mut [Player; 2], t: usize, dir: Vec2, dmg: i32, big: bool, anims: &Anims) -> bool {
+        if players[t].hurtboxes(anims).is_empty() {
+            return false;
+        }
+        players[t].take_hit(dir, dmg);
+        let at = players[t].pos;
+        self.hit_fx(at, AQUA, dmg, big);
+        true
+    }
+
+    fn cast_sword(&mut self, players: &mut [Player; 2], i: usize, k: Skill, anims: &Anims) {
+        let t = 1 - i;
+        let f = players[i].facing();
+        let pos = players[i].pos;
+        match k {
+            Skill::Cut => {
+                let combo = players[i].combo;
+                let (r, half, dmg) = if combo == 3 { (30.0, 1.5, 6) } else { (22.0, 1.05, 4) };
+                let side = if combo % 2 == 0 { -1.0 } else { 1.0 };
+                self.arcs.push(Arc { owner: i, ang: players[i].ang, r, half, side, t: 0.16, max: 0.16, big: combo == 3 });
+                let to = players[t].pos - pos;
+                if to.length() < r + RADIUS && f.angle_between(to).abs() < half {
+                    self.strike(players, t, f, dmg, combo == 3, anims);
+                }
+                for _ in 0..(if combo == 3 { 14 } else { 6 }) {
+                    let a = players[i].ang + gen_range(-half, half);
+                    self.part(pos + Vec2::from_angle(a) * r * 0.8, CHEST, Vec2::from_angle(a) * gen_range(30.0, 90.0), gen_range(0.0, 20.0), 0.25, 1.5, if gen_range(0, 2) == 0 { AQUA } else { WHITE }, 0.88);
+                }
+                if combo == 3 {
+                    self.shake = self.shake.max(3.0);
+                }
+            }
+            Skill::Swallow => {
+                self.lunges.push(Lunge { owner: i, dir: f, tick: 0, hit: false });
+                self.ring(pos, CHEST, 2.0, 14.0, 0.2, AQUA, 3.0);
+                for _ in 0..10 {
+                    let v = -f * gen_range(40.0, 120.0) + f.perp() * gen_range(-50.0, 50.0);
+                    self.part(pos, CHEST, v, gen_range(0.0, 20.0), 0.3, 1.6, PALE, 0.88);
+                }
+            }
+            Skill::WindStep => {
+                let to = (players[i].target - pos).clamp_length(WIND_DIST * 0.6, WIND_DIST);
+                players[i].ghost();
+                players[i].pos = pos + f * to.length();
+                players[i].clamp();
+                let end = players[i].pos;
+                self.slashes.push(Slash { a: pos, b: end, t: 0.25, max: 0.25, w: 3.0 });
+                for n in 1..4 {
+                    let g = pos.lerp(end, n as f32 / 4.0);
+                    players[i].ghosts.push((g, 0.12 + n as f32 * 0.05, players[i].dir8()));
+                }
+                if seg_dist(players[t].pos, pos, end) < RADIUS + 8.0 {
+                    self.strike(players, t, f, 6, false, anims);
+                }
+                for _ in 0..16 {
+                    let p = pos.lerp(end, gen_range(0.0, 1.0));
+                    self.part(p, CHEST + gen_range(-6.0, 6.0), f.perp() * gen_range(-60.0, 60.0) - f * 30.0, gen_range(0.0, 30.0), 0.35, 1.6, if gen_range(0, 2) == 0 { AQUA } else { PALE }, 0.88);
+                }
+            }
+            Skill::Formation => {
+                let m = FORM_R * 0.5;
+                let center = (pos + (players[i].target - pos).clamp_length_max(FORM_RANGE)).clamp(vec2(m, m), vec2(ARENA - m, ARENA - m));
+                self.forms.push(Formation { owner: i, center, t: 0.0, base: gen_range(0.0, TAU), hit: [false; FORM_N], done: false });
+                self.ring(center, 0.0, FORM_R * 2.0, FORM_R, 0.4, AQUA, 3.0);
+                self.burst(pos, CHEST + 6.0, 24, 90.0, 0.4, 2.0, AQUA);
+            }
+            _ => {}
         }
     }
 
@@ -295,6 +433,77 @@ impl World {
         });
         self.judges = judges;
 
+        let mut lunges = std::mem::take(&mut self.lunges);
+        lunges.retain_mut(|l| {
+            l.tick += 1;
+            let o = l.owner;
+            if players[o].state == State::Hit {
+                return false;
+            }
+            players[o].pos += l.dir * LUNGE_DIST / LUNGE_TICKS as f32;
+            players[o].clamp();
+            if l.tick % 2 == 0 {
+                players[o].ghost();
+            }
+            let tip = players[o].pos + l.dir * 12.0;
+            self.part(tip, CHEST, -l.dir * 60.0 + l.dir.perp() * gen_range(-30.0, 30.0), 0.0, 0.25, 1.5, if gen_range(0, 2) == 0 { AQUA } else { WHITE }, 0.88);
+            let t = 1 - o;
+            if !l.hit && seg_dist(players[t].pos, players[o].pos, tip) < RADIUS + 5.0 && self.strike(players, t, l.dir, 7, true, anims) {
+                l.hit = true;
+                players[o].charges = (players[o].charges + 1).min(WIND_CHARGES);
+                self.ring(tip, CHEST, 2.0, 20.0, 0.3, WHITE, 4.0);
+                self.burst(tip, CHEST, 16, 140.0, 0.35, 2.0, AQUA);
+            }
+            l.tick < LUNGE_TICKS
+        });
+        self.lunges = lunges;
+
+        let mut forms = std::mem::take(&mut self.forms);
+        forms.retain_mut(|fm| {
+            fm.t += DT;
+            let t = 1 - fm.owner;
+            for n in 0..FORM_N {
+                let start = FORM_HOVER + n as f32 * FORM_GAP;
+                let s = (fm.t - start) / FORM_STAB;
+                if !(0.0..=1.0).contains(&s) {
+                    continue;
+                }
+                let d = Self::form_dir(fm, n);
+                let pos = fm.center + d * FORM_R * (1.0 - 2.0 * s);
+                self.part(pos, CHEST, -d * 40.0, 0.0, 0.2, 1.4, AQUA, 0.9);
+                if !fm.hit[n] && players[t].pos.distance(pos) < RADIUS + 5.0 && self.strike(players, t, -d, 3, false, anims) {
+                    fm.hit[n] = true;
+                }
+                if s > 0.45 && s < 0.55 {
+                    self.ring(fm.center, CHEST, 1.0, 8.0, 0.15, AQUA, 2.0);
+                }
+            }
+            let end = FORM_HOVER + (FORM_N - 1) as f32 * FORM_GAP + FORM_STAB;
+            if fm.t >= end && !fm.done {
+                fm.done = true;
+                self.ring(fm.center, 0.0, 4.0, FORM_R * 2.2, 0.45, AQUA, 6.0);
+                self.ring(fm.center, CHEST, 4.0, FORM_R * 1.4, 0.3, WHITE, 4.0);
+                for n in 0..FORM_N {
+                    let d = Self::form_dir(fm, n);
+                    self.burst(fm.center - d * FORM_R, CHEST, 6, 90.0, 0.4, 2.0, PALE);
+                }
+                self.burst(fm.center, CHEST, 50, 180.0, 0.6, 2.6, AQUA);
+                self.shake = self.shake.max(9.0);
+                self.flash = self.flash.max(0.18);
+            }
+            fm.t < end + 0.05
+        });
+        self.forms = forms;
+
+        self.arcs.retain_mut(|a| {
+            a.t -= DT;
+            a.t > 0.0
+        });
+        self.slashes.retain_mut(|s| {
+            s.t -= DT;
+            s.t > 0.0
+        });
+
         self.parts.retain_mut(|p| {
             p.pos += p.vel * DT;
             p.z = (p.z + p.vz * DT).max(0.0);
@@ -342,8 +551,19 @@ impl World {
         }
     }
 
+    fn form_dir(fm: &Formation, n: usize) -> Vec2 {
+        Vec2::from_angle(fm.base + n as f32 * TAU / FORM_N as f32)
+    }
+
     pub fn draw_ground(&self) {
         let time = get_time() as f32;
+        for fm in &self.forms {
+            let c = proj(fm.center);
+            let open = (fm.t / FORM_APPEAR).min(1.0);
+            let r = FORM_R * S * (0.4 + 0.6 * open);
+            draw_circle(c.x, c.y, r, alpha(AQUA, 0.08 + 0.1 * open));
+            Self::magic_circle(c, r, -time * 2.5, AQUA, 0.4 + 0.5 * open, 2.0);
+        }
         for j in &self.judges {
             let k = (j.t / JUDGE_T).min(1.0);
             let open = (k * 3.0).min(1.0);
@@ -369,7 +589,7 @@ impl World {
         }
     }
 
-    pub fn draw_air(&self, players: &[Player; 2]) {
+    pub fn draw_air(&self, players: &[Player; 2], sword: &Texture2D) {
         let time = get_time() as f32;
         for w in &self.wards {
             let p = &players[w.owner];
@@ -445,6 +665,74 @@ impl World {
             let c = air(r.pos, r.z);
             let rr = (r.r1 + (r.r0 - r.r1) * k) * S;
             draw_circle_lines(c.x, c.y, rr, r.w * (0.5 + k), alpha(r.col, k));
+        }
+        for a in &self.arcs {
+            let k = a.t / a.max;
+            let p = &players[a.owner];
+            let sweep = 1.0 - k;
+            let segs = 14;
+            let spread = a.half * 2.0 * (0.4 + 0.6 * sweep.min(1.0) * 1.6).min(1.0);
+            let start = a.ang - a.side * a.half;
+            let pts: Vec<Vec2> = (0..=segs)
+                .map(|n| {
+                    let ang = start + a.side * spread * n as f32 / segs as f32;
+                    air(p.pos + Vec2::from_angle(ang) * a.r, CHEST)
+                })
+                .collect();
+            let w = if a.big { 9.0 } else { 6.0 };
+            for n in 0..segs {
+                let taper = n as f32 / segs as f32;
+                let (x, y) = (pts[n], pts[n + 1]);
+                draw_line(x.x, x.y, y.x, y.y, w * 2.2 * taper * k, alpha(AQUA, 0.25 * k));
+                draw_line(x.x, x.y, y.x, y.y, w * taper * k, alpha(AQUA, 0.8 * k));
+                draw_line(x.x, x.y, y.x, y.y, w * 0.4 * taper * k, alpha(WHITE, k));
+            }
+            glow(pts[segs], w * 0.6 * k, AQUA, k);
+        }
+        for s in &self.slashes {
+            let k = s.t / s.max;
+            let a = air(s.a, CHEST);
+            let b = air(s.b, CHEST);
+            let w = s.w * S * k;
+            draw_line(a.x, a.y, b.x, b.y, w * 2.4, alpha(AQUA, 0.2 * k));
+            draw_line(a.x, a.y, b.x, b.y, w, alpha(AQUA, 0.75 * k));
+            draw_line(a.x, a.y, b.x, b.y, w * 0.35, alpha(WHITE, k));
+        }
+        for l in &self.lunges {
+            let p = &players[l.owner];
+            let tip = p.pos + l.dir * 12.0;
+            let a = air(p.pos, CHEST);
+            let b = air(tip + l.dir * 6.0, CHEST);
+            draw_line(a.x, a.y, b.x, b.y, 7.0 * S, alpha(AQUA, 0.2));
+            draw_line(a.x, a.y, b.x, b.y, 2.5 * S, alpha(PALE, 0.7));
+            draw_sword(sword, air(tip, CHEST), l.ang(), 1.2, 1.0);
+            glow(b, 2.5 * S, AQUA, 0.9);
+        }
+        for fm in &self.forms {
+            let appear = (fm.t / FORM_APPEAR).min(1.0);
+            for n in 0..FORM_N {
+                let d = Self::form_dir(fm, n);
+                let start = FORM_HOVER + n as f32 * FORM_GAP;
+                let s = ((fm.t - start) / FORM_STAB).clamp(0.0, 1.0);
+                if fm.t > start + FORM_STAB {
+                    continue;
+                }
+                let bob = (time * 6.0 + n as f32).sin() * 1.5 * (1.0 - s.min(1.0));
+                let pos = fm.center + d * FORM_R * (1.0 - 2.0 * s);
+                let z = CHEST + (1.0 - appear) * 30.0 + bob;
+                let c = air(pos, z);
+                let inward = (-d).y.atan2(-d.x);
+                if s > 0.0 {
+                    let back = air(fm.center + d * FORM_R, CHEST);
+                    draw_line(back.x, back.y, c.x, c.y, 4.0 * S, alpha(AQUA, 0.35));
+                    draw_line(back.x, back.y, c.x, c.y, 1.2 * S, alpha(WHITE, 0.8));
+                } else if fm.t > FORM_HOVER - 0.2 {
+                    let shake = vec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)) * 2.0;
+                    glow(c + shake, 3.0 * S, AQUA, 0.5);
+                }
+                glow(c, 2.0 * S, AQUA, 0.35 * appear);
+                draw_sword(sword, c, inward, 1.0, appear);
+            }
         }
         for n in &self.nums {
             let k = n.t / 0.8;

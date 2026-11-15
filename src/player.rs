@@ -7,7 +7,7 @@ pub const RADIUS: f32 = 6.0;
 pub const DT: f32 = 1.0 / 60.0;
 const SPEED: f32 = 72.0;
 const ROLL_SPEED: f32 = 160.0;
-const MAX_HP: i32 = 100;
+pub const WIND_CHARGES: u32 = 2;
 
 #[derive(Clone, Copy, PartialEq, Eq, Debug)]
 pub enum Skill {
@@ -15,18 +15,83 @@ pub enum Skill {
     Ray,
     Ward,
     Judgement,
+    Cut,
+    Swallow,
+    WindStep,
+    Formation,
 }
 
-pub const SKILLS: [Skill; 4] = [Skill::Needle, Skill::Ray, Skill::Ward, Skill::Judgement];
-pub const COOLDOWN: [f32; 4] = [0.3, 4.0, 6.0, 12.0];
-const CAST_TICKS: [u32; 4] = [18, 36, 20, 40];
-const LOCK_TICKS: [u32; 4] = [0, 30, 0, 24];
+impl Skill {
+    pub fn cooldown(self) -> f32 {
+        match self {
+            Skill::Needle => 0.3,
+            Skill::Ray => 4.0,
+            Skill::Ward => 6.0,
+            Skill::Judgement => 12.0,
+            Skill::Cut => 0.22,
+            Skill::Swallow => 4.0,
+            Skill::WindStep => 3.0,
+            Skill::Formation => 14.0,
+        }
+    }
+
+    fn cast_ticks(self) -> u32 {
+        match self {
+            Skill::Needle => 18,
+            Skill::Ray => 36,
+            Skill::Ward => 20,
+            Skill::Judgement => 40,
+            Skill::Cut => 13,
+            Skill::Swallow => 14,
+            Skill::WindStep => 10,
+            Skill::Formation => 30,
+        }
+    }
+
+    fn lock_ticks(self) -> u32 {
+        match self {
+            Skill::Ray => 30,
+            Skill::Judgement => 24,
+            Skill::Formation => 26,
+            Skill::Swallow => 12,
+            _ => 0,
+        }
+    }
+}
+
+pub struct Kit {
+    pub name: &'static str,
+    pub skills: [Skill; 4],
+    pub hp: i32,
+    pub hint: &'static str,
+}
+
+pub const KITS: [Kit; 3] = [
+    Kit {
+        name: "Elf Mage",
+        skills: [Skill::Needle, Skill::Ray, Skill::Ward, Skill::Judgement],
+        hp: 100,
+        hint: "LMB needle   Q piercing ray   E ward shell   R judgement circle",
+    },
+    Kit {
+        name: "Witch",
+        skills: [Skill::Needle, Skill::Ray, Skill::Ward, Skill::Judgement],
+        hp: 100,
+        hint: "LMB needle   Q piercing ray   E ward shell   R judgement circle",
+    },
+    Kit {
+        name: "Sword Cultivator",
+        skills: [Skill::Cut, Skill::Swallow, Skill::WindStep, Skill::Formation],
+        hp: 80,
+        hint: "LMB swift cut (x3)   Q swallow strike (hit: +1 E charge)   E wind step (2 charges)   R sword formation",
+    },
+];
 
 #[derive(Default, Clone, Copy)]
 pub struct Input {
     pub dir: Vec2,
     pub aim: Vec2,
-    pub skill: Option<Skill>,
+    pub slot: Option<usize>,
     pub dodge: bool,
 }
 
@@ -41,7 +106,7 @@ pub fn read_input(aim: Vec2) -> Input {
     Input {
         dir: vec2(axis(KeyCode::A, KeyCode::D), axis(KeyCode::W, KeyCode::S)),
         aim,
-        skill: (0..4).find(|i| pressed[*i]).map(|i| SKILLS[i]),
+        slot: (0..4).find(|i| pressed[*i]),
         dodge: is_mouse_button_pressed(MouseButton::Right),
     }
 }
@@ -51,6 +116,8 @@ pub struct Player {
     pub ang: f32,
     knock: Vec2,
     pub hp: i32,
+    pub max_hp: i32,
+    pub kit: usize,
     pub state: State,
     pub frame: usize,
     timer: u32,
@@ -60,6 +127,12 @@ pub struct Player {
     pub cast: Option<Skill>,
     pub cast_ticks: u32,
     pub lock: u32,
+    pub combo: u32,
+    combo_timer: f32,
+    pub charges: u32,
+    pub recast: bool,
+    pub untargetable: bool,
+    pub ghosts: Vec<(Vec2, f32, i32)>,
     pub has_hit: bool,
     pub color: Color,
     pub tint: Color,
@@ -69,12 +142,14 @@ pub struct Player {
 }
 
 impl Player {
-    pub fn new(pos: Vec2, ang: f32, color: Color, dummy: bool) -> Self {
+    pub fn new(pos: Vec2, ang: f32, color: Color, dummy: bool, kit: usize) -> Self {
         Player {
             pos,
             ang,
             knock: Vec2::ZERO,
-            hp: MAX_HP,
+            hp: KITS[kit].hp,
+            max_hp: KITS[kit].hp,
+            kit,
             state: State::Idle,
             frame: 0,
             timer: 0,
@@ -84,6 +159,12 @@ impl Player {
             cast: None,
             cast_ticks: 18,
             lock: 0,
+            combo: 0,
+            combo_timer: 0.0,
+            charges: WIND_CHARGES,
+            recast: false,
+            untargetable: false,
+            ghosts: Vec::new(),
             has_hit: false,
             tint: WHITE,
             color,
@@ -93,12 +174,28 @@ impl Player {
         }
     }
 
+    pub fn skills(&self) -> [Skill; 4] {
+        KITS[self.kit].skills
+    }
+
+    pub fn set_kit(&mut self, kit: usize) {
+        self.kit = kit;
+        self.max_hp = KITS[kit].hp;
+        self.respawn();
+    }
+
     pub fn respawn(&mut self) {
         self.pos = self.spawn.0;
         self.ang = self.spawn.1;
         self.knock = Vec2::ZERO;
-        self.hp = MAX_HP;
+        self.hp = self.max_hp;
         self.cd = [0.0; 4];
+        self.lock = 0;
+        self.combo = 0;
+        self.charges = WIND_CHARGES;
+        self.recast = false;
+        self.untargetable = false;
+        self.ghosts.clear();
         self.reset_to(State::Idle);
     }
 
@@ -125,9 +222,68 @@ impl Player {
         ((self.ang / (PI / 4.0)).round() as i32).rem_euclid(8)
     }
 
-    pub fn step(&mut self, input: Input, anims: &Anims) {
+    pub fn ghost(&mut self) {
+        let d = self.dir8();
+        self.ghosts.push((self.pos, 0.3, d));
+    }
+
+    fn ready(&self, slot: usize) -> bool {
+        match self.skills()[slot] {
+            Skill::WindStep => self.charges > 0,
+            _ => self.cd[slot] <= 0.0,
+        }
+    }
+
+    fn tick_timers(&mut self) {
         self.cd.iter_mut().for_each(|c| *c = (*c - DT).max(0.0));
-        let ready = input.skill.filter(|k| self.cd[*k as usize] <= 0.0);
+        let skills = self.skills();
+        if let Some(s) = skills.iter().position(|k| *k == Skill::WindStep) {
+            if self.charges < WIND_CHARGES && self.cd[s] <= 0.0 {
+                self.charges += 1;
+                if self.charges < WIND_CHARGES {
+                    self.cd[s] = Skill::WindStep.cooldown();
+                }
+            }
+        }
+        self.combo_timer = (self.combo_timer - DT).max(0.0);
+        if self.combo_timer <= 0.0 {
+            self.combo = 0;
+        }
+        self.ghosts.retain_mut(|g| {
+            g.1 -= DT;
+            g.1 > 0.0
+        });
+    }
+
+    fn begin_cast(&mut self, slot: usize, aim: Vec2) {
+        let k = self.skills()[slot];
+        let to = aim - self.pos;
+        if to.length() > 0.5 {
+            self.ang = to.y.atan2(to.x);
+        }
+        self.target = aim;
+        self.cast_ticks = k.cast_ticks();
+        self.lock = k.lock_ticks();
+        match k {
+            Skill::WindStep => {
+                self.charges -= 1;
+                if self.cd[slot] <= 0.0 {
+                    self.cd[slot] = k.cooldown();
+                }
+            }
+            Skill::Cut => {
+                self.combo = self.combo % 3 + 1;
+                self.combo_timer = 0.7;
+                self.cd[slot] = if self.combo == 3 { 0.45 } else { k.cooldown() };
+            }
+            _ => self.cd[slot] = k.cooldown(),
+        }
+        self.cast = Some(k);
+        self.reset_to(State::Attack);
+    }
+
+    pub fn step(&mut self, input: Input, anims: &Anims) {
+        self.tick_timers();
         if self.lock > 0 {
             self.lock -= 1;
             self.pos += self.knock;
@@ -136,8 +292,10 @@ impl Player {
             self.advance(anims);
             return;
         }
+        let ready = input.slot.filter(|s| self.ready(*s));
+        let quick = self.state == State::Attack && ready.is_some() && self.age >= 6;
         match self.state {
-            State::Hit | State::Attack => {
+            State::Hit | State::Attack if !quick => {
                 if self.finished {
                     self.set_state(State::Idle);
                 }
@@ -156,17 +314,8 @@ impl Player {
                         self.ang = to.y.atan2(to.x);
                     }
                     self.set_state(State::Roll);
-                } else if let Some(k) = ready {
-                    let to = input.aim - self.pos;
-                    if to.length() > 0.5 {
-                        self.ang = to.y.atan2(to.x);
-                    }
-                    self.target = input.aim;
-                    self.cast_ticks = CAST_TICKS[k as usize];
-                    self.lock = LOCK_TICKS[k as usize];
-                    self.cd[k as usize] = COOLDOWN[k as usize];
-                    self.cast = Some(k);
-                    self.set_state(State::Attack);
+                } else if let Some(s) = ready {
+                    self.begin_cast(s, input.aim);
                 } else if dir != Vec2::ZERO {
                     self.pos += dir * SPEED * DT;
                     self.ang = dir.y.atan2(dir.x);
@@ -213,6 +362,9 @@ impl Player {
     }
 
     pub fn hurtboxes(&self, anims: &Anims) -> Vec<(Vec2, f32)> {
+        if self.untargetable {
+            return Vec::new();
+        }
         self.current(anims)
             .hurt
             .iter()

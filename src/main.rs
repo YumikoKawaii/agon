@@ -176,6 +176,21 @@ fn draw_player(p: &Player, anims: &Anims, sprites: &Sprites, debug: bool) {
     } else {
         anims.get(p.state).frames.iter().map(|f| f.ticks).sum()
     };
+    for (g, t, d) in &p.ghosts {
+        let gs = proj(*g);
+        let gt = sprites.frame(State::Run, *d, 0, 1);
+        let gsize = vec2(gt.width(), gt.height()) * SPRITE * S;
+        draw_texture_ex(
+            gt,
+            (gs.x - gsize.x / 2.0).round(),
+            (gs.y - gsize.y / 2.0 - FOOT * S).round(),
+            Color::new(0.45, 1.0, 0.92, (t / 0.3).min(1.0) * 0.55),
+            DrawTextureParams { dest_size: Some(gsize), ..Default::default() },
+        );
+    }
+    if p.untargetable {
+        return;
+    }
     let tex = sprites.frame(p.state, p.dir8(), p.age, total);
     let size = vec2(tex.width(), tex.height()) * SPRITE * S;
     let tint = if p.state == State::Hit && p.age < 4 { Color::new(1.0, 0.6, 0.6, 1.0) } else { p.tint };
@@ -197,16 +212,23 @@ fn draw_hud(players: &[Player; 2]) {
     for (i, p) in players.iter().enumerate() {
         let x = if i == 0 { 40.0 } else { screen_width() - 40.0 - w };
         draw_rectangle(x, 24.0, w, 14.0, Color::from_rgba(34, 38, 52, 255));
-        let fill = w * p.hp.max(0) as f32 / 100.0;
+        let fill = w * p.hp.max(0) as f32 / p.max_hp as f32;
         let fx = if i == 0 { x } else { x + w - fill };
         draw_rectangle(fx, 24.0, fill, 14.0, p.color);
+        let label = format!("{}  {}/{}", KITS[p.kit].name, p.hp.max(0), p.max_hp);
+        let lx = if i == 0 { x } else { x + w - measure_text(&label, None, 18, 1.0).width };
+        draw_text(&label, lx, 18.0, 18.0, LIGHTGRAY);
+        let skills = p.skills();
         for (k, name) in ["LMB", "Q", "E", "R"].iter().enumerate() {
             let bx = if i == 0 { x + k as f32 * 52.0 } else { x + w - 48.0 - k as f32 * 52.0 };
             draw_rectangle(bx, 44.0, 48.0, 22.0, Color::from_rgba(34, 38, 52, 255));
-            let frac = p.cd[k] / COOLDOWN[k];
-            let col = if frac <= 0.0 { ICE } else { Color::from_rgba(70, 76, 98, 255) };
+            let wind = skills[k] == Skill::WindStep;
+            let ready = if wind { p.charges > 0 } else { p.cd[k] <= 0.0 };
+            let frac = if wind && p.charges >= WIND_CHARGES { 0.0 } else { p.cd[k] / skills[k].cooldown() };
+            let col = if ready { ICE } else { Color::from_rgba(70, 76, 98, 255) };
             draw_rectangle(bx, 44.0, 48.0 * (1.0 - frac), 22.0, col);
-            draw_text(name, bx + 6.0, 61.0, 20.0, Color::from_rgba(20, 20, 28, 255));
+            let text = if wind { format!("{} {}", name, p.charges) } else { name.to_string() };
+            draw_text(&text, bx + 6.0, 61.0, 20.0, Color::from_rgba(20, 20, 28, 255));
         }
     }
 }
@@ -214,10 +236,17 @@ fn draw_hud(players: &[Player; 2]) {
 #[macroquad::main(window_conf)]
 async fn main() {
     let anims = Anims::new();
-    let skins = [Sprites::load("assets/elf").await, Sprites::load("assets/witch").await];
+    let sword_tex = load_texture("assets/sword/spirit_sword.png").await.unwrap();
+    sword_tex.set_filter(FilterMode::Nearest);
+    let skins = [
+        Sprites::load("assets/elf").await,
+        Sprites::load("assets/witch").await,
+        Sprites::load("assets/sword").await,
+    ];
+    let mut skin = [0, 1];
     let mut players = [
-        Player::new(vec2(120.0, 200.0), 0.0, SKYBLUE, false),
-        Player::new(vec2(280.0, 200.0), std::f32::consts::PI, ORANGE, true),
+        Player::new(vec2(120.0, 200.0), 0.0, SKYBLUE, false, 0),
+        Player::new(vec2(280.0, 200.0), std::f32::consts::PI, ORANGE, true, 1),
     ];
     let mut pending = Input::default();
     let mut acc = 0.0;
@@ -228,10 +257,18 @@ async fn main() {
         if is_key_pressed(KeyCode::Tab) {
             debug = !debug;
         }
+        for (k, n) in [(KeyCode::Key1, 0), (KeyCode::Key2, 1), (KeyCode::Key3, 2)] {
+            if is_key_pressed(k) && skin[0] != n {
+                skin[0] = n;
+                players[0].set_kit(n);
+                world = World::default();
+                players[1].untargetable = false;
+            }
+        }
         let r = read_input(mouse_world());
         pending.dir = r.dir;
         pending.aim = r.aim;
-        pending.skill = r.skill.or(pending.skill);
+        pending.slot = r.slot.or(pending.slot);
         pending.dodge |= r.dodge;
 
         acc += get_frame_time().min(0.25);
@@ -239,9 +276,9 @@ async fn main() {
             for i in 0..2 {
                 let input = if players[i].dummy { Input::default() } else { pending };
                 players[i].step(input, &anims);
-                world.cast(&mut players[i], i);
+                world.cast(&mut players, i, &anims);
             }
-            pending.skill = None;
+            pending.slot = None;
             pending.dodge = false;
             let to = players[0].pos - players[1].pos;
             players[1].ang = to.y.atan2(to.x);
@@ -259,16 +296,18 @@ async fn main() {
         let mut order = [0, 1];
         order.sort_by(|a, b| players[*a].pos.y.total_cmp(&players[*b].pos.y));
         for i in order {
-            draw_player(&players[i], &anims, &skins[i], debug);
+            draw_player(&players[i], &anims, &skins[skin[i]], debug);
         }
-        world.draw_air(&players);
+        world.draw_air(&players, &sword_tex);
         draw_cage(true);
         let me = proj(players[0].pos);
         let aim = proj(mouse_world());
+        let elf = players[0].kit != 2;
         if is_key_down(KeyCode::R) {
-            draw_circle_lines(me.x, me.y, JUDGE_RANGE * S, 1.5, Color::new(1.0, 0.86, 0.45, 0.35));
+            let (r, c) = if elf { (JUDGE_RANGE, Color::new(1.0, 0.86, 0.45, 0.35)) } else { (FORM_RANGE, Color::new(0.45, 1.0, 0.92, 0.35)) };
+            draw_circle_lines(me.x, me.y, r * S, 1.5, c);
         }
-        if is_key_down(KeyCode::Q) {
+        if elf && is_key_down(KeyCode::Q) {
             let d = (mouse_world() - players[0].pos).normalize_or(Vec2::X);
             let e = proj(players[0].pos + d * RAY_LEN);
             draw_line(me.x, me.y - 9.0 * S, e.x, e.y - 9.0 * S, 2.0, Color::new(0.55, 0.85, 1.0, 0.3));
@@ -280,7 +319,14 @@ async fn main() {
         world.draw_flash();
         draw_hud(&players);
         draw_text(
-            "WASD move   Mouse aim   LMB needle   RMB roll   Q piercing ray   E ward shell   R judgement circle   Tab boxes",
+            "WASD move   Mouse aim   RMB roll   1/2/3 character   Tab boxes",
+            40.0,
+            screen_height() - 46.0,
+            24.0,
+            LIGHTGRAY,
+        );
+        draw_text(
+            KITS[players[0].kit].hint,
             40.0,
             screen_height() - 20.0,
             24.0,
