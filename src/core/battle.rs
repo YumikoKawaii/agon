@@ -187,8 +187,8 @@ pub(crate) fn strike(players: &mut [Player; 2], target: usize, hit: Hit, events:
 }
 
 const HEX_MAX: u8 = 3;
-const HEX_DMG: i32 = 8;
-const HEX_ROOT: Apply = Apply(EffectKind::Root, 30, 0);
+const HEX_DMG: i32 = 3;
+const HEX_ROOT: Apply = Apply(EffectKind::Root, 20, 0);
 const INTENT_MAX: u8 = 4;
 
 fn passive(players: &mut [Player; 2], me: usize, target: usize, events: &mut Vec<Event>) {

@@ -34,9 +34,9 @@ impl Skill {
             Skill::WindStep => 2.0,
             Skill::Formation => 8.0,
             Skill::Hex => 1.2,
-            Skill::Potion => 2.5,
+            Skill::Potion => 3.0,
             Skill::Broom => 3.5,
-            Skill::Cauldron => 8.0,
+            Skill::Cauldron => 10.0,
             Skill::Slash => 0.45,
             Skill::Whirl => 3.0,
             Skill::Cable => crate::core::warden::CABLE_GAP,
@@ -44,7 +44,7 @@ impl Skill {
             Skill::Talisman => 1.1,
             Skill::Parasol => 1.0,
             Skill::Storm => 13.0,
-            Skill::SpiritStep => 6.0,
+            Skill::SpiritStep => 3.0,
         }
     }
 
@@ -149,15 +149,15 @@ const WITCH: [Skill; 4] = [Skill::Hex, Skill::Potion, Skill::Broom, Skill::Cauld
 const WITCH_HINT: &str = "LMB hex bolt   Q potion toss   E broom dash   R cauldron burst   PASSIVE hexed: 3rd hit detonates + root";
 
 pub const KITS: [Kit; 4] = [
-    Kit { name: "Elf Mage", role: Role::Mage, passive: Passive::Grace, skin: "elf", skills: MAGE, hp: 100, hint: MAGE_HINT },
-    Kit { name: "Witch", role: Role::Mage, passive: Passive::Hexed, skin: "witch", skills: WITCH, hp: 100, hint: WITCH_HINT },
+    Kit { name: "Elf Mage", role: Role::Mage, passive: Passive::Grace, skin: "elf", skills: MAGE, hp: 150, hint: MAGE_HINT },
+    Kit { name: "Witch", role: Role::Mage, passive: Passive::Hexed, skin: "witch", skills: WITCH, hp: 150, hint: WITCH_HINT },
     Kit {
         name: "Sword Cultivator",
         role: Role::Melee,
         passive: Passive::Intent,
         skin: "sword",
         skills: [Skill::Cut, Skill::Swallow, Skill::WindStep, Skill::Formation],
-        hp: 80,
+        hp: 120,
         hint: "LMB swift cut (x3, 3rd: sword intent wave)   Q swallow strike (hit: +1 E charge)   E wind step (2 charges)   R sword formation   PASSIVE intent: 4 hits = free wave + E charge",
     },
     Kit {
@@ -166,7 +166,7 @@ pub const KITS: [Kit; 4] = [
         passive: Passive::Bond,
         skin: "parasol",
         skills: [Skill::Talisman, Skill::Parasol, Skill::SpiritStep, Skill::Storm],
-        hp: 95,
+        hp: 142,
         hint: "LMB paper talisman   Q parasol flight (again: move it, walk over: pick up)   E spirit step (to parasol)   R sakura tempest   PASSIVE bond: near parasol = speed + shield, pickup resets E",
     },
 ];

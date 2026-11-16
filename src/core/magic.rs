@@ -11,7 +11,7 @@ use crate::core::{
 
 pub const NEEDLE_SPEED: f32 = 320.0;
 pub const NEEDLE_R: f32 = 2.5;
-const NEEDLE_DMG: i32 = 2;
+const NEEDLE_DMG: i32 = 1;
 const NEEDLE_LIFE: f32 = 0.8;
 const TIP: f32 = 8.0;
 
@@ -19,7 +19,7 @@ pub const RAY_LEN: f32 = 280.0;
 pub const RAY_CHARGE: f32 = 0.4;
 pub const RAY_SHOW: f32 = 0.3;
 pub const RAY_W: f32 = 7.0;
-const RAY_DMG: i32 = 19;
+const RAY_DMG: i32 = 11;
 const NEEDLE_FX: &[Apply] = &[Apply(EffectKind::Slow, 30, 15)];
 const RAY_FX: &[Apply] = &[Apply(EffectKind::Slow, 72, 40)];
 const HEAVEN_FX: &[Apply] = &[Apply(EffectKind::Slow, 60, 40)];
@@ -38,8 +38,8 @@ pub const HEAVEN_RING: f32 = 26.0;
 pub const HEAVEN_H: f32 = 46.0;
 pub const HEAVEN_SHOW: f32 = 0.45;
 const CORE_R: f32 = 14.0;
-const CORE_DMG: i32 = 34;
-const EDGE_DMG: i32 = 12;
+const CORE_DMG: i32 = 20;
+const EDGE_DMG: i32 = 7;
 
 pub struct Shot {
     pub pos: Vec2,

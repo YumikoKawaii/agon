@@ -11,14 +11,14 @@ use crate::core::{
 
 pub const SLASH_R: f32 = 24.0;
 pub const SLASH_HALF: f32 = 1.2;
-const SLASH_DMG: i32 = 4;
-const SLASH_FIN_DMG: i32 = 6;
+const SLASH_DMG: i32 = 2;
+const SLASH_FIN_DMG: i32 = 4;
 const BLEED: &[Apply] = &[Apply(EffectKind::Bleed, 180, 1)];
 
 pub const WHIRL_R: f32 = 28.0;
 pub const WHIRL_TICKS: u32 = 18;
 const WHIRL_HITS: [u32; 3] = [2, 8, 14];
-const WHIRL_DMG: i32 = 4;
+const WHIRL_DMG: i32 = 2;
 const WHIRL_DRIFT: f32 = 30.0;
 
 pub const CABLE_RANGE: f32 = 180.0;
@@ -28,7 +28,7 @@ pub const GAS_MAX: f32 = 100.0;
 pub const GAS_COST: f32 = 25.0;
 pub const GAS_REGEN: f32 = 20.0;
 pub const CABLE_GAP: f32 = 0.0;
-const ZIP_DMG: i32 = 5;
+const ZIP_DMG: i32 = 3;
 
 pub const FURY_T: f32 = 4.0;
 const FURY_HEAL: i32 = 2;
@@ -53,7 +53,7 @@ pub fn cable_cost(p: &Player) -> f32 {
     (GAS_COST - CHAIN_DISCOUNT * p.chain as f32).max(GAS_FLOOR)
 }
 const CHAIN_SPEED: f32 = 0.25;
-const CHAIN_DMG: i32 = 2;
+const CHAIN_DMG: i32 = 1;
 
 fn wall_dist(p: Vec2, d: Vec2) -> f32 {
     let m = RADIUS + 2.0;

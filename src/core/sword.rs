@@ -19,25 +19,25 @@ pub const FORM_APPEAR: f32 = 0.35;
 pub const FORM_HOVER: f32 = 0.6;
 pub const FORM_GAP: f32 = 0.06;
 pub const FORM_STAB: f32 = 0.14;
-const FORM_DMG: i32 = 3;
+const FORM_DMG: i32 = 2;
 
 pub const LUNGE_TICKS: u32 = 9;
 const LUNGE_DIST: f32 = 52.0;
 pub const LUNGE_REACH: f32 = 12.0;
-const LUNGE_DMG: i32 = 7;
+const LUNGE_DMG: i32 = 4;
 
 const WIND_DIST: f32 = 65.0;
-const WIND_DMG: i32 = 6;
+const WIND_DMG: i32 = 4;
 const WIND_GHOSTS: usize = 4;
 
 pub const INTENT_SPEED: f32 = 260.0;
 pub const INTENT_RANGE: f32 = 150.0;
 pub const INTENT_R: f32 = 26.0;
 const INTENT_W: f32 = 10.0;
-const INTENT_DMG: i32 = 6;
+const INTENT_DMG: i32 = 4;
 
 const BLEED: &[Apply] = &[Apply(EffectKind::Bleed, 180, 1)];
-const BLEED_POP_DMG: i32 = 4;
+const BLEED_POP_DMG: i32 = 2;
 
 pub struct Lunge {
     pub owner: usize,

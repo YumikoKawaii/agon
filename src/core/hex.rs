@@ -12,10 +12,10 @@ use crate::core::{
 
 pub const BOLT_SPEED: f32 = 190.0;
 pub const BOLT_R: f32 = 4.5;
-const BOLT_DMG: i32 = 2;
+const BOLT_DMG: i32 = 1;
 const BOLT_FX: &[Apply] = &[Apply(EffectKind::Burn, 120, 1)];
-const BROOM_FX: &[Apply] = &[Apply(EffectKind::Stun, 24, 0)];
-const CAULDRON_FX: &[Apply] = &[Apply(EffectKind::Root, 40, 0), Apply(EffectKind::Vulnerable, 150, 25)];
+const BROOM_FX: &[Apply] = &[Apply(EffectKind::Stun, 12, 0)];
+const CAULDRON_FX: &[Apply] = &[Apply(EffectKind::Root, 40, 0), Apply(EffectKind::Vulnerable, 150, 15)];
 pub const POOL_LIFE: f32 = 3.0;
 const POOL_BURN: Apply = Apply(EffectKind::Burn, 60, 2);
 const BOLT_LIFE: f32 = 1.2;
@@ -24,16 +24,16 @@ const BOLT_TIP: f32 = 8.0;
 pub const POTION_RANGE: f32 = 150.0;
 pub const POTION_T: f32 = 0.5;
 pub const POTION_R: f32 = 22.0;
-const POTION_DMG: i32 = 18;
+const POTION_DMG: i32 = 8;
 
 pub const BROOM_DIST: f32 = 80.0;
-const BROOM_DMG: i32 = 15;
+const BROOM_DMG: i32 = 5;
 const BROOM_GHOSTS: usize = 4;
 
 pub const CAULDRON_RANGE: f32 = 140.0;
 pub const CAULDRON_R: f32 = 45.0;
 pub const CAULDRON_T: f32 = 0.8;
-const CAULDRON_DMG: i32 = 34;
+const CAULDRON_DMG: i32 = 16;
 
 pub struct Bolt {
     pub pos: Vec2,

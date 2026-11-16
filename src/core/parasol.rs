@@ -12,13 +12,13 @@ use crate::core::{
 
 pub const TALISMAN_SPEED: f32 = 220.0;
 pub const TALISMAN_R: f32 = 4.0;
-const TALISMAN_DMG: i32 = 2;
+const TALISMAN_DMG: i32 = 1;
 const TALISMAN_LIFE: f32 = 1.0;
 const TALISMAN_TIP: f32 = 8.0;
 
 pub const FLIGHT_RANGE: f32 = 140.0;
 pub const FLIGHT_SPEED: f32 = 300.0;
-const FLIGHT_DMG: i32 = 10;
+const FLIGHT_DMG: i32 = 6;
 const FLIGHT_HIT: f32 = RADIUS + 7.0;
 const PICKUP_R: f32 = RADIUS + 6.0;
 const PICKUP_DELAY: f32 = 0.4;
@@ -28,7 +28,7 @@ const RETURN_SPEED: f32 = 380.0;
 const STEP_BLINK: f32 = 60.0;
 pub const WAVE_R: f32 = 52.0;
 pub const WAVE_HALF: f32 = 0.6;
-const WAVE_DMG: i32 = 16;
+const WAVE_DMG: i32 = 10;
 const WAVE_FX: &[Apply] = &[Apply(EffectKind::Slow, 60, 40)];
 pub const BOND_R: f32 = 70.0;
 const BOND_EVERY: f32 = 1.0;
@@ -40,9 +40,9 @@ pub const STORM_RANGE: f32 = 150.0;
 pub const STORM_R: f32 = 50.0;
 pub const STORM_T: f32 = 1.6;
 const STORM_TICK: f32 = 0.3;
-const STORM_TICK_DMG: i32 = 3;
+const STORM_TICK_DMG: i32 = 2;
 const STORM_PULL: f32 = 34.0;
-const STORM_DMG: i32 = 22;
+const STORM_DMG: i32 = 13;
 const STORM_FX: &[Apply] = &[Apply(EffectKind::Stun, 45, 0)];
 
 pub struct Talisman {
