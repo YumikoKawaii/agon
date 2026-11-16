@@ -9,7 +9,8 @@ use crate::{
         effect::EffectKind,
         Battle, Skill,
     },
-    screen::battle::view::{alpha, glow, magic_circle, Camera, SPRITE, AQUA, CHEST, FOOT, GOLD, ICE, LILAC, MINT, PALE, S},
+    screen::battle::view::{alpha, glow, magic_circle, Camera, SPRITE, AQUA, CHEST, CRIMSON, FOOT, GOLD, ICE, LILAC, MINT, PALE, S, STEEL},
+    core::warden::CABLE_RANGE,
 };
 
 const AURA_BACK_FEET: Vec2 = vec2(25.0, 43.0);
@@ -25,6 +26,13 @@ pub fn draw_ground(b: &Battle, cam: &Camera) {
     for p in b.players.iter().filter(|p| p.intent_ready()) {
         let sh = &assets::get().sword.aura_back;
         sh.draw_at(sh.frame_at(time, true).unwrap_or(0), cam.proj(p.pos), AURA_BACK_FEET, SPRITE * S, 1.0);
+    }
+    for p in b.players.iter().filter(|p| p.fury > 0.0) {
+        let c = cam.proj(p.pos);
+        let pulse = 0.6 + 0.4 * (time * 10.0).sin();
+        let fade = (p.fury / 0.4).min(1.0);
+        magic_circle(c, 16.0 * S, time * 2.5, CRIMSON, 0.5 * fade * pulse, 2.0);
+        glow(c, 14.0 * S, CRIMSON, 0.25 * fade);
     }
     for fm in &b.blades.forms {
         let c = cam.proj(fm.center);
@@ -98,6 +106,24 @@ pub fn draw_air(b: &Battle, cam: &Camera, sword: &Texture2D) {
             draw_poly_lines(cell.x, cell.y, 6, 8.5 * S, 30.0, 2.0, alpha(PALE, 0.9 * fade));
             draw_poly_lines(cell.x, cell.y, 6, 5.0 * S, 30.0 + time * 90.0, 1.0, alpha(ICE, 0.6 * fade));
         }
+    }
+    for h in &b.warden.hooks {
+        let p = &b.players[h.owner];
+        let a = cam.air(p.pos + vec2(-3.0, 0.0), CHEST - 2.0);
+        let e = cam.air(h.pos, CHEST);
+        let sag = if h.pulling { 0.0 } else { 6.0 * S };
+        let mid = (a + e) / 2.0 + vec2(0.0, sag);
+        for (x, y) in [(a, mid), (mid, e)] {
+            draw_line(x.x, x.y, y.x, y.y, 3.0 * S, alpha(CRIMSON, 0.18));
+            draw_line(x.x, x.y, y.x, y.y, 1.0 * S, alpha(STEEL, 0.95));
+            draw_line(x.x, x.y, y.x, y.y, 0.4 * S, alpha(WHITE, 1.0));
+        }
+        let d = (e - a).normalize_or(Vec2::X);
+        for side in [-1.0, 1.0] {
+            let prong = e - d * 3.0 * S + d.perp() * side * 2.5 * S;
+            draw_line(e.x, e.y, prong.x, prong.y, 1.2 * S, GOLD);
+        }
+        glow(e, 2.5 * S, if h.pulling { CRIMSON } else { STEEL }, 0.9);
     }
     let fx = &assets::get().sword;
     for p in b.players.iter().filter(|p| p.intent_ready()) {
@@ -181,9 +207,9 @@ pub fn draw_air(b: &Battle, cam: &Camera, sword: &Texture2D) {
             let d = fm.dir(n);
             let s = fm.stab(n).clamp(0.0, 1.0);
             let bob = (time * 6.0 + n as f32).sin() * 1.5 * (1.0 - s);
-            let c = cam.air(fm.sword_pos(n), CHEST + (1.0 - appear) * 30.0 + bob);
+            let c = cam.air(fm.sword_pos(n), (1.0 - appear) * 30.0 + bob);
             if s > 0.0 {
-                let back = cam.air(fm.center + d * FORM_R, CHEST);
+                let back = cam.proj(fm.center + d * FORM_R);
                 draw_line(back.x, back.y, c.x, c.y, 4.0 * S, alpha(AQUA, 0.35));
                 draw_line(back.x, back.y, c.x, c.y, 1.2 * S, alpha(WHITE, 0.8));
             } else if fm.t > FORM_HOVER - 0.2 {
@@ -205,6 +231,7 @@ pub fn draw_aim(b: &Battle, cam: &Camera) {
         let (r, c) = match skills[3] {
             Skill::Judgement => (JUDGE_RANGE, alpha(GOLD, 0.35)),
             Skill::Cauldron => (CAULDRON_RANGE, alpha(LILAC, 0.35)),
+            Skill::Fury => (CABLE_RANGE, alpha(CRIMSON, 0.35)),
             _ => (FORM_RANGE, alpha(AQUA, 0.35)),
         };
         draw_circle_lines(at.x, at.y, r * S, 1.5, c);

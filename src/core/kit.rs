@@ -12,6 +12,10 @@ pub enum Skill {
     Potion,
     Broom,
     Cauldron,
+    Slash,
+    Whirl,
+    Cable,
+    Fury,
 }
 
 impl Skill {
@@ -29,6 +33,10 @@ impl Skill {
             Skill::Potion => 2.5,
             Skill::Broom => 3.5,
             Skill::Cauldron => 8.0,
+            Skill::Slash => 0.45,
+            Skill::Whirl => 3.0,
+            Skill::Cable => crate::core::warden::CABLE_GAP,
+            Skill::Fury => 14.0,
         }
     }
 
@@ -46,6 +54,10 @@ impl Skill {
             Skill::Potion => 20,
             Skill::Broom => 10,
             Skill::Cauldron => 36,
+            Skill::Slash => 12,
+            Skill::Whirl => 18,
+            Skill::Cable => 8,
+            Skill::Fury => 20,
         }
     }
 
@@ -56,6 +68,8 @@ impl Skill {
             Skill::Formation => 26,
             Skill::Swallow => 12,
             Skill::Cauldron => 20,
+            Skill::Whirl => 16,
+            Skill::Fury => 10,
             _ => 0,
         }
     }

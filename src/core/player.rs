@@ -6,6 +6,7 @@ use crate::core::{
     anim::{Frame, State},
     effect::Effects,
     kit::{kit, Kit, Skill, WIND_CHARGES},
+    warden::{GAS_MAX, GAS_REGEN},
     ARENA, DT, RADIUS,
 };
 
@@ -44,6 +45,12 @@ pub struct Player {
     pub dash_gap: f32,
     pub dash_cd: f32,
     pub untargetable: bool,
+    pub gas: f32,
+    pub fury: f32,
+    pub flying: bool,
+    pub hooked: bool,
+    pub chain: u32,
+    pub chain_t: f32,
     pub target: Vec2,
     pub effects: Effects,
     pub(crate) cast: Option<Skill>,
@@ -73,6 +80,12 @@ impl Player {
             dash_gap: 0.0,
             dash_cd: 0.0,
             untargetable: false,
+            gas: GAS_MAX,
+            fury: 0.0,
+            flying: false,
+            hooked: false,
+            chain: 0,
+            chain_t: 0.0,
             target: spawn.0,
             effects: Effects::default(),
             cast: None,
@@ -111,6 +124,12 @@ impl Player {
         self.dash_gap = 0.0;
         self.dash_cd = 0.0;
         self.untargetable = false;
+        self.gas = GAS_MAX;
+        self.fury = 0.0;
+        self.flying = false;
+        self.hooked = false;
+        self.chain = 0;
+        self.chain_t = 0.0;
         self.effects.reset();
         self.cast = None;
         self.reset_to(State::Idle);
@@ -161,10 +180,17 @@ impl Player {
         if skill.charged() && self.charges >= WIND_CHARGES {
             return 0.0;
         }
+        if skill == Skill::Cable {
+            return if self.fury > 0.0 { 0.0 } else { 1.0 - self.gas / GAS_MAX };
+        }
         self.cd[slot] / skill.cooldown()
     }
 
     pub fn take_hit(&mut self, dir: Vec2, dmg: i32) {
+        if self.flying {
+            self.hp -= dmg;
+            return;
+        }
         self.reset_to(State::Hit);
         self.lock = 0;
         self.knock = dir * 3.0;
@@ -178,11 +204,17 @@ impl Player {
 
     pub fn step(&mut self, input: Input) {
         self.tick_timers();
-        if self.effects.stunned() {
+        if self.effects.stunned() && !self.flying {
             if self.state != State::Hit {
                 self.set_state(State::Idle);
             }
             self.drift();
+            self.advance();
+            return;
+        }
+        let chain = input.slot.filter(|s| (self.flying || self.hooked) && self.kit().skills[*s] == Skill::Cable && self.ready(*s));
+        if let Some(slot) = chain {
+            self.begin_cast(slot, input.aim);
             self.advance();
             return;
         }
@@ -263,6 +295,11 @@ impl Player {
                 self.combo_timer = COMBO_WINDOW;
                 self.cd[slot] = if self.combo == 3 { COMBO_FINISHER_CD } else { skill.cooldown() };
             }
+            Skill::Slash => {
+                self.combo = self.combo % 2 + 1;
+                self.combo_timer = COMBO_WINDOW;
+                self.cd[slot] = skill.cooldown();
+            }
             _ => self.cd[slot] = skill.cooldown(),
         }
         self.cast = Some(skill);
@@ -279,6 +316,12 @@ impl Player {
                 }
             }
         }
+        self.fury = (self.fury - DT).max(0.0);
+        self.chain_t = (self.chain_t - DT).max(0.0);
+        if self.chain_t <= 0.0 && !self.flying {
+            self.chain = 0;
+        }
+        self.gas = (self.gas + GAS_REGEN * DT).min(GAS_MAX);
         self.combo_timer = (self.combo_timer - DT).max(0.0);
         self.dash_gap = (self.dash_gap - DT).max(0.0);
         if self.dashes < DASH_CHARGES {

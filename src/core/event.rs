@@ -38,4 +38,12 @@ pub enum Event {
     Absorb { pos: Vec2, amount: i32 },
     MarkPop { pos: Vec2 },
     BleedPop { pos: Vec2, dmg: i32 },
+    Twin { owner: usize, ang: f32, side: f32, big: bool },
+    Whirl { owner: usize, big: bool },
+    WhirlPulse { owner: usize, big: bool },
+    HookFire { from: Vec2, to: Vec2 },
+    HookBite { pos: Vec2 },
+    Zip { from: Vec2, to: Vec2 },
+    Fury { pos: Vec2 },
+    Heal { pos: Vec2, amount: i32 },
 }

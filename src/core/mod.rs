@@ -8,6 +8,7 @@ pub mod kit;
 pub mod magic;
 pub mod player;
 pub mod sword;
+pub mod warden;
 
 pub use battle::Battle;
 pub use kit::{Skill, KITS};

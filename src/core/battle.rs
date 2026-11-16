@@ -9,6 +9,7 @@ use crate::core::{
     player::{Input, Player},
     sword::Blades,
     hex::Hexes,
+    warden::Wardens,
     Skill, DT, RADIUS,
 };
 
@@ -34,6 +35,7 @@ pub struct Battle {
     pub spells: Spells,
     pub blades: Blades,
     pub hexes: Hexes,
+    pub warden: Wardens,
     pub zones: Vec<Zone>,
     pub deaths: [u32; 2],
     events: Vec<Event>,
@@ -48,6 +50,7 @@ impl Battle {
             spells: Spells::default(),
             blades: Blades::default(),
             hexes: Hexes::default(),
+            warden: Wardens::default(),
             zones: Vec::new(),
             deaths: [0; 2],
             events: Vec::new(),
@@ -69,6 +72,7 @@ impl Battle {
         self.spells.update(&mut self.players, &mut self.events);
         self.blades.update(&mut self.players, &mut self.events);
         self.hexes.update(&mut self.players, &self.spells.wards, &mut self.zones, &mut self.events);
+        self.warden.update(&mut self.players, &mut self.events);
         self.update_zones();
         for seat in 0..2 {
             let pos = self.players[seat].pos;
@@ -112,6 +116,9 @@ impl Battle {
             }
             Skill::Hex | Skill::Potion | Skill::Broom | Skill::Cauldron => {
                 self.hexes.cast(&mut self.players, i, skill, &mut self.events)
+            }
+            Skill::Slash | Skill::Whirl | Skill::Cable | Skill::Fury => {
+                self.warden.cast(&mut self.players, i, skill, &mut self.events)
             }
         }
     }

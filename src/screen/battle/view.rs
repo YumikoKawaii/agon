@@ -29,6 +29,8 @@ pub const AQUA: Color = Color::new(0.45, 1.0, 0.92, 1.0);
 pub const LILAC: Color = Color::new(0.78, 0.55, 1.0, 1.0);
 pub const MINT: Color = Color::new(0.72, 0.96, 0.78, 1.0);
 pub const BLOOD: Color = Color::new(1.0, 0.56, 0.66, 1.0);
+pub const CRIMSON: Color = Color::new(1.0, 0.22, 0.3, 1.0);
+pub const STEEL: Color = Color::new(0.8, 0.85, 0.92, 1.0);
 pub const SEAT_COLORS: [Color; 2] = [SKYBLUE, ORANGE];
 const FLOOR: [Color; 2] = [Color::new(0.2, 0.22, 0.29, 1.0), Color::new(0.227, 0.247, 0.322, 1.0)];
 const CAGE: Color = Color::new(0.541, 0.565, 0.651, 1.0);
@@ -254,7 +256,13 @@ pub fn draw_hud(players: &[Player; 2]) {
             draw_rectangle(bx, 44.0, 48.0, 22.0, slot);
             let col = if p.ready(k) { ICE } else { Color::from_rgba(70, 76, 98, 255) };
             draw_rectangle(bx, 44.0, 48.0 * (1.0 - p.cooldown_frac(k)), 22.0, col);
-            let text = if p.kit().skills[k].charged() { format!("{key} {}", p.charges) } else { key.to_string() };
+            let text = if p.kit().skills[k].charged() {
+                format!("{key} {}", p.charges)
+            } else if p.kit().skills[k] == crate::core::Skill::Cable {
+                format!("{key} {}", if p.fury > 0.0 { 100 } else { p.gas as i32 })
+            } else {
+                key.to_string()
+            };
             draw_text(&text, bx + 6.0, 61.0, 20.0, Color::from_rgba(20, 20, 28, 255));
             if p.cd[k] > 0.0 {
                 let left = if p.cd[k] < 1.0 { format!("{:.1}", p.cd[k]) } else { format!("{}", p.cd[k].ceil() as i32) };
