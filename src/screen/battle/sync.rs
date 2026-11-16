@@ -20,16 +20,14 @@ pub struct Sync {
     tick: u32,
     cast_seq: u16,
     cast_slot: u8,
-    dodge_seq: u8,
     remote: Option<Packet>,
     seen_cast: u16,
-    seen_dodge: u8,
     pub foe_deaths: u32,
 }
 
 impl Sync {
     pub fn new(link: Link, seat: usize, foe: String) -> Self {
-        Sync { link, seat, foe, started: false, result: None, tick: 0, cast_seq: 0, cast_slot: 0, dodge_seq: 0, remote: None, seen_cast: 0, seen_dodge: 0, foe_deaths: 0 }
+        Sync { link, seat, foe, started: false, result: None, tick: 0, cast_seq: 0, cast_slot: 0, remote: None, seen_cast: 0, foe_deaths: 0 }
     }
 
     pub fn live(&self) -> bool {
@@ -73,7 +71,6 @@ impl Sync {
             }
             if self.remote.is_none() {
                 self.seen_cast = p.cast_seq;
-                self.seen_dodge = p.dodge_seq;
             }
             self.foe_deaths = self.foe_deaths.max(p.deaths);
             self.remote = Some(p);
@@ -82,14 +79,10 @@ impl Sync {
 
     pub fn remote_input(&mut self) -> Input {
         let Some(p) = self.remote else { return Input::default() };
-        let mut input = Input { dir: Vec2::from(p.dir), aim: Vec2::from(p.aim), slot: None, dodge: false };
+        let mut input = Input { dir: Vec2::from(p.dir), aim: Vec2::from(p.aim), slot: None };
         if p.cast_seq != self.seen_cast {
             self.seen_cast = p.cast_seq;
             input.slot = Some(p.cast_slot as usize);
-        }
-        if p.dodge_seq != self.seen_dodge {
-            self.seen_dodge = p.dodge_seq;
-            input.dodge = true;
         }
         input
     }
@@ -109,9 +102,6 @@ impl Sync {
             self.cast_seq = self.cast_seq.wrapping_add(1);
             self.cast_slot = s as u8;
         }
-        if input.dodge {
-            self.dodge_seq = self.dodge_seq.wrapping_add(1);
-        }
         let (fx_ticks, fx_power, fx_stacks) = me.effects.wire();
         self.link.send(&Packet {
             tick: self.tick,
@@ -123,7 +113,6 @@ impl Sync {
             deaths,
             cast_seq: self.cast_seq,
             cast_slot: self.cast_slot,
-            dodge_seq: self.dodge_seq,
             fx_ticks,
             fx_power,
             fx_stacks,

@@ -14,7 +14,6 @@ pub struct Packet {
     pub deaths: u32,
     pub cast_seq: u16,
     pub cast_slot: u8,
-    pub dodge_seq: u8,
     pub fx_ticks: [u16; N],
     pub fx_power: [u8; N],
     pub fx_stacks: u8,
@@ -32,7 +31,6 @@ impl Packet {
         b[36..40].copy_from_slice(&self.deaths.to_le_bytes());
         b[40..42].copy_from_slice(&self.cast_seq.to_le_bytes());
         b[42] = self.cast_slot;
-        b[43] = self.dodge_seq;
         for i in 0..N {
             b[FX + i * 2..FX + i * 2 + 2].copy_from_slice(&self.fx_ticks[i].to_le_bytes());
             b[FX + N * 2 + i] = self.fx_power[i];
@@ -63,7 +61,6 @@ impl Packet {
             deaths: u(36),
             cast_seq: u16::from_le_bytes([b[40], b[41]]),
             cast_slot: b[42],
-            dodge_seq: b[43],
             fx_ticks,
             fx_power,
             fx_stacks: b[FX + N * 3],

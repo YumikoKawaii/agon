@@ -58,7 +58,6 @@ fn read_input(aim: Vec2) -> Input {
         dir: vec2(axis(KeyCode::A, KeyCode::D), axis(KeyCode::W, KeyCode::S)),
         aim,
         slot: (0..4).find(|i| pressed[*i]),
-        dodge: is_mouse_button_pressed(MouseButton::Right),
     }
 }
 
@@ -199,7 +198,6 @@ impl Screen for Battle {
         self.pending.dir = r.dir;
         self.pending.aim = r.aim;
         self.pending.slot = r.slot.or(self.pending.slot);
-        self.pending.dodge |= r.dodge;
         self.acc += dt;
         while self.acc >= DT {
             self.acc -= DT;
@@ -209,7 +207,6 @@ impl Screen for Battle {
                 self.fx.update(DT);
             }
             self.pending.slot = None;
-            self.pending.dodge = false;
         }
         StackCommand::None
     }

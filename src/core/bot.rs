@@ -93,12 +93,12 @@ impl Bot {
                 if let Some(slot) = self.slot_of(b, Skill::WindStep) {
                     return Input { aim: me.pos + side * 60.0, slot: Some(slot), ..Input::default() };
                 }
-                return Input { dir: side, aim: me.pos + side * 40.0, dodge: me.can_dash(), ..Input::default() };
+                return Input { dir: side, aim: me.pos + side * 40.0, ..Input::default() };
             }
         }
 
         if let Some((slot, aim)) = self.pick_skill(b, seen, dist) {
-            return Input { dir: Vec2::ZERO, aim, slot: Some(slot), dodge: false };
+            return Input { dir: Vec2::ZERO, aim, slot: Some(slot) };
         }
 
         if self.strafe_ticks == 0 {
@@ -160,6 +160,10 @@ impl Bot {
                 Skill::Whirl => dist < 32.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.1,
                 Skill::Cable => dist > 50.0 && me.gas > 50.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
                 Skill::Fury => dist < 120.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.02,
+                Skill::Talisman => dist < 190.0,
+                Skill::Parasol => dist < crate::core::parasol::FLIGHT_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.05,
+                Skill::Storm => dist < crate::core::parasol::STORM_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
+                Skill::SpiritStep => b.parasols.anchor(self.seat).is_some_and(|p| p.distance(b.players[1 - self.seat].pos) < crate::core::parasol::WAVE_R) && gen_range(0.0, 1.0) < self.level.aggression * 0.1,
             }
         };
         let order = [3, 1, 2, 0];
@@ -171,6 +175,7 @@ impl Bot {
             let speed = match s {
                 Skill::Needle => Some(crate::core::magic::NEEDLE_SPEED),
                 Skill::Hex => Some(BOLT_SPEED),
+                Skill::Talisman => Some(crate::core::parasol::TALISMAN_SPEED),
                 _ => None,
             };
             (i, self.aim_at(b, seen, speed, cast_t(s)))

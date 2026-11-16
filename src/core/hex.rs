@@ -12,7 +12,7 @@ use crate::core::{
 
 pub const BOLT_SPEED: f32 = 190.0;
 pub const BOLT_R: f32 = 4.5;
-const BOLT_DMG: i32 = 10;
+const BOLT_DMG: i32 = 2;
 const BOLT_FX: &[Apply] = &[Apply(EffectKind::Burn, 120, 1)];
 const BROOM_FX: &[Apply] = &[Apply(EffectKind::Stun, 24, 0)];
 const CAULDRON_FX: &[Apply] = &[Apply(EffectKind::Root, 40, 0), Apply(EffectKind::Vulnerable, 150, 25)];

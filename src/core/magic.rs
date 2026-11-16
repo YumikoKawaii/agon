@@ -11,7 +11,7 @@ use crate::core::{
 
 pub const NEEDLE_SPEED: f32 = 320.0;
 pub const NEEDLE_R: f32 = 2.5;
-const NEEDLE_DMG: i32 = 6;
+const NEEDLE_DMG: i32 = 2;
 const NEEDLE_LIFE: f32 = 0.8;
 const TIP: f32 = 8.0;
 
@@ -22,7 +22,7 @@ pub const RAY_W: f32 = 7.0;
 const RAY_DMG: i32 = 19;
 const NEEDLE_FX: &[Apply] = &[Apply(EffectKind::Slow, 30, 15)];
 const RAY_FX: &[Apply] = &[Apply(EffectKind::Slow, 72, 40)];
-const JUDGE_FX: &[Apply] = &[Apply(EffectKind::Mark, 180, 10)];
+const HEAVEN_FX: &[Apply] = &[Apply(EffectKind::Slow, 60, 40)];
 const WARD_SHIELD: Apply = Apply(EffectKind::Shield, 120, 8);
 
 pub const WARD_T: f32 = 1.5;
@@ -30,10 +30,16 @@ pub const WARD_W: f32 = 22.0;
 pub const WARD_OFF: f32 = 14.0;
 const WARD_REFUND: f32 = 2.0;
 
-pub const JUDGE_RANGE: f32 = 130.0;
+pub const JUDGE_RANGE: f32 = RAY_LEN;
 pub const JUDGE_R: f32 = 42.0;
-pub const JUDGE_T: f32 = 1.0;
-const JUDGE_DMG: i32 = 30;
+pub const JUDGE_T: f32 = 0.7;
+pub const HEAVEN_N: usize = 12;
+pub const HEAVEN_RING: f32 = 26.0;
+pub const HEAVEN_H: f32 = 46.0;
+pub const HEAVEN_SHOW: f32 = 0.45;
+const CORE_R: f32 = 14.0;
+const CORE_DMG: i32 = 34;
+const EDGE_DMG: i32 = 12;
 
 pub struct Shot {
     pub pos: Vec2,
@@ -69,11 +75,19 @@ pub struct Judge {
     pub pos: Vec2,
     pub t: f32,
     pub owner: usize,
+    pub from: Vec2,
+    pub fired: bool,
 }
 
 impl Judge {
     pub fn charge(&self) -> f32 {
         (self.t / JUDGE_T).min(1.0)
+    }
+
+    pub fn emitter(&self, n: usize) -> Vec2 {
+        let base = (self.pos - self.from).normalize_or(Vec2::X);
+        let ang = base.y.atan2(base.x) + n as f32 * std::f32::consts::TAU / HEAVEN_N as f32;
+        self.from + Vec2::from_angle(ang) * HEAVEN_RING
     }
 }
 
@@ -94,6 +108,7 @@ pub fn ward_block(wards: &[Ward], players: &mut [Player; 2], owner: usize, pos: 
         players[o].cd[slot] = (players[o].cd[slot] - WARD_REFUND).max(0.0);
     }
     events.push(Event::Blocked { pos });
+    players[o].haste = crate::core::player::GRACE_T;
     bless(players, o, WARD_SHIELD, events);
     true
 }
@@ -127,7 +142,7 @@ impl Spells {
             }
             Skill::Judgement => {
                 let at = judge_target(p);
-                self.judges.push(Judge { pos: at, t: 0.0, owner: i });
+                self.judges.push(Judge { pos: at, t: 0.0, owner: i, from: p.pos, fired: false });
                 events.push(Event::JudgeCast { caster: p.pos, at });
             }
             _ => {}
@@ -184,15 +199,21 @@ impl Spells {
         self.judges.retain_mut(|j| {
             j.t += DT;
             if j.t < JUDGE_T {
-                return true;
+                j.from = players[j.owner].pos;
             }
-            let t = 1 - j.owner;
-            let d = players[t].pos - j.pos;
-            if d.length() < JUDGE_R + RADIUS {
-                strike(players, t, Hit::new(JUDGE_DMG, d.normalize_or(Vec2::X) * 4.0 / 3.0, Element::Holy, true, JUDGE_FX), events);
+            if !j.fired && j.t >= JUDGE_T {
+                j.fired = true;
+                let t = 1 - j.owner;
+                let d = players[t].pos - j.pos;
+                let dist = d.length();
+                if dist < JUDGE_R + RADIUS {
+                    let core = dist < CORE_R + RADIUS;
+                    let dmg = if core { CORE_DMG } else { EDGE_DMG };
+                    strike(players, t, Hit::new(dmg, d.normalize_or(Vec2::X) * if core { 4.0 } else { 2.0 }, Element::Holy, core, HEAVEN_FX), events);
+                }
+                events.push(Event::JudgeStrike { pos: j.pos });
             }
-            events.push(Event::JudgeStrike { pos: j.pos });
-            false
+            j.t < JUDGE_T + HEAVEN_SHOW
         });
     }
 }

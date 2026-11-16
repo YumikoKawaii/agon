@@ -10,11 +10,10 @@ use crate::core::{
     ARENA, DT, RADIUS,
 };
 
-const SPEED: f32 = 72.0;
-const ROLL_SPEED: f32 = 160.0;
-pub const DASH_CHARGES: u32 = 2;
-pub const DASH_GAP: f32 = 2.0;
-pub const DASH_RECHARGE: f32 = 10.0;
+const SPEED: f32 = 78.0;
+pub const GRACE_T: f32 = 1.0;
+const GRACE_MUL: f32 = 0.35;
+const BOND_MUL: f32 = 0.2;
 const KNOCK_DECAY: f32 = 0.85;
 const QUICK_CAST_AGE: u32 = 6;
 const COMBO_WINDOW: f32 = 1.6;
@@ -25,7 +24,6 @@ pub struct Input {
     pub dir: Vec2,
     pub aim: Vec2,
     pub slot: Option<usize>,
-    pub dodge: bool,
 }
 
 pub struct Player {
@@ -41,9 +39,10 @@ pub struct Player {
     pub lock: u32,
     pub combo: u32,
     pub charges: u32,
-    pub dashes: u32,
-    pub dash_gap: f32,
-    pub dash_cd: f32,
+    pub haste: f32,
+    pub bond: bool,
+    pub hex: u8,
+    pub intent: u8,
     pub untargetable: bool,
     pub gas: f32,
     pub fury: f32,
@@ -76,9 +75,10 @@ impl Player {
             lock: 0,
             combo: 0,
             charges: WIND_CHARGES,
-            dashes: DASH_CHARGES,
-            dash_gap: 0.0,
-            dash_cd: 0.0,
+            haste: 0.0,
+            bond: false,
+            hex: 0,
+            intent: 0,
             untargetable: false,
             gas: GAS_MAX,
             fury: 0.0,
@@ -120,9 +120,10 @@ impl Player {
         self.lock = 0;
         self.combo = 0;
         self.charges = WIND_CHARGES;
-        self.dashes = DASH_CHARGES;
-        self.dash_gap = 0.0;
-        self.dash_cd = 0.0;
+        self.haste = 0.0;
+        self.bond = false;
+        self.hex = 0;
+        self.intent = 0;
         self.untargetable = false;
         self.gas = GAS_MAX;
         self.fury = 0.0;
@@ -171,8 +172,16 @@ impl Player {
         }
     }
 
-    pub fn can_dash(&self) -> bool {
-        self.dashes > 0 && self.dash_gap <= 0.0
+    pub fn empower(&mut self) {
+        self.combo = 2;
+        self.combo_timer = COMBO_WINDOW;
+        self.charges = (self.charges + 1).min(WIND_CHARGES + 1);
+    }
+
+    fn speed(&self) -> f32 {
+        let haste = if self.haste > 0.0 { 1.0 + GRACE_MUL } else { 1.0 };
+        let bond = if self.bond { 1.0 + BOND_MUL } else { 1.0 };
+        SPEED * self.effects.speed_mul() * haste * bond
     }
 
     pub fn cooldown_frac(&self, slot: usize) -> f32 {
@@ -232,12 +241,6 @@ impl Player {
                     self.set_state(State::Idle);
                 }
             }
-            State::Roll => {
-                self.pos += self.facing() * ROLL_SPEED * DT;
-                if self.finished {
-                    self.set_state(State::Idle);
-                }
-            }
             _ => self.act(input, ready),
         }
         self.drift();
@@ -247,18 +250,10 @@ impl Player {
     fn act(&mut self, input: Input, ready: Option<usize>) {
         let rooted = self.effects.rooted();
         let dir = if rooted { Vec2::ZERO } else { input.dir.normalize_or_zero() };
-        if input.dodge && self.can_dash() && !rooted {
-            self.dashes -= 1;
-            self.dash_gap = DASH_GAP;
-            if self.dash_cd <= 0.0 {
-                self.dash_cd = DASH_RECHARGE;
-            }
-            self.face(input.aim);
-            self.set_state(State::Roll);
-        } else if let Some(slot) = ready {
+        if let Some(slot) = ready {
             self.begin_cast(slot, input.aim);
         } else if dir != Vec2::ZERO {
-            self.pos += dir * SPEED * self.effects.speed_mul() * DT;
+            self.pos += dir * self.speed() * DT;
             self.ang = dir.y.atan2(dir.x);
             self.set_state(State::Run);
         } else {
@@ -323,16 +318,7 @@ impl Player {
         }
         self.gas = (self.gas + GAS_REGEN * DT).min(GAS_MAX);
         self.combo_timer = (self.combo_timer - DT).max(0.0);
-        self.dash_gap = (self.dash_gap - DT).max(0.0);
-        if self.dashes < DASH_CHARGES {
-            self.dash_cd = (self.dash_cd - DT).max(0.0);
-            if self.dash_cd <= 0.0 {
-                self.dashes += 1;
-                if self.dashes < DASH_CHARGES {
-                    self.dash_cd = DASH_RECHARGE;
-                }
-            }
-        }
+        self.haste = (self.haste - DT).max(0.0);
         if self.combo_timer <= 0.0 {
             self.combo = 0;
         }

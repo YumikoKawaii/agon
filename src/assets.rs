@@ -76,7 +76,7 @@ impl Skin {
     pub fn frame(&self, state: State, dir: usize, age: u32, total: u32) -> &Texture2D {
         let (clip, rate) = match state {
             State::Idle => (0, Some(IDLE_RATE)),
-            State::Run | State::Roll => (1, Some(WALK_RATE)),
+            State::Run => (1, Some(WALK_RATE)),
             State::Attack => (2, None),
             State::Hit => (3, None),
         };
@@ -150,6 +150,14 @@ pub struct Status {
     pub ground: bool,
 }
 
+pub struct ParasolFx {
+    pub bolt: Sheet,
+    pub bloom: Sheet,
+    pub step: Sheet,
+    pub field: Sheet,
+    pub burst: Sheet,
+}
+
 pub struct SwordFx {
     pub wave: Sheet,
     pub aura_back: Sheet,
@@ -196,16 +204,16 @@ pub struct UiKit {
     pub icons: Vec<Texture2D>,
 }
 
-pub const ICONS: [&str; 13] = ["needle", "ray", "ward", "judgement", "cut", "swallow", "windstep", "formation", "hex", "potion", "broom", "cauldron", "dash"];
-pub const DASH_ICON: usize = 12;
+pub const ICONS: [&str; 16] = ["needle", "ray", "ward", "judgement", "cut", "swallow", "windstep", "formation", "hex", "potion", "broom", "cauldron", "grace", "hexed", "intent", "bond"];
+pub const PASSIVE_ICON: usize = 12;
 
 pub fn skill_icon(s: crate::core::Skill) -> Option<&'static Texture2D> {
     let i = s as usize;
-    (i < DASH_ICON).then(|| &get().ui.icons[i])
+    (i < PASSIVE_ICON).then(|| &get().ui.icons[i])
 }
 
-pub fn dash_icon() -> &'static Texture2D {
-    &get().ui.icons[DASH_ICON]
+pub fn passive_icon(p: crate::core::kit::Passive) -> &'static Texture2D {
+    &get().ui.icons[PASSIVE_ICON + p as usize]
 }
 
 pub fn portrait(kit: usize) -> &'static Texture2D {
@@ -219,6 +227,7 @@ pub struct Assets {
     pub spirit_sword: Texture2D,
     pub witch: WitchFx,
     pub sword: SwordFx,
+    pub parasol: ParasolFx,
     pub status: Vec<Status>,
     pub bleed_pop: Status,
 }
@@ -256,6 +265,13 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
         aura_front: Sheet::load("assets/sword/fx/aura/front.png", 54.0, 64.0, 24, 12.0).await?,
         release: Sheet::load("assets/sword/fx/release/sword-intent-release.png", 64.0, 51.0, 8, 16.0).await?,
     };
+    let parasol = ParasolFx {
+        bolt: Sheet::load("assets/parasol/fx/sakura-talisman-bolt.png", 48.0, 32.0, 8, 12.0).await?,
+        bloom: Sheet::load("assets/parasol/fx/sakura-bloom-pop.png", 64.0, 64.0, 8, 16.0).await?,
+        step: Sheet::load("assets/parasol/fx/sakura-spirit-step.png", 96.0, 80.0, 10, 16.0).await?,
+        field: Sheet::load("assets/parasol/fx/sakura-tempest-field.png", 128.0, 112.0, 16, 12.0).await?,
+        burst: Sheet::load("assets/parasol/fx/sakura-tempest-burst.png", 143.0, 178.0, 12, 16.0).await?,
+    };
     let status = vec![
         load_status("slow", 36.0, 43.0, 12, 10.0, vec2(17.0, 34.0), true).await?,
         load_status("root", 64.0, 58.0, 22, 14.0, vec2(32.0, 44.0), true).await?,
@@ -286,7 +302,7 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     for kit in &KITS {
         portraits.push(texture(&format!("assets/{}/portrait.png", kit.skin)).await?);
     }
-    Ok(Assets { ui, portraits, skins, spirit_sword, witch, sword, status, bleed_pop })
+    Ok(Assets { ui, portraits, skins, spirit_sword, witch, sword, parasol, status, bleed_pop })
 }
 
 pub async fn load() -> AResult {

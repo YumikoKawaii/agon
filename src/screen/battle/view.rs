@@ -2,7 +2,6 @@ use std::f32::consts::{PI, TAU};
 
 use macroquad::{prelude::*, rand::gen_range};
 
-use crate::core::player::{DASH_CHARGES, DASH_RECHARGE};
 use crate::{
     assets,
     core::{
@@ -31,6 +30,7 @@ pub const MINT: Color = Color::new(0.72, 0.96, 0.78, 1.0);
 pub const BLOOD: Color = Color::new(1.0, 0.56, 0.66, 1.0);
 pub const CRIMSON: Color = Color::new(1.0, 0.22, 0.3, 1.0);
 pub const STEEL: Color = Color::new(0.8, 0.85, 0.92, 1.0);
+pub const SAKURA: Color = Color::new(1.0, 0.68, 0.84, 1.0);
 const FLOOR: [Color; 2] = [Color::new(0.27, 0.33, 0.34, 1.0), Color::new(0.3, 0.37, 0.37, 1.0)];
 const CAGE: Color = Color::new(0.72, 0.62, 0.86, 1.0);
 const HIT_TINT: Color = Color::new(1.0, 0.6, 0.6, 1.0);
@@ -351,9 +351,9 @@ fn draw_skills(p: &Player) {
     }
     let s = sizes[4];
     let sr = Rect::new(x, r.y + r.h - 16.0 - s, s, s);
-    let frac = if p.dashes >= DASH_CHARGES { 0.0 } else { p.dash_cd / DASH_RECHARGE };
-    let wait = if p.dash_gap > 0.0 { p.dash_gap } else if p.dashes == 0 { p.dash_cd } else { 0.0 };
-    draw_slot(sr, "RMB", Some(assets::dash_icon()), mint, frac, wait, Some(p.dashes.to_string()), p.can_dash());
+    let (frac, extra, on) = passive_state(p);
+    draw_slot(sr, "P", Some(assets::passive_icon(p.kit().passive)), mint, frac, 0.0, extra, on);
+    text_mid(p.kit().passive.name(), sr.x + s / 2.0, r.y + 18.0, 14.0, crate::ui::INK);
 }
 
 pub fn hud_zones() -> [Rect; 2] {
@@ -382,4 +382,14 @@ pub fn draw_hud(players: &[Player; 2], title: Option<&str>) {
 pub fn draw_cursor(cam: &Camera) {
     let m = cam.mouse_view();
     crate::ui::reticle(m, 2.0);
+}
+
+fn passive_state(p: &Player) -> (f32, Option<String>, bool) {
+    use crate::core::kit::Passive;
+    match p.kit().passive {
+        Passive::Grace => (1.0 - p.haste / crate::core::player::GRACE_T, None, p.haste > 0.0),
+        Passive::Hexed => (0.0, None, true),
+        Passive::Intent => (0.0, Some(format!("{}/4", p.intent)), p.intent >= 3),
+        Passive::Bond => (0.0, None, p.bond),
+    }
 }

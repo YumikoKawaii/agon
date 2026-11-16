@@ -16,7 +16,12 @@ use crate::{
     },
     screen::battle::view::{alpha, draw_sprite, glow, status_color, Camera, AQUA, BLOOD, CHEST, CRIMSON, GOLD, ICE, LILAC, MINT, PALE, S, STEEL, VIEW},
     core::warden::{WHIRL_R, SLASH_R, SLASH_HALF},
+    core::parasol::STORM_R,
+    screen::battle::view::SAKURA,
 };
+
+const LEAF: Color = Color::new(0.55, 1.0, 0.82, 1.0);
+const MOON: Color = Color::new(0.8, 0.68, 1.0, 1.0);
 
 const SPIN_LIFE: f32 = 0.3;
 const ZIP_LIFE: f32 = 0.3;
@@ -99,10 +104,19 @@ struct Pillar {
 
 fn element_color(e: Element) -> Color {
     match e {
-        Element::Frost => ICE,
+        Element::Frost => LEAF,
         Element::Holy => GOLD,
         Element::Blade => AQUA,
         Element::Hex => LILAC,
+        Element::Spirit => SAKURA,
+    }
+}
+
+fn petal() -> Color {
+    match gen_range(0, 5) {
+        0 => WHITE,
+        1 => LILAC,
+        _ => SAKURA,
     }
 }
 
@@ -117,12 +131,16 @@ enum Kind {
     Poof,
     BleedPop,
     Release,
+    Bloom,
+    Step,
+    Tempest,
 }
 
 struct Sprite {
     kind: Kind,
     pos: Vec2,
     t: f32,
+    ang: f32,
 }
 
 fn sheet(kind: Kind) -> (&'static assets::Sheet, f32) {
@@ -133,6 +151,9 @@ fn sheet(kind: Kind) -> (&'static assets::Sheet, f32) {
         Kind::Poof => (&w.poof, 0.6),
         Kind::BleedPop => (&assets::get().bleed_pop.sheet, 0.6),
         Kind::Release => (&assets::get().sword.release, 0.6),
+        Kind::Bloom => (&assets::get().parasol.bloom, 0.5),
+        Kind::Step => (&assets::get().parasol.step, 0.6),
+        Kind::Tempest => (&assets::get().parasol.burst, STORM_R / 52.0),
     }
 }
 
@@ -169,6 +190,17 @@ impl Fx {
         self.rings.push(Ring { pos, z, r0, r1, t: max, max, col, w });
     }
 
+    fn petals(&mut self, pos: Vec2, z: f32, n: usize, speed: f32, life: f32) {
+        for _ in 0..n {
+            let v = Vec2::from_angle(gen_range(0.0, TAU)) * gen_range(speed * 0.3, speed);
+            self.part(pos, z, v, gen_range(10.0, speed * 0.6), gen_range(life * 0.5, life), gen_range(1.0, 2.4), petal(), 0.9);
+        }
+    }
+
+    fn bloom(&mut self, pos: Vec2) {
+        self.sprites.push(Sprite { kind: Kind::Bloom, pos, t: 0.0, ang: 0.0 });
+    }
+
     fn kick(&mut self, shake: f32, flash: f32) {
         self.shake = self.shake.max(shake);
         self.flash = self.flash.max(flash);
@@ -179,11 +211,12 @@ impl Fx {
             Event::Needle { tip, ang } => {
                 for _ in 0..6 {
                     let v = Vec2::from_angle(ang + gen_range(-0.6, 0.6)) * gen_range(40.0, 110.0);
-                    self.part(tip, CHEST, v, gen_range(-10.0, 20.0), 0.25, 1.5, PALE, 0.85);
+                    self.part(tip, CHEST, v, gen_range(-10.0, 20.0), 0.25, 1.5, MOON, 0.85);
                 }
-                self.ring(tip, CHEST, 1.0, 7.0, 0.15, ICE, 2.0);
+                self.ring(tip, CHEST, 1.0, 7.0, 0.15, LEAF, 2.0);
             }
             Event::Ward { pos, front } => {
+                self.ring(front, CHEST, 2.0, 40.0, 0.4, ICE, 2.0);
                 self.ring(pos, CHEST, 4.0, 30.0, 0.35, PALE, 3.0);
                 self.burst(front, CHEST, 16, 60.0, 0.4, 2.0, ICE);
             }
@@ -193,6 +226,8 @@ impl Fx {
                 self.kick(2.5, 0.0);
             }
             Event::RayFired { origin, dir } => {
+                self.ring(origin + dir * 8.0, CHEST, 6.0, 46.0, 0.35, ICE, 3.0);
+                self.ring(origin + dir * crate::core::magic::RAY_LEN, CHEST, 3.0, 30.0, 0.3, PALE, 3.0);
                 for _ in 0..50 {
                     let along = origin + dir * gen_range(10.0, crate::core::magic::RAY_LEN);
                     let v = dir.perp() * gen_range(-90.0, 90.0) + dir * gen_range(20.0, 120.0);
@@ -200,23 +235,34 @@ impl Fx {
                     self.part(along, CHEST, v, gen_range(-20.0, 40.0), gen_range(0.2, 0.5), gen_range(1.0, 2.5), col, 0.88);
                 }
                 self.ring(origin + dir * 8.0, CHEST, 3.0, 22.0, 0.25, PALE, 4.0);
-                self.kick(6.0, 0.12);
+                self.kick(8.0, 0.2);
             }
             Event::JudgeCast { caster, at } => {
-                self.ring(at, 0.0, JUDGE_R * 1.6, JUDGE_R, 0.4, GOLD, 3.0);
-                self.burst(caster, CHEST + 8.0, 20, 70.0, 0.5, 2.0, GOLD);
+                self.ring(at, 0.0, JUDGE_R * 2.0, JUDGE_R, 0.5, GOLD, 3.0);
+                self.ring(caster, 0.0, 4.0, 40.0, 0.5, GOLD, 3.0);
+                for _ in 0..40 {
+                    let v = Vec2::from_angle(gen_range(0.0, TAU)) * gen_range(10.0, 50.0);
+                    self.part(caster, gen_range(0.0, 10.0), v, gen_range(80.0, 180.0), gen_range(0.4, 0.8), gen_range(1.0, 2.5), pick(GOLD, WHITE), 0.92);
+                }
+                self.kick(2.0, 0.0);
             }
             Event::JudgeStrike { pos } => {
                 self.pillars.push(Pillar { pos, t: PILLAR_LIFE });
-                self.ring(pos, 0.0, 4.0, JUDGE_R * 1.8, 0.5, GOLD, 6.0);
-                self.ring(pos, 0.0, 4.0, JUDGE_R * 1.3, 0.35, WHITE, 4.0);
-                self.ring(pos, CHEST, 4.0, JUDGE_R, 0.25, PALE, 3.0);
-                for _ in 0..90 {
-                    let v = Vec2::from_angle(gen_range(0.0, TAU)) * gen_range(60.0, 220.0);
-                    let col = if gen_range(0, 3) == 0 { WHITE } else { GOLD };
-                    self.part(pos, gen_range(0.0, 10.0), v, gen_range(20.0, 200.0), gen_range(0.4, 0.9), gen_range(1.5, 3.5), col, 0.92);
+                self.ring(pos, 0.0, 4.0, JUDGE_R * 2.4, 0.6, GOLD, 7.0);
+                self.ring(pos, 0.0, 4.0, JUDGE_R * 1.7, 0.45, WHITE, 5.0);
+                self.ring(pos, 0.0, 4.0, JUDGE_R * 1.2, 0.35, ICE, 4.0);
+                self.ring(pos, CHEST, 4.0, JUDGE_R, 0.3, PALE, 3.0);
+                self.ring(pos, 40.0, 2.0, JUDGE_R * 0.8, 0.3, GOLD, 3.0);
+                for _ in 0..160 {
+                    let v = Vec2::from_angle(gen_range(0.0, TAU)) * gen_range(60.0, 260.0);
+                    let col = match gen_range(0, 4) { 0 => WHITE, 1 => ICE, _ => GOLD };
+                    self.part(pos, gen_range(0.0, 12.0), v, gen_range(20.0, 260.0), gen_range(0.4, 1.0), gen_range(1.5, 3.8), col, 0.92);
                 }
-                self.kick(14.0, 0.35);
+                for _ in 0..30 {
+                    let v = Vec2::from_angle(gen_range(0.0, TAU)) * gen_range(5.0, 30.0);
+                    self.part(pos, 0.0, v, gen_range(200.0, 360.0), gen_range(0.5, 0.9), gen_range(1.5, 2.5), WHITE, 0.95);
+                }
+                self.kick(18.0, 0.5);
             }
             Event::Cut { owner, ang, r, half, side, big } => {
                 self.arcs.push(Arc { owner, ang, r, half, side, t: ARC_LIFE, big, col: AQUA });
@@ -237,7 +283,7 @@ impl Fx {
                 }
             }
             Event::Intent { pos, dir } => {
-                self.sprites.push(Sprite { kind: Kind::Release, pos: pos + dir * 8.0, t: 0.0 });
+                self.sprites.push(Sprite { kind: Kind::Release, pos: pos + dir * 8.0, t: 0.0, ang: 0.0 });
                 self.ring(pos, CHEST, 4.0, 26.0, 0.3, AQUA, 4.0);
                 for _ in 0..24 {
                     let v = dir * gen_range(60.0, 200.0) + dir.perp() * gen_range(-80.0, 80.0);
@@ -282,15 +328,15 @@ impl Fx {
                 self.burst(tip, CHEST, 8, 50.0, 0.3, 1.8, LILAC);
             }
             Event::PotionBurst { pos } => {
-                self.sprites.push(Sprite { kind: Kind::Potion, pos, t: 0.0 });
+                self.sprites.push(Sprite { kind: Kind::Potion, pos, t: 0.0, ang: 0.0 });
                 self.ring(pos, 0.0, 4.0, POTION_R * 1.6, 0.4, LILAC, 5.0);
                 self.burst(pos, 6.0, 40, 150.0, 0.5, 2.4, LILAC);
                 self.burst(pos, 6.0, 14, 90.0, 0.4, 1.6, WHITE);
                 self.kick(5.0, 0.0);
             }
             Event::Broom { from, to, dir } => {
-                self.sprites.push(Sprite { kind: Kind::Poof, pos: from, t: 0.0 });
-                self.sprites.push(Sprite { kind: Kind::Poof, pos: to, t: 0.0 });
+                self.sprites.push(Sprite { kind: Kind::Poof, pos: from, t: 0.0, ang: 0.0 });
+                self.sprites.push(Sprite { kind: Kind::Poof, pos: to, t: 0.0, ang: 0.0 });
                 for _ in 0..18 {
                     let p = from.lerp(to, gen_range(0.0, 1.0));
                     self.part(p, CHEST + gen_range(-6.0, 6.0), dir.perp() * gen_range(-50.0, 50.0) - dir * 30.0, gen_range(0.0, 30.0), 0.4, 1.8, pick(LILAC, GOLD), 0.88);
@@ -301,7 +347,7 @@ impl Fx {
                 self.burst(caster, CHEST + 8.0, 20, 70.0, 0.5, 2.0, LILAC);
             }
             Event::CauldronBurst { pos } => {
-                self.sprites.push(Sprite { kind: Kind::Burst, pos, t: 0.0 });
+                self.sprites.push(Sprite { kind: Kind::Burst, pos, t: 0.0, ang: 0.0 });
                 self.ring(pos, 0.0, 4.0, CAULDRON_R * 1.8, 0.5, LILAC, 6.0);
                 self.ring(pos, 0.0, 4.0, CAULDRON_R * 1.2, 0.35, WHITE, 4.0);
                 for _ in 0..80 {
@@ -311,6 +357,9 @@ impl Fx {
                 self.kick(12.0, 0.25);
             }
             Event::Hit { pos, element, dmg, big } => {
+                if element == Element::Spirit {
+                    self.bloom(pos);
+                }
                 let col = element_color(element);
                 let n = if big { 30 } else { 10 };
                 self.burst(pos, CHEST, n, if big { 140.0 } else { 80.0 }, 0.45, if big { 3.0 } else { 2.0 }, col);
@@ -348,7 +397,7 @@ impl Fx {
                 self.kick(10.0, 0.2);
             }
             Event::BleedPop { pos, dmg } => {
-                self.sprites.push(Sprite { kind: Kind::BleedPop, pos, t: 0.0 });
+                self.sprites.push(Sprite { kind: Kind::BleedPop, pos, t: 0.0, ang: 0.0 });
                 self.burst(pos, CHEST, 20 + dmg as usize * 2, 160.0, 0.6, 2.4, pick(BLOOD, AQUA));
                 self.ring(pos, CHEST, 2.0, 28.0, 0.3, BLOOD, 4.0);
                 self.kick(9.0, 0.12);
@@ -419,6 +468,52 @@ impl Fx {
                 }
                 self.kick(12.0, 0.3);
             }
+            Event::TalismanCast { tip, dir } => {
+                self.bloom(tip + dir * 4.0);
+                for _ in 0..8 {
+                    let v = Vec2::from_angle(dir.y.atan2(dir.x) + gen_range(-0.7, 0.7)) * gen_range(40.0, 110.0);
+                    self.part(tip, CHEST, v, gen_range(-10.0, 30.0), 0.3, gen_range(1.0, 1.8), petal(), 0.86);
+                }
+            }
+            Event::ParasolThrow { from, to } => {
+                self.bloom(from);
+                self.ring(to, 0.0, 22.0, 6.0, 0.35, SAKURA, 2.0);
+            }
+            Event::ParasolPlant { pos } => {
+                self.bloom(pos);
+                self.ring(pos, 0.0, 2.0, 24.0, 0.35, SAKURA, 3.0);
+                self.petals(pos, 8.0, 14, 90.0, 0.6);
+                self.kick(3.0, 0.0);
+            }
+            Event::ParasolPickup { pos } => {
+                self.bloom(pos);
+                self.ring(pos, CHEST, 18.0, 2.0, 0.3, SAKURA, 3.0);
+            }
+            Event::SpiritStep { from, to, ang } => {
+                self.bloom(from);
+                self.sprites.push(Sprite { kind: Kind::Step, pos: to, t: 0.0, ang });
+                self.slashes.push(Slash { a: from, b: to, t: SLASH_LIFE * 1.6, col: SAKURA, max: SLASH_LIFE * 1.6 });
+                for _ in 0..20 {
+                    let p = from.lerp(to, gen_range(0.0, 1.0));
+                    self.part(p, CHEST + gen_range(-8.0, 8.0), Vec2::from_angle(gen_range(0.0, TAU)) * 40.0, gen_range(10.0, 60.0), 0.6, gen_range(1.2, 2.2), petal(), 0.92);
+                }
+                self.ring(to, 0.0, 4.0, 30.0, 0.35, SAKURA, 3.0);
+                self.kick(9.0, 0.12);
+            }
+            Event::StormCast { caster, at } => {
+                self.bloom(caster);
+                self.ring(at, 0.0, STORM_R * 2.2, STORM_R, 0.5, SAKURA, 3.0);
+                self.kick(4.0, 0.05);
+            }
+            Event::StormTick => self.kick(1.5, 0.0),
+            Event::StormBurst { pos } => {
+                self.sprites.push(Sprite { kind: Kind::Tempest, pos, t: 0.0, ang: 0.0 });
+                for n in 0..6 {
+                    self.bloom(pos + Vec2::from_angle(n as f32 * TAU / 6.0) * STORM_R * 0.6);
+                }
+                self.petals(pos, 20.0, 60, 240.0, 1.0);
+                self.kick(16.0, 0.4);
+            }
             Event::Heal { pos, amount } => {
                 self.burst(pos, CHEST, 10, 60.0, 0.4, 1.6, MINT);
                 self.nums.push(Num { pos: pos + vec2(0.0, -6.0), t: NUM_LIFE, dmg: -amount, tag: Some(MINT) });
@@ -427,6 +522,31 @@ impl Fx {
     }
 
     pub fn ambient(&mut self, b: &Battle) {
+        for t in &b.parasols.talismans {
+            self.part(t.pos, CHEST + gen_range(-1.5, 1.5), -t.vel * 0.15 + Vec2::from_angle(gen_range(0.0, TAU)) * 15.0, 0.0, 0.3, gen_range(0.8, 1.6), petal(), 0.9);
+        }
+        for fl in &b.parasols.flights {
+            for _ in 0..3 {
+                let off = Vec2::from_angle(fl.spin * 3.0 + gen_range(0.0, TAU)) * 7.0;
+                self.part(fl.pos + off, CHEST + 6.0, off * 6.0, gen_range(0.0, 30.0), 0.4, gen_range(1.0, 2.0), petal(), 0.9);
+            }
+        }
+        for at in b.parasols.planted.iter().flatten() {
+            if gen_range(0, 4) == 0 {
+                let off = Vec2::from_angle(gen_range(0.0, TAU)) * gen_range(4.0, 10.0);
+                self.part(*at + off, 22.0, off * 0.5, -gen_range(5.0, 15.0), 0.9, gen_range(0.8, 1.4), petal(), 0.98);
+            }
+        }
+        for s in &b.parasols.storms {
+            let k = s.k();
+            for _ in 0..(4 + (k * 8.0) as usize) {
+                let a = gen_range(0.0, TAU);
+                let r = STORM_R * gen_range(0.2, 1.05);
+                let p = s.pos + Vec2::from_angle(a) * r;
+                let swirl = Vec2::from_angle(a + 1.9) * gen_range(80.0, 160.0) * (0.5 + k);
+                self.part(p, gen_range(0.0, 40.0 + 30.0 * k), swirl, gen_range(-20.0, 40.0), gen_range(0.35, 0.7), gen_range(1.0, 2.6), petal(), 0.9);
+            }
+        }
         for s in &b.spells.shots {
             let (pos, vel) = (s.pos, s.vel);
             self.part(pos, CHEST + gen_range(-1.0, 1.0), -vel * 0.1, 0.0, 0.25, NEEDLE_R * 0.7, ICE, 0.9);
@@ -563,7 +683,12 @@ impl Fx {
         for s in &self.sprites {
             let (sh, k) = sheet(s.kind);
             if let Some(i) = sh.frame_at(s.t, false) {
-                sh.draw(i, cam.air(s.pos, 8.0), k * S, 1.0);
+                match s.kind {
+                    Kind::Step => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(20.0, 40.0), k * S, s.ang, 1.0),
+                    Kind::Tempest => sh.draw_at(i, cam.proj(s.pos), vec2(74.0, 80.0), k * S, 1.0),
+                    Kind::Bloom => sh.draw(i, cam.air(s.pos, CHEST), k * S, 1.0),
+                    _ => sh.draw(i, cam.air(s.pos, 8.0), k * S, 1.0),
+                }
             }
         }
         for p in &self.parts {

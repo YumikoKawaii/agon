@@ -3,7 +3,6 @@ pub enum State {
     Idle,
     Run,
     Attack,
-    Roll,
     Hit,
 }
 
@@ -26,7 +25,6 @@ const BODY: Option<f32> = Some(6.0);
 const IDLE: Anim = Anim { frames: &[f(30, BODY), f(30, BODY)], looping: true };
 const RUN: Anim = Anim { frames: &[f(6, BODY), f(6, BODY), f(6, BODY), f(6, BODY)], looping: true };
 const ATTACK: Anim = Anim { frames: &[f(4, BODY), f(4, BODY), f(10, BODY)], looping: false };
-const ROLL: Anim = Anim { frames: &[f(4, None), f(4, None), f(4, None), f(6, Some(5.0))], looping: false };
 const HIT: Anim = Anim { frames: &[f(12, BODY)], looping: false };
 
 impl State {
@@ -35,7 +33,6 @@ impl State {
             State::Idle => &IDLE,
             State::Run => &RUN,
             State::Attack => &ATTACK,
-            State::Roll => &ROLL,
             State::Hit => &HIT,
         }
     }

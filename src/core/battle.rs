@@ -3,9 +3,12 @@ use std::f32::consts::PI;
 use macroquad::math::{vec2, Vec2};
 
 use crate::core::{
-    effect::Apply,
+    effect::{Apply, EffectKind},
+    kit::Passive,
+    player::GRACE_T,
     event::{Element, Event},
     magic::Spells,
+    parasol::Parasols,
     player::{Input, Player},
     sword::Blades,
     hex::Hexes,
@@ -36,6 +39,7 @@ pub struct Battle {
     pub blades: Blades,
     pub hexes: Hexes,
     pub warden: Wardens,
+    pub parasols: Parasols,
     pub zones: Vec<Zone>,
     pub deaths: [u32; 2],
     events: Vec<Event>,
@@ -51,6 +55,7 @@ impl Battle {
             blades: Blades::default(),
             hexes: Hexes::default(),
             warden: Wardens::default(),
+            parasols: Parasols::default(),
             zones: Vec::new(),
             deaths: [0; 2],
             events: Vec::new(),
@@ -73,6 +78,7 @@ impl Battle {
         self.blades.update(&mut self.players, &mut self.events);
         self.hexes.update(&mut self.players, &self.spells.wards, &mut self.zones, &mut self.events);
         self.warden.update(&mut self.players, &mut self.events);
+        self.parasols.update(&mut self.players, &self.spells.wards, &mut self.events);
         self.update_zones();
         for seat in 0..2 {
             let pos = self.players[seat].pos;
@@ -84,6 +90,7 @@ impl Battle {
             }
             if self.players[seat].hp <= 0 {
                 self.players[seat].respawn();
+                self.parasols.reset(seat);
                 self.deaths[seat] += 1;
             }
         }
@@ -119,6 +126,9 @@ impl Battle {
             }
             Skill::Slash | Skill::Whirl | Skill::Cable | Skill::Fury => {
                 self.warden.cast(&mut self.players, i, skill, &mut self.events)
+            }
+            Skill::Talisman | Skill::Parasol | Skill::SpiritStep | Skill::Storm => {
+                self.parasols.cast(&mut self.players, i, skill, &mut self.events)
             }
         }
     }
@@ -167,12 +177,45 @@ pub(crate) fn strike(players: &mut [Player; 2], target: usize, hit: Hit, events:
     for a in hit.apply {
         let fresh = !p.effects.on(a.0);
         p.effects.add(*a);
-        if fresh || a.0 == crate::core::effect::EffectKind::Bleed {
+        if fresh || a.0 == EffectKind::Bleed {
             events.push(Event::Status { pos, kind: a.0 });
         }
     }
     events.push(Event::Hit { pos, element: hit.element, dmg, big: hit.big || marked });
+    passive(players, 1 - target, target, events);
     true
+}
+
+const HEX_MAX: u8 = 3;
+const HEX_DMG: i32 = 8;
+const HEX_ROOT: Apply = Apply(EffectKind::Root, 30, 0);
+const INTENT_MAX: u8 = 4;
+
+fn passive(players: &mut [Player; 2], me: usize, target: usize, events: &mut Vec<Event>) {
+    match players[me].kit().passive {
+        Passive::Grace => players[me].haste = GRACE_T,
+        Passive::Hexed => {
+            let t = &mut players[target];
+            t.hex += 1;
+            if t.hex >= HEX_MAX {
+                t.hex = 0;
+                t.hp -= HEX_DMG;
+                t.effects.add(HEX_ROOT);
+                events.push(Event::Status { pos: t.pos, kind: EffectKind::Root });
+                events.push(Event::Hit { pos: t.pos, element: Element::Hex, dmg: HEX_DMG, big: true });
+            }
+        }
+        Passive::Intent => {
+            let p = &mut players[me];
+            p.intent += 1;
+            if p.intent >= INTENT_MAX {
+                p.intent = 0;
+                p.empower();
+                events.push(Event::Status { pos: p.pos, kind: EffectKind::Vulnerable });
+            }
+        }
+        Passive::Bond => {}
+    }
 }
 
 pub(crate) fn bless(players: &mut [Player; 2], seat: usize, a: Apply, events: &mut Vec<Event>) {

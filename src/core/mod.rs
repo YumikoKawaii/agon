@@ -6,6 +6,7 @@ pub mod event;
 pub mod hex;
 pub mod kit;
 pub mod magic;
+pub mod parasol;
 pub mod player;
 pub mod sword;
 pub mod warden;

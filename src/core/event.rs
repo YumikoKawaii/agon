@@ -8,6 +8,7 @@ pub enum Element {
     Holy,
     Blade,
     Hex,
+    Spirit,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -46,4 +47,12 @@ pub enum Event {
     Zip { from: Vec2, to: Vec2 },
     Fury { pos: Vec2 },
     Heal { pos: Vec2, amount: i32 },
+    TalismanCast { tip: Vec2, dir: Vec2 },
+    ParasolThrow { from: Vec2, to: Vec2 },
+    ParasolPlant { pos: Vec2 },
+    ParasolPickup { pos: Vec2 },
+    StormCast { caster: Vec2, at: Vec2 },
+    StormTick,
+    StormBurst { pos: Vec2 },
+    SpiritStep { from: Vec2, to: Vec2, ang: f32 },
 }
