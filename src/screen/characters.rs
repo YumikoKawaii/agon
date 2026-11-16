@@ -19,13 +19,16 @@ fn cards() -> Vec<Rect> {
 }
 
 fn confirm_rect() -> Rect {
-    ui::centered(320.0, 590.0, 56.0)
+    ui::centered(320.0, 650.0, 56.0)
 }
+
+const IDLE_BOX: f32 = 88.0;
 
 pub fn draw_idle(kit: usize, x: f32, y: f32, w: f32, scale: f32) {
     let tex = assets::skin(kit).frame(State::Idle, SOUTH, (get_time() * 60.0) as u32, 1);
     let size = vec2(tex.width(), tex.height()) * scale;
-    draw_texture_ex(tex, x + (w - size.x) / 2.0, y, WHITE, DrawTextureParams { dest_size: Some(size), ..Default::default() });
+    let centre = vec2(x + w / 2.0, y + IDLE_BOX * scale / 2.0);
+    draw_texture_ex(tex, centre.x - size.x / 2.0, centre.y - size.y / 2.0, WHITE, DrawTextureParams { dest_size: Some(size), ..Default::default() });
 }
 
 pub struct Characters {
@@ -71,7 +74,9 @@ impl Screen for Characters {
 
     fn draw(&self, _ctx: &Context) {
         ui::text_centered("Choose your character", 110.0, ui::HEADING, ui::GOLD);
-        ui::text_centered(KITS[self.pick].hint, 568.0, ui::SMALL - 4, ui::DIM);
+        for (i, part) in KITS[self.pick].hint.split("   ").enumerate() {
+            ui::text_centered(part, 562.0 + i as f32 * 20.0, ui::SMALL - 4, ui::DIM);
+        }
         for (i, r) in cards().into_iter().enumerate() {
             ui::panel(r, self.pick == i);
             draw_idle(i, r.x, r.y + 30.0, r.w, 2.6);

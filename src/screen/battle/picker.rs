@@ -32,8 +32,10 @@ pub struct Picker {
     role: Option<Role>,
     search: String,
     recent: Vec<usize>,
-    eat_hotkey: bool,
+    typing: bool,
 }
+
+const SEARCH_MAX: usize = 16;
 
 pub struct Bar {
     pub level: Option<usize>,
@@ -171,6 +173,7 @@ impl Picker {
         self.open = Some(side);
         self.chosen = Some(current);
         self.search.clear();
+        self.typing = false;
         self.role = None;
         self.scroll = 0;
     }
@@ -185,9 +188,18 @@ impl Picker {
     }
 
     pub fn update(&mut self, m: Vec2, bar: &Bar) -> Option<Action> {
+        let typing = self.open.is_some() && self.typing;
+        while let Some(c) = get_char_pressed() {
+            if typing && (c.is_ascii_alphanumeric() || c == ' ') && self.search.len() < SEARCH_MAX {
+                self.search.push(c);
+                self.scroll = 0;
+            }
+        }
+        if typing && is_key_pressed(KeyCode::Backspace) {
+            self.search.pop();
+        }
         if self.open.is_none() && is_key_pressed(KeyCode::C) {
             self.open_for(0, bar.kits[0]);
-            self.eat_hotkey = true;
             return None;
         }
         if let Some(side) = self.open {
@@ -196,17 +208,8 @@ impl Picker {
                 self.open_for(other, bar.kits[other]);
                 return None;
             }
-            while let Some(c) = get_char_pressed() {
-                if std::mem::take(&mut self.eat_hotkey) && c.eq_ignore_ascii_case(&'c') {
-                    continue;
-                }
-                if c.is_ascii_alphanumeric() || c == ' ' {
-                    self.search.push(c);
-                    self.scroll = 0;
-                }
-            }
-            if is_key_pressed(KeyCode::Backspace) {
-                self.search.pop();
+            if is_mouse_button_pressed(MouseButton::Left) {
+                self.typing = search_rect().contains(m);
             }
             let (_, wheel) = mouse_wheel();
             if wheel != 0.0 && Rect::new(grid_origin().x, grid_origin().y, CELL.x * COLS as f32 + 20.0, CELL.y * ROWS as f32).contains(m) {
@@ -312,9 +315,9 @@ impl Picker {
         draw_text("Tab: switch side   Esc: close", p.x + 400.0, p.y + p.h - 36.0, 16.0, ui::INK);
         let s = search_rect();
         draw_rectangle(s.x, s.y, s.w, s.h, Color::new(1.0, 0.98, 0.94, 1.0));
-        draw_rectangle_lines(s.x, s.y, s.w, s.h, 2.0, ui::INK);
-        let caret = if (get_time() * 2.0) as i64 % 2 == 0 { "|" } else { "" };
-        let (txt, col) = if self.search.is_empty() { ("type to search".to_string(), Color::new(0.55, 0.52, 0.62, 1.0)) } else { (format!("{}{caret}", self.search), ui::INK) };
+        draw_rectangle_lines(s.x, s.y, s.w, s.h, if self.typing { 3.0 } else { 2.0 }, if self.typing { ui::GOLD } else { ui::INK });
+        let caret = if self.typing && (get_time() * 2.0) as i64 % 2 == 0 { "|" } else { "" };
+        let (txt, col) = if self.search.is_empty() && !self.typing { ("click to search".to_string(), Color::new(0.55, 0.52, 0.62, 1.0)) } else { (format!("{}{caret}", self.search), ui::INK) };
         draw_text(&txt, s.x + 10.0, s.y + 25.0, 18.0, col);
         for i in 0..=Role::ALL.len() {
             let r = tab_rect(i);
