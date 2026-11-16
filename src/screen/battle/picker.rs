@@ -19,7 +19,7 @@ const RECENT_MAX: usize = 5;
 
 pub enum Action {
     Pick(usize, usize),
-    Level(usize),
+    Level(usize, usize),
     Swap,
     Reset,
 }
@@ -39,6 +39,7 @@ const SEARCH_MAX: usize = 16;
 
 pub struct Bar {
     pub level: Option<usize>,
+    pub watch: Option<[usize; 2]>,
     pub kits: [usize; 2],
 }
 
@@ -54,6 +55,11 @@ fn chip_rect(side: usize) -> Rect {
 fn level_rect(i: usize) -> Rect {
     let b = bar_rect();
     Rect::new(b.x + 188.0 + i as f32 * 64.0, b.y + 44.0, 62.0, 36.0)
+}
+
+fn watch_rect(side: usize, i: usize) -> Rect {
+    let b = bar_rect();
+    Rect::new(b.x + 210.0 + i as f32 * 56.0, b.y + 22.0 + side as f32 * 36.0, 54.0, 32.0)
 }
 
 fn swap_rect() -> Rect {
@@ -260,7 +266,16 @@ impl Picker {
         if bar.level.is_some() {
             for i in 0..bot::LEVELS.len() {
                 if level_rect(i).contains(m) {
-                    return Some(Action::Level(i));
+                    return Some(Action::Level( 1, i));
+                }
+            }
+        }
+        if bar.watch.is_some() {
+            for side in 0..2 {
+                for i in 0..bot::LEVELS.len() {
+                    if watch_rect(side, i).contains(m) {
+                        return Some(Action::Level(side, i));
+                    }
                 }
             }
         }
@@ -279,7 +294,9 @@ impl Picker {
         let b = bar_rect();
         ui::panel_scaled(b, 0.45);
         let foe = if bar.level.is_some() { "BOT" } else { "DUMMY" };
-        for (side, label) in [(0, "YOU"), (1, foe)] {
+        let me = if bar.watch.is_some() { "BOT A" } else { "YOU" };
+        let foe = if bar.watch.is_some() { "BOT B" } else { foe };
+        for (side, label) in [(0, me), (1, foe)] {
             let r = chip_rect(side);
             text_mid(label, r.x + r.w / 2.0, r.y - 6.0, 16.0, ui::INK);
             chip(r, Some(bar.kits[side]), self.open == Some(side), r.contains(m));
@@ -291,8 +308,20 @@ impl Picker {
         }
         let l = chip_rect(0);
         text_mid("VS", l.x + l.w + 27.0, l.y + 34.0, 26.0, ui::INK);
-        match bar.level {
-            Some(level) => {
+        match (bar.level, bar.watch) {
+            (_, Some(lv)) => {
+                for side in 0..2 {
+                    let r0 = watch_rect(side, 0);
+                    text_mid(["A", "B"][side], r0.x - 12.0, r0.y + 22.0, 18.0, ui::INK);
+                    for (i, (name, _)) in bot::LEVELS.iter().enumerate() {
+                        let r = watch_rect(side, i);
+                        let mut label = name.to_string();
+                        label[..1].make_ascii_uppercase();
+                        button(r, &label, i == lv[side], r.contains(m));
+                    }
+                }
+            }
+            (Some(level), None) => {
                 text_mid("BOT LEVEL", level_rect(1).x + 31.0, level_rect(1).y - 6.0, 16.0, ui::INK);
                 for (i, (name, _)) in bot::LEVELS.iter().enumerate() {
                     let r = level_rect(i);
@@ -301,7 +330,7 @@ impl Picker {
                     button(r, &label, i == level, r.contains(m));
                 }
             }
-            None => text_mid("TRAINING", level_rect(1).x + 31.0, level_rect(1).y + 24.0, 22.0, ui::INK),
+            (None, None) => text_mid("TRAINING", level_rect(1).x + 31.0, level_rect(1).y + 24.0, 22.0, ui::INK),
         }
         button(swap_rect(), "Swap", false, swap_rect().contains(m));
         button(reset_rect(), "Reset", false, reset_rect().contains(m));

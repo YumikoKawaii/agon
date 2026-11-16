@@ -12,15 +12,17 @@ enum Item {
     Online,
     Practice,
     Training,
+    Watch,
     Characters,
     SignOut,
     Quit,
 }
 
-const ITEMS: [(Item, &str); 6] = [
+const ITEMS: [(Item, &str); 7] = [
     (Item::Online, "Play online"),
     (Item::Practice, "Vs Bot"),
     (Item::Training, "Training"),
+    (Item::Watch, "Bot vs Bot"),
     (Item::Characters, "Characters"),
     (Item::SignOut, "Sign out"),
     (Item::Quit, "Quit"),
@@ -28,7 +30,7 @@ const ITEMS: [(Item, &str); 6] = [
 
 fn layout() -> Vec<(Item, &'static str, Rect)> {
     let x = screen_width() / 2.0 - 360.0;
-    ITEMS.iter().enumerate().map(|(i, (item, label))| (*item, *label, Rect::new(x, 230.0 + ui::oy() + i as f32 * 66.0, 320.0, 56.0))).collect()
+    ITEMS.iter().enumerate().map(|(i, (item, label))| (*item, *label, Rect::new(x, 230.0 + ui::oy() + i as f32 * 58.0, 320.0, 50.0))).collect()
 }
 
 fn showcase() -> Rect {
@@ -53,6 +55,7 @@ impl Screen for MainMenu {
             Item::Online => StackCommand::Push(Box::new(Rooms::new())),
             Item::Practice => StackCommand::Push(Box::new(Battle::practice(ctx.user.kit))),
             Item::Training => StackCommand::Push(Box::new(Battle::training(ctx.user.kit))),
+            Item::Watch => StackCommand::Push(Box::new(Battle::watch(ctx.user.kit))),
             Item::Characters => StackCommand::Push(Box::new(Characters::new(ctx.user.kit))),
             Item::SignOut => {
                 drop(ctx.api.logout());

@@ -1,0 +1,7 @@
+{
+  "matches": 50,
+  "max_seconds": 180,
+  "seed": 1,
+  "a": { "kit": "all", "level": "hard" },
+  "b": { "kit": "all", "level": "hard", "aim_error": 10.0, "aggression": 0.7 }
+}

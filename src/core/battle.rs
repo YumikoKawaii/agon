@@ -42,6 +42,7 @@ pub struct Battle {
     pub parasols: Parasols,
     pub zones: Vec<Zone>,
     pub deaths: [u32; 2],
+    pub stay: bool,
     events: Vec<Event>,
 }
 
@@ -58,6 +59,7 @@ impl Battle {
             parasols: Parasols::default(),
             zones: Vec::new(),
             deaths: [0; 2],
+            stay: false,
             events: Vec::new(),
         }
     }
@@ -89,7 +91,11 @@ impl Battle {
                 }
             }
             if self.players[seat].hp <= 0 {
+                let at = self.players[seat].pos;
                 self.players[seat].respawn();
+                if self.stay {
+                    self.players[seat].pos = at;
+                }
                 self.parasols.reset(seat);
                 self.deaths[seat] += 1;
             }

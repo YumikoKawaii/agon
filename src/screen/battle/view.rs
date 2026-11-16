@@ -356,9 +356,13 @@ fn draw_skills(p: &Player) {
     text_mid(p.kit().passive.name(), sr.x + s / 2.0, r.y + 18.0, 14.0, crate::ui::INK);
 }
 
-pub fn hud_zones() -> [Rect; 2] {
+pub fn score_rect() -> Rect {
+    Rect::new(VIEW.x / 2.0 - 260.0, 108.0, 520.0, 56.0)
+}
+
+pub fn hud_zones() -> [Rect; 3] {
     let sizes = 70.0 * 3.0 + 84.0 + 62.0 + 12.0 * 5.0 + 40.0;
-    [Rect::new(0.0, 0.0, VIEW.x, PLATE.y + 12.0), Rect::new((VIEW.x - sizes) / 2.0, VIEW.y - 124.0, sizes, 124.0)]
+    [Rect::new(0.0, 0.0, VIEW.x, PLATE.y + 12.0), Rect::new((VIEW.x - sizes) / 2.0, VIEW.y - 124.0, sizes, 124.0), score_rect()]
 }
 
 pub fn body_rect(cam: &Camera, p: &Player) -> Rect {

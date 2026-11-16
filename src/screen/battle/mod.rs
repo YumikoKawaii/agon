@@ -31,6 +31,7 @@ const PRACTICE_FOE_KIT: usize = 1;
 
 enum Mode {
     Practice(Bot, usize),
+    Watch([Bot; 2], [usize; 2]),
     Training,
     Online(Sync),
 }
@@ -45,7 +46,7 @@ pub struct Battle {
     debug: bool,
     canvas: RenderTarget,
     hud: RenderTarget,
-    fade: std::cell::Cell<[f32; 2]>,
+    fade: std::cell::Cell<[f32; 3]>,
     picker: Picker,
 }
 
@@ -67,11 +68,18 @@ impl Battle {
         canvas.texture.set_filter(FilterMode::Nearest);
         let hud = render_target(VIEW.x as u32, VIEW.y as u32);
         hud.texture.set_filter(FilterMode::Nearest);
-        Battle { core, fx: Fx::default(), cam: Camera::default(), mode, pending: Input::default(), acc: 0.0, debug: false, canvas, hud, fade: std::cell::Cell::new([1.0; 2]), picker: Picker::default() }
+        Battle { core, fx: Fx::default(), cam: Camera::default(), mode, pending: Input::default(), acc: 0.0, debug: false, canvas, hud, fade: std::cell::Cell::new([1.0; 3]), picker: Picker::default() }
     }
 
     pub fn practice(kit: usize) -> Self {
         Self::new(core::Battle::new([kit, PRACTICE_FOE_KIT], 0), Mode::Practice(Bot::new(bot::EASY, 1), 0))
+    }
+
+    pub fn watch(kit: usize) -> Self {
+        let lv = [1, 1];
+        let mut core = core::Battle::new([kit, PRACTICE_FOE_KIT], 0);
+        core.stay = true;
+        Self::new(core, Mode::Watch([Bot::new(bot::LEVELS[lv[0]].1, 0), Bot::new(bot::LEVELS[lv[1]].1, 1)], lv))
     }
 
     pub fn training(kit: usize) -> Self {
@@ -87,16 +95,21 @@ impl Battle {
     fn bar(&self) -> Option<Bar> {
         let kits = [self.core.players[0].kit, self.core.players[1].kit];
         match self.mode {
-            Mode::Practice(_, level) => Some(Bar { level: Some(level), kits }),
-            Mode::Training => Some(Bar { level: None, kits }),
+            Mode::Practice(_, level) => Some(Bar { level: Some(level), watch: None, kits }),
+            Mode::Watch(_, lv) => Some(Bar { level: None, watch: Some(lv), kits }),
+            Mode::Training => Some(Bar { level: None, watch: None, kits }),
             Mode::Online(_) => None,
         }
     }
 
     fn restart(&mut self, kits: [usize; 2]) {
         self.core = core::Battle::new(kits, 0);
+        self.core.stay = matches!(self.mode, Mode::Watch(..));
         if let Mode::Practice(_, level) = self.mode {
             self.mode = Mode::Practice(Bot::new(bot::LEVELS[level].1, 1), level);
+        }
+        if let Mode::Watch(_, lv) = self.mode {
+            self.mode = Mode::Watch([Bot::new(bot::LEVELS[lv[0]].1, 0), Bot::new(bot::LEVELS[lv[1]].1, 1)], lv);
         }
         self.fx = Fx::default();
     }
@@ -113,24 +126,30 @@ impl Battle {
                 self.restart(kits);
             }
             Action::Reset => self.restart(kits),
-            Action::Level(i) => {
-                if let Mode::Practice(bot, level) = &mut self.mode {
+            Action::Level(side, i) => match &mut self.mode {
+                Mode::Practice(bot, level) => {
                     bot.level = bot::LEVELS[i].1;
                     *level = i;
                 }
-            }
+                Mode::Watch(bots, lv) => {
+                    bots[side].level = bot::LEVELS[i].1;
+                    lv[side] = i;
+                }
+                _ => {}
+            },
         }
     }
 
     fn step(&mut self) {
-        let foe_input = match &mut self.mode {
-            Mode::Practice(bot, _) => bot.think(&self.core),
-            Mode::Training => Input::default(),
-            Mode::Online(sync) => sync.remote_input(),
+        let inputs = match &mut self.mode {
+            Mode::Practice(bot, _) => [self.pending, bot.think(&self.core)],
+            Mode::Watch(bots, _) => [bots[0].think(&self.core), bots[1].think(&self.core)],
+            Mode::Training => [self.pending, Input::default()],
+            Mode::Online(sync) => [self.pending, sync.remote_input()],
         };
-        self.core.tick([self.pending, foe_input]);
+        self.core.tick(inputs);
         match &mut self.mode {
-            Mode::Practice(..) => {}
+            Mode::Practice(..) | Mode::Watch(..) => {}
             Mode::Training => {
                 let to = self.core.players[0].pos - self.core.players[1].pos;
                 self.core.players[1].ang = to.y.atan2(to.x);
@@ -150,6 +169,7 @@ impl Battle {
     fn scoreline(&self, ctx: &Context) -> String {
         match &self.mode {
             Mode::Practice(..) => "vs bot   Esc menu".to_string(),
+            Mode::Watch(..) => format!("{} {} - {} {}   Space restart   Esc menu", core::KITS[self.core.players[0].kit].name, self.core.deaths[1], self.core.deaths[0], core::KITS[self.core.players[1].kit].name),
             Mode::Training => "training   Esc menu".to_string(),
             Mode::Online(s) => format!("{} {} - {} {}   first to {} kills   Esc forfeit", ctx.user.username, s.foe_deaths, self.core.deaths[0], s.foe, DEATHS_TO_WIN),
         }
@@ -179,6 +199,12 @@ impl Screen for Battle {
         }
         let live = match &mut self.mode {
             Mode::Practice(..) | Mode::Training => !open,
+            Mode::Watch(..) => {
+                if !open && is_key_pressed(KeyCode::Space) {
+                    self.apply(Action::Reset);
+                }
+                !open
+            }
             Mode::Online(sync) => {
                 if sync.finished(dt) {
                     return StackCommand::Pop;
@@ -261,6 +287,13 @@ impl Battle {
         view::draw_hud(&b.players, if bar.is_some() { None } else { Some(title) });
         if let Some(bar) = &bar {
             self.picker.draw_bar(m, bar);
+        }
+        if let Mode::Watch(..) = &self.mode {
+            let r = view::score_rect();
+            ui::panel_scaled(r, 0.45);
+            let t = format!("{}  {} - {}  {}", core::KITS[b.players[0].kit].name, b.deaths[1], b.deaths[0], core::KITS[b.players[1].kit].name);
+            let w = measure_text(&t, None, 26, 1.0).width;
+            draw_text(&t, (VIEW.x - w) / 2.0, r.y + 37.0, 26.0, ui::INK);
         }
         set_camera(&cam_for(&self.canvas));
         let zones = view::hud_zones();
