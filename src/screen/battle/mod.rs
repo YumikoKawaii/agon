@@ -13,12 +13,14 @@ use crate::{
 };
 
 mod fx;
+mod picker;
 mod spells;
 mod sync;
 mod view;
 
 use self::{
     fx::Fx,
+    picker::{Action, Bar, Picker},
     sync::Sync,
     view::{letterbox, Camera, VIEW},
 };
@@ -26,8 +28,6 @@ use self::{
 const BARS: Color = ui::BG;
 
 const PRACTICE_FOE_KIT: usize = 1;
-const LEVEL_KEYS: [KeyCode; 3] = [KeyCode::Key4, KeyCode::Key5, KeyCode::Key6];
-const KIT_KEYS: [KeyCode; 3] = [KeyCode::Key1, KeyCode::Key2, KeyCode::Key3];
 
 enum Mode {
     Practice(Bot, usize),
@@ -46,6 +46,7 @@ pub struct Battle {
     canvas: RenderTarget,
     hud: RenderTarget,
     fade: std::cell::Cell<[f32; 2]>,
+    picker: Picker,
 }
 
 const HUD_HIDDEN: f32 = 0.3;
@@ -67,7 +68,7 @@ impl Battle {
         canvas.texture.set_filter(FilterMode::Nearest);
         let hud = render_target(VIEW.x as u32, VIEW.y as u32);
         hud.texture.set_filter(FilterMode::Nearest);
-        Battle { core, fx: Fx::default(), cam: Camera::default(), mode, pending: Input::default(), acc: 0.0, debug: false, canvas, hud, fade: std::cell::Cell::new([1.0; 2]) }
+        Battle { core, fx: Fx::default(), cam: Camera::default(), mode, pending: Input::default(), acc: 0.0, debug: false, canvas, hud, fade: std::cell::Cell::new([1.0; 2]), picker: Picker::default() }
     }
 
     pub fn practice(kit: usize) -> Self {
@@ -84,31 +85,41 @@ impl Battle {
         Self::new(core, Mode::Online(Sync::new(link, endpoint.seat, foe.username)))
     }
 
-    fn switch_kit(&mut self) {
-        let level = match self.mode {
-            Mode::Practice(_, level) => Some(level),
-            Mode::Training => None,
-            Mode::Online(_) => return,
-        };
-        let Some(kit) = KIT_KEYS.iter().position(|k| is_key_pressed(*k)) else { return };
-        let foe = is_key_down(KeyCode::LeftShift) || is_key_down(KeyCode::RightShift);
-        let mut kits = [self.core.players[0].kit, self.core.players[1].kit];
-        if kits[foe as usize] == kit {
-            return;
+    fn bar(&self) -> Option<Bar> {
+        let kits = [self.core.players[0].kit, self.core.players[1].kit];
+        match self.mode {
+            Mode::Practice(_, level) => Some(Bar { level: Some(level), kits }),
+            Mode::Training => Some(Bar { level: None, kits }),
+            Mode::Online(_) => None,
         }
-        kits[foe as usize] = kit;
+    }
+
+    fn restart(&mut self, kits: [usize; 2]) {
         self.core = core::Battle::new(kits, 0);
-        if let Some(level) = level {
+        if let Mode::Practice(_, level) = self.mode {
             self.mode = Mode::Practice(Bot::new(bot::LEVELS[level].1, 1), level);
         }
         self.fx = Fx::default();
     }
 
-    fn switch_level(&mut self) {
-        let Mode::Practice(bot, level) = &mut self.mode else { return };
-        if let Some(i) = LEVEL_KEYS.iter().position(|k| is_key_pressed(*k)) {
-            bot.level = bot::LEVELS[i].1;
-            *level = i;
+    fn apply(&mut self, action: Action) {
+        let mut kits = [self.core.players[0].kit, self.core.players[1].kit];
+        match action {
+            Action::Pick(side, kit) => {
+                kits[side] = kit;
+                self.restart(kits);
+            }
+            Action::Swap => {
+                kits.swap(0, 1);
+                self.restart(kits);
+            }
+            Action::Reset => self.restart(kits),
+            Action::Level(i) => {
+                if let Mode::Practice(bot, level) = &mut self.mode {
+                    bot.level = bot::LEVELS[i].1;
+                    *level = i;
+                }
+            }
         }
     }
 
@@ -139,8 +150,8 @@ impl Battle {
 
     fn scoreline(&self, ctx: &Context) -> String {
         match &self.mode {
-            Mode::Practice(_, level) => format!("vs bot   1/2/3 character   Shift+1/2/3 bot   4/5/6 difficulty: {}   Esc menu", bot::LEVELS[*level].0),
-            Mode::Training => "training   1/2/3 character   Shift+1/2/3 dummy   Esc menu".to_string(),
+            Mode::Practice(..) => "vs bot   Esc menu".to_string(),
+            Mode::Training => "training   Esc menu".to_string(),
             Mode::Online(s) => format!("{} {} - {} {}   first to {} kills   Esc forfeit", ctx.user.username, s.foe_deaths, self.core.deaths[0], s.foe, DEATHS_TO_WIN),
         }
     }
@@ -148,16 +159,27 @@ impl Battle {
 
 impl Screen for Battle {
     fn update(&mut self, _ctx: &mut Context, dt: f32) -> StackCommand {
+        let m = self.cam.mouse_view();
         if is_key_pressed(KeyCode::Escape) {
-            return StackCommand::Pop;
+            if self.picker.open.is_some() {
+                self.picker.open = None;
+            } else {
+                return StackCommand::Pop;
+            }
         }
-        if is_key_pressed(KeyCode::Tab) {
+        let mut blocked = false;
+        if let Some(bar) = self.bar() {
+            blocked = self.picker.blocks(m);
+            if let Some(a) = self.picker.update(m, &bar) {
+                self.apply(a);
+            }
+        }
+        let open = self.picker.open.is_some();
+        if !open && is_key_pressed(KeyCode::Tab) {
             self.debug = !self.debug;
         }
-        self.switch_kit();
-        self.switch_level();
         let live = match &mut self.mode {
-            Mode::Practice(..) | Mode::Training => true,
+            Mode::Practice(..) | Mode::Training => !open,
             Mode::Online(sync) => {
                 if sync.finished(dt) {
                     return StackCommand::Pop;
@@ -167,7 +189,13 @@ impl Screen for Battle {
             }
         };
         self.cam.shake(self.fx.shake);
-        let r = read_input(self.cam.mouse_world());
+        let mut r = read_input(self.cam.mouse_world());
+        if blocked && r.slot == Some(0) {
+            r.slot = None;
+        }
+        if open {
+            r = Input { aim: r.aim, ..Input::default() };
+        }
         self.pending.dir = r.dir;
         self.pending.aim = r.aim;
         self.pending.slot = r.slot.or(self.pending.slot);
@@ -232,7 +260,12 @@ impl Battle {
         let cam_for = |rt: &RenderTarget| Camera2D { zoom: vec2(2.0 / VIEW.x, 2.0 / VIEW.y), target: VIEW / 2.0, render_target: Some(rt.clone()), ..Default::default() };
         set_camera(&cam_for(&self.hud));
         clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
-        view::draw_hud(&b.players, title);
+        let m = cam.mouse_view();
+        let bar = self.bar();
+        view::draw_hud(&b.players, if bar.is_some() { None } else { Some(title) });
+        if let Some(bar) = &bar {
+            self.picker.draw_bar(m, bar);
+        }
         set_camera(&cam_for(&self.canvas));
         let zones = view::hud_zones();
         let mut fade = self.fade.get();
@@ -266,8 +299,10 @@ impl Battle {
                 centered(&banner, VIEW.y / 2.0 - 108.0, 40, ui::INK);
             }
         }
+        self.picker.draw_panel(m);
         let mut y = VIEW.y - 40.0;
-        for part in ["WASD move   Tab boxes", rest.trim()] {
+        let keys = if self.bar().is_some() { "WASD move   C characters   Tab boxes" } else { "WASD move   Tab boxes" };
+        for part in [keys, rest.trim()] {
             draw_text(part, 20.0, y, 16.0, ui::DIM);
             y += 22.0;
         }

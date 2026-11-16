@@ -366,14 +366,16 @@ pub fn body_rect(cam: &Camera, p: &Player) -> Rect {
     Rect::new(s.x - 40.0, s.y - 120.0, 80.0, 132.0)
 }
 
-pub fn draw_hud(players: &[Player; 2], title: &str) {
+pub fn draw_hud(players: &[Player; 2], title: Option<&str>) {
     for (i, p) in players.iter().enumerate() {
         draw_plate(i, p);
     }
-    let tw = measure_text(title, None, 24, 1.0).width.max(120.0) + 60.0;
-    let tr = Rect::new((VIEW.x - tw) / 2.0, 14.0, tw, 52.0);
-    crate::ui::panel_scaled(tr, 0.4);
-    text_mid(title, VIEW.x / 2.0, tr.y + 34.0, 24.0, crate::ui::INK);
+    if let Some(title) = title {
+        let tw = measure_text(title, None, 24, 1.0).width.max(120.0) + 60.0;
+        let tr = Rect::new((VIEW.x - tw) / 2.0, 14.0, tw, 52.0);
+        crate::ui::panel_scaled(tr, 0.4);
+        text_mid(title, VIEW.x / 2.0, tr.y + 34.0, 24.0, crate::ui::INK);
+    }
     draw_skills(&players[0]);
 }
 

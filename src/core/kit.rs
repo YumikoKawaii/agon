@@ -79,8 +79,30 @@ impl Skill {
     }
 }
 
+#[derive(Clone, Copy, PartialEq, Eq, Debug)]
+pub enum Role {
+    Mage,
+    Melee,
+    Tank,
+    Support,
+}
+
+impl Role {
+    pub const ALL: [Role; 4] = [Role::Mage, Role::Melee, Role::Tank, Role::Support];
+
+    pub fn name(self) -> &'static str {
+        match self {
+            Role::Mage => "Mage",
+            Role::Melee => "Melee",
+            Role::Tank => "Tank",
+            Role::Support => "Support",
+        }
+    }
+}
+
 pub struct Kit {
     pub name: &'static str,
+    pub role: Role,
     pub skin: &'static str,
     pub skills: [Skill; 4],
     pub hp: i32,
@@ -93,10 +115,11 @@ const WITCH: [Skill; 4] = [Skill::Hex, Skill::Potion, Skill::Broom, Skill::Cauld
 const WITCH_HINT: &str = "LMB hex bolt   Q potion toss   E broom dash   R cauldron burst";
 
 pub const KITS: [Kit; 3] = [
-    Kit { name: "Elf Mage", skin: "elf", skills: MAGE, hp: 100, hint: MAGE_HINT },
-    Kit { name: "Witch", skin: "witch", skills: WITCH, hp: 100, hint: WITCH_HINT },
+    Kit { name: "Elf Mage", role: Role::Mage, skin: "elf", skills: MAGE, hp: 100, hint: MAGE_HINT },
+    Kit { name: "Witch", role: Role::Mage, skin: "witch", skills: WITCH, hp: 100, hint: WITCH_HINT },
     Kit {
         name: "Sword Cultivator",
+        role: Role::Melee,
         skin: "sword",
         skills: [Skill::Cut, Skill::Swallow, Skill::WindStep, Skill::Formation],
         hp: 80,

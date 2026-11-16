@@ -75,10 +75,6 @@ pub fn panel_scaled(r: Rect, scale: f32) {
     kit().panel.draw(r, scale, WHITE);
 }
 
-pub fn frame(r: Rect) {
-    kit().field.draw(r, 1.5, WHITE);
-}
-
 pub fn frame_border(r: Rect) {
     let c = INK;
     draw_rectangle_lines(r.x + 2.0, r.y + 2.0, r.w - 4.0, r.h - 4.0, 4.0, Color::new(0.5, 0.78, 0.7, 1.0));
