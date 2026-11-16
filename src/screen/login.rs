@@ -38,6 +38,7 @@ impl Login {
 
 impl Screen for Login {
     fn update(&mut self, ctx: &mut Context, _dt: f32) -> StackCommand {
+        ui::frame(60.0, 500.0);
         let l = layout();
         if let Some(p) = self.pending.as_mut() {
             if let Some(result) = p.poll() {
@@ -75,6 +76,7 @@ impl Screen for Login {
     }
 
     fn draw(&self, _ctx: &Context) {
+        ui::frame(60.0, 500.0);
         let l = layout();
         let idle = self.pending.is_none();
         ui::logo(110.0, 1.6);

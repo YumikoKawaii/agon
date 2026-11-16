@@ -16,7 +16,7 @@ const SEAT_GAP: f32 = 140.0;
 
 fn seats() -> [Rect; 2] {
     let x0 = (screen_width() - (SEAT_W * 2.0 + SEAT_GAP)) / 2.0;
-    [Rect::new(x0, 180.0, SEAT_W, 300.0), Rect::new(x0 + SEAT_W + SEAT_GAP, 180.0, SEAT_W, 300.0)]
+    [Rect::new(x0, 180.0 + ui::oy(), SEAT_W, 300.0), Rect::new(x0 + SEAT_W + SEAT_GAP, 180.0 + ui::oy(), SEAT_W, 300.0)]
 }
 
 fn ready_rect() -> Rect {
@@ -58,6 +58,7 @@ impl Lobby {
 
 impl Screen for Lobby {
     fn update(&mut self, ctx: &mut Context, _dt: f32) -> StackCommand {
+        ui::frame(80.0, 650.0);
         let (latest, closed) = self.watch.poll();
         if let Some(room) = latest {
             self.apply(ctx, room);
@@ -101,6 +102,7 @@ impl Screen for Lobby {
     }
 
     fn draw(&self, _ctx: &Context) {
+        ui::frame(80.0, 650.0);
         ui::text_centered(&format!("Room {}", self.room.id), 110.0, 56, ui::GOLD);
         ui::text_centered("VS", 350.0, 64, ui::GOLD);
         ui::text_centered("share this id with your opponent", 145.0, ui::SMALL, ui::DIM);

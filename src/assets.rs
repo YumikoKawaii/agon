@@ -33,10 +33,10 @@ fn draw_progress(done: usize, logo: Option<&Texture2D>, bar: Option<&Nine>) {
             let size = vec2(t.width(), t.height()) * 2.0;
             draw_texture_ex(t, (screen_width() - size.x) / 2.0, cy - 40.0 - size.y, WHITE, DrawTextureParams { dest_size: Some(size), ..Default::default() });
         }
-        None => ui::text_centered("AGON", cy - 40.0, ui::TITLE, ui::ACCENT),
+        None => ui::text_centered_abs("AGON", cy - 40.0, ui::TITLE, ui::ACCENT),
     }
     let frac = done as f32 / TOTAL_STEPS as f32;
-    let r = ui::centered(BAR_W, cy + 10.0, BAR_H * 2.6);
+    let r = ui::centered_abs(BAR_W, cy + 10.0, BAR_H * 2.6);
     match bar {
         Some(b) => {
             b.draw(r, r.h / 22.0, WHITE);
@@ -46,7 +46,7 @@ fn draw_progress(done: usize, logo: Option<&Texture2D>, bar: Option<&Nine>) {
         }
         None => draw_rectangle(r.x, r.y, r.w * frac, r.h, ui::ACCENT),
     }
-    ui::text_centered(&format!("loading {}%", done * 100 / TOTAL_STEPS), r.y + r.h + 30.0, ui::SMALL, ui::DIM);
+    ui::text_centered_abs(&format!("loading {}%", done * 100 / TOTAL_STEPS), r.y + r.h + 30.0, ui::SMALL, ui::DIM);
 }
 
 impl Skin {

@@ -15,7 +15,7 @@ const SOUTH: usize = 2;
 
 fn cards() -> Vec<Rect> {
     let x0 = (screen_width() - (CARD_W * KITS.len() as f32 + CARD_GAP * (KITS.len() - 1) as f32)) / 2.0;
-    (0..KITS.len()).map(|i| Rect::new(x0 + i as f32 * (CARD_W + CARD_GAP), 160.0, CARD_W, 380.0)).collect()
+    (0..KITS.len()).map(|i| Rect::new(x0 + i as f32 * (CARD_W + CARD_GAP), 160.0 + ui::oy(), CARD_W, 380.0)).collect()
 }
 
 fn confirm_rect() -> Rect {
@@ -45,6 +45,7 @@ impl Characters {
 
 impl Screen for Characters {
     fn update(&mut self, ctx: &mut Context, _dt: f32) -> StackCommand {
+        ui::frame(80.0, 720.0);
         if let Some(p) = self.pending.as_mut() {
             if let Some(result) = p.poll() {
                 self.pending = None;
@@ -73,6 +74,7 @@ impl Screen for Characters {
     }
 
     fn draw(&self, _ctx: &Context) {
+        ui::frame(80.0, 720.0);
         ui::text_centered("Choose your character", 110.0, ui::HEADING, ui::GOLD);
         for (i, part) in KITS[self.pick].hint.split("   ").enumerate() {
             ui::text_centered(part, 562.0 + i as f32 * 20.0, ui::SMALL - 4, ui::DIM);

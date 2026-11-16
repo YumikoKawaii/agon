@@ -28,11 +28,11 @@ const ITEMS: [(Item, &str); 6] = [
 
 fn layout() -> Vec<(Item, &'static str, Rect)> {
     let x = screen_width() / 2.0 - 360.0;
-    ITEMS.iter().enumerate().map(|(i, (item, label))| (*item, *label, Rect::new(x, 230.0 + i as f32 * 66.0, 320.0, 56.0))).collect()
+    ITEMS.iter().enumerate().map(|(i, (item, label))| (*item, *label, Rect::new(x, 230.0 + ui::oy() + i as f32 * 66.0, 320.0, 56.0))).collect()
 }
 
 fn showcase() -> Rect {
-    Rect::new(screen_width() / 2.0 + 40.0, 230.0, 320.0, 386.0)
+    Rect::new(screen_width() / 2.0 + 40.0, 230.0 + ui::oy(), 320.0, 386.0)
 }
 
 pub struct MainMenu;
@@ -45,6 +45,7 @@ impl MainMenu {
 
 impl Screen for MainMenu {
     fn update(&mut self, ctx: &mut Context, _dt: f32) -> StackCommand {
+        ui::frame(60.0, 640.0);
         let Some(item) = layout().into_iter().find(|(_, _, r)| ui::clicked(*r, true)).map(|(i, _, _)| i) else {
             return StackCommand::None;
         };
@@ -63,6 +64,7 @@ impl Screen for MainMenu {
     }
 
     fn draw(&self, ctx: &Context) {
+        ui::frame(60.0, 640.0);
         ui::logo(110.0, 1.6);
         let s = showcase();
         ui::panel(s, false);

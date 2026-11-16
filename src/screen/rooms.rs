@@ -40,6 +40,7 @@ impl Rooms {
 
 impl Screen for Rooms {
     fn update(&mut self, ctx: &mut Context, _dt: f32) -> StackCommand {
+        ui::frame(110.0, 600.0);
         if let Some(p) = self.pending.as_mut() {
             if let Some(result) = p.poll() {
                 self.pending = None;
@@ -70,6 +71,7 @@ impl Screen for Rooms {
     }
 
     fn draw(&self, ctx: &Context) {
+        ui::frame(110.0, 600.0);
         let l = layout();
         let idle = self.pending.is_none();
         ui::text_centered("Play online", 140.0, 56, ui::GOLD);

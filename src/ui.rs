@@ -18,7 +18,24 @@ pub fn clicked(r: Rect, enabled: bool) -> bool {
     enabled && hovered(r) && is_mouse_button_pressed(MouseButton::Left)
 }
 
+thread_local! {
+    static FRAME: std::cell::Cell<(f32, f32)> = const { std::cell::Cell::new((0.0, 0.0)) };
+}
+
+pub fn frame(top: f32, bottom: f32) {
+    FRAME.with(|f| f.set((top, bottom)));
+}
+
+pub fn oy() -> f32 {
+    let (top, bottom) = FRAME.with(|f| f.get());
+    ((screen_height() - (bottom - top)) / 2.0 - top).max(0.0)
+}
+
 pub fn centered(w: f32, y: f32, h: f32) -> Rect {
+    Rect::new((screen_width() - w) / 2.0, y + oy(), w, h)
+}
+
+pub fn centered_abs(w: f32, y: f32, h: f32) -> Rect {
     Rect::new((screen_width() - w) / 2.0, y, w, h)
 }
 
@@ -28,6 +45,10 @@ pub fn row(r: Rect, n: usize, gap: f32) -> Vec<Rect> {
 }
 
 pub fn text_centered(t: &str, y: f32, size: u16, c: Color) {
+    text_centered_abs(t, y + oy(), size, c);
+}
+
+pub fn text_centered_abs(t: &str, y: f32, size: u16, c: Color) {
     let w = measure_text(t, None, size, 1.0).width;
     draw_text(t, (screen_width() - w) / 2.0, y, size as f32, c);
 }
@@ -51,7 +72,7 @@ fn kit() -> &'static crate::assets::UiKit {
 pub fn logo(y: f32, scale: f32) {
     let t = &kit().logo;
     let size = vec2(t.width(), t.height()) * scale;
-    draw_texture_ex(t, (screen_width() - size.x) / 2.0, y - size.y / 2.0, WHITE, DrawTextureParams { dest_size: Some(size), ..Default::default() });
+    draw_texture_ex(t, (screen_width() - size.x) / 2.0, y + oy() - size.y / 2.0, WHITE, DrawTextureParams { dest_size: Some(size), ..Default::default() });
 }
 
 pub fn reticle(at: Vec2, scale: f32) {
@@ -147,9 +168,9 @@ pub struct Status {
 
 impl Status {
     pub fn draw(&self) {
-        text_centered(&self.error, screen_height() - 70.0, SMALL, ERROR);
+        text_centered_abs(&self.error, screen_height() - 70.0, SMALL, ERROR);
         if self.busy {
-            text_centered("...", screen_height() - 100.0, 28, DIM);
+            text_centered_abs("...", screen_height() - 100.0, 28, DIM);
         }
     }
 }
