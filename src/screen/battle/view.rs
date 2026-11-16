@@ -356,6 +356,16 @@ fn draw_skills(p: &Player) {
     draw_slot(sr, "RMB", Some(assets::dash_icon()), mint, frac, wait, Some(p.dashes.to_string()), p.can_dash());
 }
 
+pub fn hud_zones() -> [Rect; 2] {
+    let sizes = 70.0 * 3.0 + 84.0 + 62.0 + 12.0 * 5.0 + 40.0;
+    [Rect::new(0.0, 0.0, VIEW.x, PLATE.y + 12.0), Rect::new((VIEW.x - sizes) / 2.0, VIEW.y - 124.0, sizes, 124.0)]
+}
+
+pub fn body_rect(cam: &Camera, p: &Player) -> Rect {
+    let s = cam.proj(p.pos);
+    Rect::new(s.x - 40.0, s.y - 120.0, 80.0, 132.0)
+}
+
 pub fn draw_hud(players: &[Player; 2], title: &str) {
     for (i, p) in players.iter().enumerate() {
         draw_plate(i, p);

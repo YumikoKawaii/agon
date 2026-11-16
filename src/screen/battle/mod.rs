@@ -44,7 +44,11 @@ pub struct Battle {
     acc: f32,
     debug: bool,
     canvas: RenderTarget,
+    hud: RenderTarget,
+    fade: std::cell::Cell<[f32; 2]>,
 }
+
+const HUD_HIDDEN: f32 = 0.3;
 
 fn read_input(aim: Vec2) -> Input {
     let axis = |neg: KeyCode, pos: KeyCode| is_key_down(pos) as i32 as f32 - is_key_down(neg) as i32 as f32;
@@ -61,7 +65,9 @@ impl Battle {
     fn new(core: core::Battle, mode: Mode) -> Self {
         let canvas = render_target(VIEW.x as u32, VIEW.y as u32);
         canvas.texture.set_filter(FilterMode::Nearest);
-        Battle { core, fx: Fx::default(), cam: Camera::default(), mode, pending: Input::default(), acc: 0.0, debug: false, canvas }
+        let hud = render_target(VIEW.x as u32, VIEW.y as u32);
+        hud.texture.set_filter(FilterMode::Nearest);
+        Battle { core, fx: Fx::default(), cam: Camera::default(), mode, pending: Input::default(), acc: 0.0, debug: false, canvas, hud, fade: std::cell::Cell::new([1.0; 2]) }
     }
 
     pub fn practice(kit: usize) -> Self {
@@ -223,7 +229,22 @@ impl Battle {
         self.fx.draw_flash();
         let line = self.scoreline(ctx);
         let (title, rest) = line.split_once("   ").unwrap_or((line.as_str(), ""));
+        let cam_for = |rt: &RenderTarget| Camera2D { zoom: vec2(2.0 / VIEW.x, 2.0 / VIEW.y), target: VIEW / 2.0, render_target: Some(rt.clone()), ..Default::default() };
+        set_camera(&cam_for(&self.hud));
+        clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
         view::draw_hud(&b.players, title);
+        set_camera(&cam_for(&self.canvas));
+        let zones = view::hud_zones();
+        let mut fade = self.fade.get();
+        for (z, f) in zones.iter().zip(fade.iter_mut()) {
+            let covered = b.players.iter().any(|p| view::body_rect(cam, p).overlaps(z));
+            let goal = if covered { HUD_HIDDEN } else { 1.0 };
+            *f += (goal - *f) * (get_frame_time() * 10.0).min(1.0);
+        }
+        self.fade.set(fade);
+        for (z, f) in zones.iter().zip(fade) {
+            draw_texture_ex(&self.hud.texture, z.x, z.y, Color::new(1.0, 1.0, 1.0, f), DrawTextureParams { source: Some(*z), dest_size: Some(z.size()), ..Default::default() });
+        }
         let centered = |t: &str, y: f32, size: u16, c: Color| {
             let w = measure_text(t, None, size, 1.0).width;
             draw_text(t, (VIEW.x - w) / 2.0, y, size as f32, c);
