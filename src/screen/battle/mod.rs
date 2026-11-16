@@ -253,7 +253,6 @@ impl Battle {
         self.fx.draw_numbers(cam);
         view::draw_cage(cam, true);
         spells::draw_aim(b, cam);
-        view::draw_cursor(cam);
         self.fx.draw_flash();
         let line = self.scoreline(ctx);
         let (title, rest) = line.split_once("   ").unwrap_or((line.as_str(), ""));
@@ -300,6 +299,7 @@ impl Battle {
             }
         }
         self.picker.draw_panel(m);
+        view::draw_cursor(cam);
         let mut y = VIEW.y - 40.0;
         let keys = if self.bar().is_some() { "WASD move   C characters   Tab boxes" } else { "WASD move   Tab boxes" };
         for part in [keys, rest.trim()] {
