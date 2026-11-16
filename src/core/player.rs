@@ -14,6 +14,7 @@ const SPEED: f32 = 78.0;
 pub const GRACE_T: f32 = 1.0;
 const GRACE_MUL: f32 = 0.35;
 const BOND_MUL: f32 = 0.2;
+const FOX_MUL: f32 = 0.3;
 const KNOCK_DECAY: f32 = 0.85;
 const QUICK_CAST_AGE: u32 = 6;
 const COMBO_WINDOW: f32 = 1.6;
@@ -41,6 +42,8 @@ pub struct Player {
     pub charges: u32,
     pub haste: f32,
     pub bond: bool,
+    pub armed: bool,
+    pub cd_alt: [f32; 4],
     pub hex: u8,
     pub intent: u8,
     pub untargetable: bool,
@@ -77,6 +80,8 @@ impl Player {
             charges: WIND_CHARGES,
             haste: 0.0,
             bond: false,
+            armed: true,
+            cd_alt: [0.0; 4],
             hex: 0,
             intent: 0,
             untargetable: false,
@@ -117,6 +122,8 @@ impl Player {
         self.knock = Vec2::ZERO;
         self.hp = self.max_hp();
         self.cd = [0.0; 4];
+        self.cd_alt = [0.0; 4];
+        self.armed = true;
         self.lock = 0;
         self.combo = 0;
         self.charges = WIND_CHARGES;
@@ -164,11 +171,36 @@ impl Player {
         }
     }
 
+    pub fn skill(&self, slot: usize) -> Skill {
+        let s = self.kit().skills[slot];
+        if self.armed {
+            s
+        } else {
+            s.unarmed()
+        }
+    }
+
+    pub fn cd(&self, slot: usize) -> f32 {
+        if self.skill(slot) == self.kit().skills[slot] {
+            self.cd[slot]
+        } else {
+            self.cd_alt[slot]
+        }
+    }
+
+    fn cd_mut(&mut self, slot: usize) -> &mut f32 {
+        if self.skill(slot) == self.kit().skills[slot] {
+            &mut self.cd[slot]
+        } else {
+            &mut self.cd_alt[slot]
+        }
+    }
+
     pub fn ready(&self, slot: usize) -> bool {
-        if self.kit().skills[slot].charged() {
+        if self.skill(slot).charged() {
             self.charges > 0
         } else {
-            self.cd[slot] <= 0.0
+            self.cd(slot) <= 0.0
         }
     }
 
@@ -181,22 +213,23 @@ impl Player {
     fn speed(&self) -> f32 {
         let haste = if self.haste > 0.0 { 1.0 + GRACE_MUL } else { 1.0 };
         let bond = if self.bond { 1.0 + BOND_MUL } else { 1.0 };
-        SPEED * self.effects.speed_mul() * haste * bond
+        let fox = if !self.armed && self.kit().passive == crate::core::kit::Passive::Fox { 1.0 + FOX_MUL } else { 1.0 };
+        SPEED * self.effects.speed_mul() * haste * bond * fox
     }
 
     pub fn cooldown_frac(&self, slot: usize) -> f32 {
-        let skill = self.kit().skills[slot];
+        let skill = self.skill(slot);
         if skill.charged() && self.charges >= WIND_CHARGES {
             return 0.0;
         }
         if skill == Skill::Cable {
             return if self.fury > 0.0 { 0.0 } else { 1.0 - self.gas / GAS_MAX };
         }
-        self.cd[slot] / skill.cooldown()
+        self.cd(slot) / skill.cooldown()
     }
 
-    pub fn take_hit(&mut self, dir: Vec2, dmg: i32) {
-        if self.flying {
+    pub fn take_hit(&mut self, dir: Vec2, dmg: i32, control: bool) {
+        if self.flying || !control {
             self.hp -= dmg;
             return;
         }
@@ -269,7 +302,7 @@ impl Player {
     }
 
     fn begin_cast(&mut self, slot: usize, aim: Vec2) {
-        let skill = self.kit().skills[slot];
+        let skill = self.skill(slot);
         self.face(aim);
         self.target = aim;
         self.cast_ticks = skill.cast_ticks();
@@ -295,14 +328,14 @@ impl Player {
                 self.combo_timer = COMBO_WINDOW;
                 self.cd[slot] = skill.cooldown();
             }
-            _ => self.cd[slot] = skill.cooldown(),
+            _ => *self.cd_mut(slot) = skill.cooldown(),
         }
         self.cast = Some(skill);
         self.reset_to(State::Attack);
     }
 
     fn tick_timers(&mut self) {
-        self.cd.iter_mut().for_each(|c| *c = (*c - DT).max(0.0));
+        self.cd.iter_mut().chain(self.cd_alt.iter_mut()).for_each(|c| *c = (*c - DT).max(0.0));
         if let Some(slot) = self.kit().skills.iter().position(|s| s.charged()) {
             if self.charges < WIND_CHARGES && self.cd[slot] <= 0.0 {
                 self.charges += 1;

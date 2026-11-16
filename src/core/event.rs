@@ -55,4 +55,12 @@ pub enum Event {
     StormTick,
     StormBurst { pos: Vec2 },
     SpiritStep { from: Vec2, to: Vec2, ang: f32 },
+    FoxCast { tip: Vec2, dir: Vec2 },
+    FoxBlast { pos: Vec2 },
+    FoxStrike { pos: Vec2 },
+    FoxSwipe { pos: Vec2, ang: f32, big: bool },
+    FoxDash { from: Vec2, to: Vec2 },
+    FoxPoof { pos: Vec2 },
+    PetalDash { from: Vec2, to: Vec2, ang: f32 },
+    Blossom { pos: Vec2 },
 }

@@ -1,0 +1,651 @@
+{
+ "frames": [
+  {
+   "filename": "fox-spirit-sigil 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 1.png",
+   "frame": {
+    "x": 144,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 2.png",
+   "frame": {
+    "x": 288,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 3.png",
+   "frame": {
+    "x": 432,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 4.png",
+   "frame": {
+    "x": 576,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 5.png",
+   "frame": {
+    "x": 0,
+    "y": 72,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 6.png",
+   "frame": {
+    "x": 144,
+    "y": 72,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 7.png",
+   "frame": {
+    "x": 288,
+    "y": 72,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 8.png",
+   "frame": {
+    "x": 432,
+    "y": 72,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 9.png",
+   "frame": {
+    "x": 576,
+    "y": 72,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 10.png",
+   "frame": {
+    "x": 0,
+    "y": 144,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 11.png",
+   "frame": {
+    "x": 144,
+    "y": 144,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 12.png",
+   "frame": {
+    "x": 288,
+    "y": 144,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 13.png",
+   "frame": {
+    "x": 432,
+    "y": 144,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 14.png",
+   "frame": {
+    "x": 576,
+    "y": 144,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 15.png",
+   "frame": {
+    "x": 0,
+    "y": 216,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 16.png",
+   "frame": {
+    "x": 144,
+    "y": 216,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 17.png",
+   "frame": {
+    "x": 288,
+    "y": 216,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 18.png",
+   "frame": {
+    "x": 432,
+    "y": 216,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 19.png",
+   "frame": {
+    "x": 576,
+    "y": 216,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 20.png",
+   "frame": {
+    "x": 0,
+    "y": 288,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 21.png",
+   "frame": {
+    "x": 144,
+    "y": 288,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 22.png",
+   "frame": {
+    "x": 288,
+    "y": 288,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-spirit-sigil 23.png",
+   "frame": {
+    "x": 432,
+    "y": 288,
+    "w": 144,
+    "h": 72
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 144,
+    "h": 72
+   },
+   "sourceSize": {
+    "w": 144,
+    "h": 72
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5138888888888888
+   },
+   "duration": 83
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "fox-spirit-sigil.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 720,
+   "h": 360
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 72,
+   "y": 37
+  },
+  "frameTags": [
+   {
+    "name": "fox-spirit-sigil",
+    "from": 0,
+    "to": 23,
+    "direction": "forward"
+   }
+  ]
+ }
+}

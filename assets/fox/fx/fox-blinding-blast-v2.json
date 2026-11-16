@@ -1,0 +1,339 @@
+{
+ "frames": [
+  {
+   "filename": "fox-blinding-blast-v2 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-blinding-blast-v2 1.png",
+   "frame": {
+    "x": 160,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-blinding-blast-v2 2.png",
+   "frame": {
+    "x": 320,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-blinding-blast-v2 3.png",
+   "frame": {
+    "x": 480,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-blinding-blast-v2 4.png",
+   "frame": {
+    "x": 0,
+    "y": 109,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-blinding-blast-v2 5.png",
+   "frame": {
+    "x": 160,
+    "y": 109,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-blinding-blast-v2 6.png",
+   "frame": {
+    "x": 320,
+    "y": 109,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-blinding-blast-v2 7.png",
+   "frame": {
+    "x": 480,
+    "y": 109,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-blinding-blast-v2 8.png",
+   "frame": {
+    "x": 0,
+    "y": 218,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-blinding-blast-v2 9.png",
+   "frame": {
+    "x": 160,
+    "y": 218,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-blinding-blast-v2 10.png",
+   "frame": {
+    "x": 320,
+    "y": 218,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-blinding-blast-v2 11.png",
+   "frame": {
+    "x": 480,
+    "y": 218,
+    "w": 160,
+    "h": 109
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 160,
+    "h": 109
+   },
+   "sourceSize": {
+    "w": 160,
+    "h": 109
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.43119266055045874
+   },
+   "duration": 63
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "fox-blinding-blast-v2.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 640,
+   "h": 327
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 80,
+   "y": 47
+  },
+  "frameTags": [
+   {
+    "name": "fox-blinding-blast-v2",
+    "from": 0,
+    "to": 11,
+    "direction": "forward"
+   }
+  ]
+ }
+}

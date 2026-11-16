@@ -1,0 +1,391 @@
+{
+ "frames": [
+  {
+   "filename": "fox-transform-v2 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 1.png",
+   "frame": {
+    "x": 93,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 2.png",
+   "frame": {
+    "x": 186,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 3.png",
+   "frame": {
+    "x": 279,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 4.png",
+   "frame": {
+    "x": 0,
+    "y": 103,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 5.png",
+   "frame": {
+    "x": 93,
+    "y": 103,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 6.png",
+   "frame": {
+    "x": 186,
+    "y": 103,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 7.png",
+   "frame": {
+    "x": 279,
+    "y": 103,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 8.png",
+   "frame": {
+    "x": 0,
+    "y": 206,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 9.png",
+   "frame": {
+    "x": 93,
+    "y": 206,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 10.png",
+   "frame": {
+    "x": 186,
+    "y": 206,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 11.png",
+   "frame": {
+    "x": 279,
+    "y": 206,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 12.png",
+   "frame": {
+    "x": 0,
+    "y": 309,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-transform-v2 13.png",
+   "frame": {
+    "x": 93,
+    "y": 309,
+    "w": 93,
+    "h": 103
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 93,
+    "h": 103
+   },
+   "sourceSize": {
+    "w": 93,
+    "h": 103
+   },
+   "pivot": {
+    "x": 0.5268817204301075,
+    "y": 0.42718446601941745
+   },
+   "duration": 63
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "fox-transform-v2.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 372,
+   "h": 412
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 49,
+   "y": 44
+  },
+  "frameTags": [
+   {
+    "name": "fox-transform-v2",
+    "from": 0,
+    "to": 13,
+    "direction": "forward"
+   }
+  ]
+ }
+}

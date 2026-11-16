@@ -26,7 +26,7 @@ const LUNGE_DIST: f32 = 52.0;
 pub const LUNGE_REACH: f32 = 12.0;
 const LUNGE_DMG: i32 = 4;
 
-const WIND_DIST: f32 = 65.0;
+pub const WIND_DIST: f32 = 65.0;
 const WIND_DMG: i32 = 4;
 const WIND_GHOSTS: usize = 4;
 

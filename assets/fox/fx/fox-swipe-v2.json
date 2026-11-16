@@ -1,0 +1,235 @@
+{
+ "frames": [
+  {
+   "filename": "fox-swipe-v2 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 66
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 66
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 66
+   },
+   "pivot": {
+    "x": 0.5131578947368421,
+    "y": 0.4696969696969697
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-swipe-v2 1.png",
+   "frame": {
+    "x": 76,
+    "y": 0,
+    "w": 76,
+    "h": 66
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 66
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 66
+   },
+   "pivot": {
+    "x": 0.5131578947368421,
+    "y": 0.4696969696969697
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-swipe-v2 2.png",
+   "frame": {
+    "x": 152,
+    "y": 0,
+    "w": 76,
+    "h": 66
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 66
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 66
+   },
+   "pivot": {
+    "x": 0.5131578947368421,
+    "y": 0.4696969696969697
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-swipe-v2 3.png",
+   "frame": {
+    "x": 0,
+    "y": 66,
+    "w": 76,
+    "h": 66
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 66
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 66
+   },
+   "pivot": {
+    "x": 0.5131578947368421,
+    "y": 0.4696969696969697
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-swipe-v2 4.png",
+   "frame": {
+    "x": 76,
+    "y": 66,
+    "w": 76,
+    "h": 66
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 66
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 66
+   },
+   "pivot": {
+    "x": 0.5131578947368421,
+    "y": 0.4696969696969697
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-swipe-v2 5.png",
+   "frame": {
+    "x": 152,
+    "y": 66,
+    "w": 76,
+    "h": 66
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 66
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 66
+   },
+   "pivot": {
+    "x": 0.5131578947368421,
+    "y": 0.4696969696969697
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-swipe-v2 6.png",
+   "frame": {
+    "x": 0,
+    "y": 132,
+    "w": 76,
+    "h": 66
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 66
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 66
+   },
+   "pivot": {
+    "x": 0.5131578947368421,
+    "y": 0.4696969696969697
+   },
+   "duration": 63
+  },
+  {
+   "filename": "fox-swipe-v2 7.png",
+   "frame": {
+    "x": 76,
+    "y": 132,
+    "w": 76,
+    "h": 66
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 76,
+    "h": 66
+   },
+   "sourceSize": {
+    "w": 76,
+    "h": 66
+   },
+   "pivot": {
+    "x": 0.5131578947368421,
+    "y": 0.4696969696969697
+   },
+   "duration": 63
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "fox-swipe-v2.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 228,
+   "h": 198
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 39,
+   "y": 31
+  },
+  "frameTags": [
+   {
+    "name": "fox-swipe-v2",
+    "from": 0,
+    "to": 7,
+    "direction": "forward"
+   }
+  ]
+ }
+}

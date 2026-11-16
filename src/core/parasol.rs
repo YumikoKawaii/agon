@@ -18,7 +18,7 @@ const TALISMAN_TIP: f32 = 8.0;
 
 pub const FLIGHT_RANGE: f32 = 140.0;
 pub const FLIGHT_SPEED: f32 = 300.0;
-const FLIGHT_DMG: i32 = 6;
+const FLIGHT_DMG: i32 = 3;
 const FLIGHT_HIT: f32 = RADIUS + 7.0;
 const PICKUP_R: f32 = RADIUS + 6.0;
 const PICKUP_DELAY: f32 = 0.4;
@@ -28,13 +28,20 @@ const RETURN_SPEED: f32 = 380.0;
 const STEP_BLINK: f32 = 60.0;
 pub const WAVE_R: f32 = 52.0;
 pub const WAVE_HALF: f32 = 0.6;
-const WAVE_DMG: i32 = 10;
+const WAVE_DMG: i32 = 5;
 const WAVE_FX: &[Apply] = &[Apply(EffectKind::Slow, 60, 40)];
 pub const BOND_R: f32 = 70.0;
 const BOND_EVERY: f32 = 1.0;
 const BOND_SHIELD: Apply = Apply(EffectKind::Shield, 90, 2);
 const BOND_CAP: i32 = 10;
 const STEP_GHOSTS: usize = 6;
+
+const DASH_RANGE: f32 = 80.0;
+const DASH_HIT: f32 = RADIUS + 8.0;
+const DASH_DMG: i32 = 5;
+const DASH_FX: &[Apply] = &[Apply(EffectKind::Slow, 60, 40)];
+pub const BLOSSOM_R: f32 = 60.0;
+const BLOSSOM_DMG: i32 = 14;
 
 pub const STORM_RANGE: f32 = 150.0;
 pub const STORM_R: f32 = 50.0;
@@ -124,7 +131,7 @@ impl Parasols {
             Skill::Parasol => {
                 let from = self.anchor(i).unwrap_or(pos);
                 self.take(i);
-                let to = inside(from + (aim - from).clamp_length_max(FLIGHT_RANGE), 6.0);
+                let to = inside(pos + (aim - pos).clamp_length_max(FLIGHT_RANGE), 6.0);
                 self.flights.push(Flight { owner: i, pos: from, to, spin: 0.0, back: false, hit: false });
                 events.push(Event::ParasolThrow { from, to });
             }
@@ -155,6 +162,29 @@ impl Parasols {
                     strike(players, t, Hit::new(WAVE_DMG, dir, Element::Spirit, true, WAVE_FX), events);
                 }
             }
+            Skill::PetalDash => {
+                let end = pos + (aim - pos).clamp_length_max(DASH_RANGE);
+                players[i].pos = end;
+                players[i].clamp();
+                let end = players[i].pos;
+                let ang = players[i].ang;
+                for n in 0..STEP_GHOSTS {
+                    let g = pos.lerp(end, n as f32 / STEP_GHOSTS as f32);
+                    events.push(Event::Ghost { seat: i, pos: g, ang, life: 0.15 + n as f32 * 0.06 });
+                }
+                events.push(Event::PetalDash { from: pos, to: end, ang });
+                if seg_dist(players[t].pos, pos, end) < DASH_HIT {
+                    let dir = (end - pos).normalize_or(f);
+                    strike(players, t, Hit::new(DASH_DMG, dir, Element::Spirit, false, DASH_FX), events);
+                }
+            }
+            Skill::Blossom => {
+                events.push(Event::Blossom { pos });
+                let d = players[t].pos - pos;
+                if d.length() < BLOSSOM_R + RADIUS {
+                    strike(players, t, Hit::new(BLOSSOM_DMG, d.normalize_or(f) * 2.5, Element::Spirit, true, &[]).knock(), events);
+                }
+            }
             Skill::Storm => {
                 let at = match self.anchor(i) {
                     Some(p) => p,
@@ -167,6 +197,9 @@ impl Parasols {
                 self.take(i);
                 self.plant(i, at);
                 self.storms.push(Storm { owner: i, pos: at, t: 0.0, tick: 0.0 });
+                if let Some(q) = players[i].kit().skills.iter().position(|k| *k == Skill::Parasol) {
+                    players[i].cd[q] = 0.0;
+                }
                 events.push(Event::StormCast { caster: pos, at });
             }
             _ => {}
@@ -225,6 +258,9 @@ impl Parasols {
             self.planted_t[i] += DT;
             let near = self.anchor(i).is_some_and(|a| players[i].pos.distance(a) < BOND_R);
             players[i].bond = near;
+            if players[i].kit().skin == "parasol" {
+                players[i].armed = !self.out(i);
+            }
             self.bond_t[i] = if near { self.bond_t[i] + DT } else { 0.0 };
             if self.bond_t[i] >= BOND_EVERY {
                 self.bond_t[i] -= BOND_EVERY;
@@ -246,7 +282,11 @@ impl Parasols {
                 }
             }
         }
+        let anchors = [self.anchor(0), self.anchor(1)];
         self.storms.retain_mut(|s| {
+            if let Some(a) = anchors[s.owner] {
+                s.pos = a;
+            }
             s.t += DT;
             s.tick += DT;
             let t = 1 - s.owner;
@@ -277,7 +317,7 @@ impl Parasols {
 }
 
 fn refresh_step(p: &mut Player) {
-    if let Some(slot) = p.kit().skills.iter().position(|k| *k == Skill::SpiritStep) {
+    if let Some(slot) = p.kit().skills.iter().position(|k| *k == Skill::PetalDash) {
         p.cd[slot] = 0.0;
     }
 }

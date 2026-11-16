@@ -42,12 +42,10 @@ pub fn draw_ground(b: &Battle, cam: &Camera) {
     for s in &b.parasols.storms {
         let k = s.k();
         let g = cam.proj(s.pos);
-        let r = STORM_R * S * (0.5 + 0.5 * (k * 4.0).min(1.0));
-        let field = &assets::get().parasol.field;
-        field.draw_at(field.frame_at(time * (1.0 + 1.5 * k), true).unwrap_or(0), g, vec2(64.0, 72.0), r / 50.0, 0.85 + 0.15 * k);
-        let pulse = (k * 8.0 * std::f32::consts::TAU).sin().abs();
-        draw_circle_lines(g.x, g.y, r * (1.0 - k), 2.5, alpha(WHITE, 0.3 + 0.5 * pulse));
-        glow(g, r * 0.6, SAKURA, 0.2 + 0.3 * k);
+        let r = STORM_R * S;
+        let sheet = &assets::get().parasol.tempest;
+        sheet.draw_at(((k * 16.0) as usize).min(15), g, vec2(76.0, 65.0), S * STORM_R / 52.0, 1.0);
+        glow(g, r * 0.6, SAKURA, 0.1 + 0.2 * k);
     }
     for fl in &b.parasols.flights {
         let g = cam.proj(fl.pos);
@@ -114,6 +112,16 @@ pub fn draw_ground(b: &Battle, cam: &Camera) {
         let c = cam.proj(s.pos);
         draw_circle(c.x, c.y, NEEDLE_R * S * 0.8, Color::new(0.0, 0.0, 0.0, 0.3));
     }
+    for o in &b.foxes.orbs {
+        let c = cam.proj(o.pos);
+        draw_circle(c.x, c.y, o.kind.r() * S * 0.8, Color::new(0.0, 0.0, 0.0, 0.3));
+    }
+    for s in &b.foxes.shines {
+        let g = cam.proj(s.pos);
+        let sh = &assets::get().fox.sigil;
+        let k = crate::core::fox::SHINE_R / 56.0;
+        sh.draw_at(sh.frame_at(time, true).unwrap_or(0), g, vec2(72.0, 37.0), k * S, 0.5 + 0.5 * s.k());
+    }
 }
 
 pub fn draw_air(b: &Battle, cam: &Camera, sword: &Texture2D) {
@@ -148,7 +156,27 @@ pub fn draw_air(b: &Battle, cam: &Camera, sword: &Texture2D) {
         draw_line(tail.x, tail.y, c.x, c.y, TALISMAN_R * S, alpha(SAKURA, 0.35));
         glow(c, TALISMAN_R * S, SAKURA, 0.6);
         let bolt = &assets::get().parasol.bolt;
-        bolt.draw_rot(bolt.frame_at(t.age, true).unwrap_or(0), c, vec2(34.0, 16.0), 0.5 * S, d.y.atan2(d.x), 1.0);
+        bolt.draw_rot(bolt.frame_at(t.age, true).unwrap_or(0), c, vec2(34.0, 12.0), 0.7 * S, d.y.atan2(d.x), 1.0);
+    }
+    for o in &b.foxes.orbs {
+        let c = cam.air(o.pos, CHEST);
+        let d = o.vel.normalize_or(Vec2::X);
+        let r = o.kind.r();
+        let fx = &assets::get().fox;
+        let (sh, col) = match o.kind {
+            crate::core::fox::OrbKind::Wisp => (&fx.wisp, MINT),
+            crate::core::fox::OrbKind::Blind => (&fx.blast, GOLD),
+            _ => (&fx.orb, MINT),
+        };
+        let ang = d.y.atan2(d.x);
+        match o.kind {
+            crate::core::fox::OrbKind::Blind => {
+                glow(c, r * S * 2.0, col, 0.5);
+                sh.draw_at(0, c, vec2(80.0, 47.0), 0.35 * S, 1.0);
+            }
+            crate::core::fox::OrbKind::Wisp => sh.draw_rot(sh.frame_at(o.age, true).unwrap_or(0), c, vec2(54.0, 17.0), r / 8.0 * S, ang, 1.0),
+            _ => sh.draw_rot(sh.frame_at(o.age, true).unwrap_or(0), c, vec2(44.0, 19.0), r / 8.0 * S, ang, 1.0),
+        }
     }
     draw_wards(b, cam, time);
     for h in &b.warden.hooks {
@@ -240,7 +268,8 @@ pub fn draw_aim(b: &Battle, cam: &Camera) {
     let mouse = cam.mouse_world();
     let skills = me.kit().skills;
     if is_key_down(KeyCode::R) {
-        let (r, c) = match skills[3] {
+        let (r, c) = match me.skill(3) {
+            Skill::Blossom => (crate::core::parasol::BLOSSOM_R, alpha(SAKURA, 0.35)),
             Skill::Judgement => (JUDGE_RANGE, alpha(GOLD, 0.35)),
             Skill::Cauldron => (CAULDRON_RANGE, alpha(LILAC, 0.35)),
             Skill::Fury => (CABLE_RANGE, alpha(CRIMSON, 0.35)),
@@ -250,8 +279,7 @@ pub fn draw_aim(b: &Battle, cam: &Camera) {
         draw_circle_lines(at.x, at.y, r * S, 1.5, c);
     }
     if skills[1] == Skill::Parasol && is_key_down(KeyCode::Q) {
-        let from = cam.proj(b.parasols.anchor(0).unwrap_or(me.pos));
-        draw_circle_lines(from.x, from.y, FLIGHT_RANGE * S, 1.5, alpha(SAKURA, 0.35));
+        draw_circle_lines(at.x, at.y, FLIGHT_RANGE * S, 1.5, alpha(SAKURA, 0.35));
     }
     if skills[1] == Skill::Potion && is_key_down(KeyCode::Q) {
         draw_circle_lines(at.x, at.y, POTION_RANGE * S, 1.5, alpha(LILAC, 0.35));
@@ -270,19 +298,10 @@ fn draw_parasol(c: Vec2, spin: f32, a: f32) {
 }
 
 fn draw_parasol_scaled(c: Vec2, spin: f32, a: f32, scale: f32) {
-    let r = 7.0 * S * scale;
-    glow(c, r * 1.1, SAKURA, 0.25 * a);
-    draw_line(c.x, c.y, c.x, c.y + r * 1.3, 0.8 * S, alpha(Color::new(0.55, 0.38, 0.3, 1.0), a));
-    draw_circle(c.x, c.y, r, alpha(Color::new(1.0, 0.8, 0.88, 1.0), a));
-    for n in 0..8 {
-        let d = Vec2::from_angle(spin + n as f32 * std::f32::consts::TAU / 8.0);
-        let e = c + d * r;
-        draw_line(c.x, c.y, e.x, e.y, 0.5 * S, alpha(Color::new(0.85, 0.5, 0.65, 1.0), a));
-        let p = c + d * r * 0.65;
-        draw_circle(p.x, p.y, 0.9 * S, alpha(WHITE, 0.8 * a));
-    }
-    draw_circle_lines(c.x, c.y, r, 0.6 * S, alpha(Color::new(0.45, 0.3, 0.5, 1.0), a));
-    draw_circle(c.x, c.y, 1.2 * S, alpha(GOLD, a));
+    let r = 8.0 * S * scale;
+    glow(c, r * 1.1, SAKURA, 0.2 * a);
+    let top = &assets::get().parasol.top;
+    top.draw_rot(0, c, vec2(24.0, 24.0), r / 23.0, spin, a);
 }
 
 const LEAF: Color = Color::new(0.55, 1.0, 0.82, 1.0);

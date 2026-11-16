@@ -23,6 +23,8 @@ use crate::{
 const LEAF: Color = Color::new(0.55, 1.0, 0.82, 1.0);
 const MOON: Color = Color::new(0.8, 0.68, 1.0, 1.0);
 
+const FOX_MINT: Color = Color::new(0.498, 0.89, 0.784, 1.0);
+const FOX_LAV: Color = Color::new(0.718, 0.608, 0.878, 1.0);
 const SPIN_LIFE: f32 = 0.3;
 const ZIP_LIFE: f32 = 0.3;
 const FURY_GHOST: Color = Color::new(1.0, 0.35, 0.42, 1.0);
@@ -134,6 +136,14 @@ enum Kind {
     Bloom,
     Step,
     Tempest,
+    Dash,
+    Blossom,
+    Return,
+    FoxBlast,
+    FoxStrike,
+    FoxSwipe,
+    FoxPoof,
+    FoxDash,
 }
 
 struct Sprite {
@@ -153,7 +163,15 @@ fn sheet(kind: Kind) -> (&'static assets::Sheet, f32) {
         Kind::Release => (&assets::get().sword.release, 0.6),
         Kind::Bloom => (&assets::get().parasol.bloom, 0.5),
         Kind::Step => (&assets::get().parasol.step, 0.6),
-        Kind::Tempest => (&assets::get().parasol.burst, STORM_R / 52.0),
+        Kind::Tempest => (&assets::get().parasol.tempest, STORM_R / 52.0),
+        Kind::Dash => (&assets::get().parasol.dash, 1.0),
+        Kind::Blossom => (&assets::get().parasol.blossom, crate::core::parasol::BLOSSOM_R / 60.0),
+        Kind::Return => (&assets::get().parasol.ret, 0.8),
+        Kind::FoxBlast => (&assets::get().fox.blast, crate::core::fox::BLIND_BLAST / 60.0),
+        Kind::FoxStrike => (&assets::get().fox.strike, crate::core::fox::SHINE_R / 60.0),
+        Kind::FoxSwipe => (&assets::get().fox.swipe, crate::core::fox::SWIPE_R / 35.0),
+        Kind::FoxPoof => (&assets::get().fox.poof, 0.6),
+        Kind::FoxDash => (&assets::get().fox.dash, 0.8),
     }
 }
 
@@ -490,15 +508,18 @@ impl Fx {
                 self.ring(pos, CHEST, 18.0, 2.0, 0.3, SAKURA, 3.0);
             }
             Event::SpiritStep { from, to, ang } => {
-                self.bloom(from);
-                self.sprites.push(Sprite { kind: Kind::Step, pos: to, t: 0.0, ang });
-                self.slashes.push(Slash { a: from, b: to, t: SLASH_LIFE * 1.6, col: SAKURA, max: SLASH_LIFE * 1.6 });
-                for _ in 0..20 {
-                    let p = from.lerp(to, gen_range(0.0, 1.0));
-                    self.part(p, CHEST + gen_range(-8.0, 8.0), Vec2::from_angle(gen_range(0.0, TAU)) * 40.0, gen_range(10.0, 60.0), 0.6, gen_range(1.2, 2.2), petal(), 0.92);
-                }
-                self.ring(to, 0.0, 4.0, 30.0, 0.35, SAKURA, 3.0);
+                self.sprites.push(Sprite { kind: Kind::Return, pos: from, t: 0.0, ang });
+                self.sprites.push(Sprite { kind: Kind::Return, pos: to, t: 0.0, ang });
                 self.kick(9.0, 0.12);
+            }
+            Event::PetalDash { from, to, ang } => {
+                let _ = to;
+                self.sprites.push(Sprite { kind: Kind::Dash, pos: from, t: 0.0, ang });
+                self.kick(5.0, 0.05);
+            }
+            Event::Blossom { pos } => {
+                self.sprites.push(Sprite { kind: Kind::Blossom, pos, t: 0.0, ang: 0.0 });
+                self.kick(10.0, 0.2);
             }
             Event::StormCast { caster, at } => {
                 self.bloom(caster);
@@ -513,6 +534,39 @@ impl Fx {
                 }
                 self.petals(pos, 20.0, 60, 240.0, 1.0);
                 self.kick(16.0, 0.4);
+            }
+            Event::FoxCast { tip, dir } => {
+                for _ in 0..6 {
+                    let v = Vec2::from_angle(dir.y.atan2(dir.x) + gen_range(-0.6, 0.6)) * gen_range(30.0, 90.0);
+                    self.part(tip, CHEST, v, gen_range(-10.0, 25.0), 0.3, gen_range(1.0, 1.6), pick(FOX_MINT, FOX_LAV), 0.86);
+                }
+            }
+            Event::FoxBlast { pos } => {
+                self.sprites.push(Sprite { kind: Kind::FoxBlast, pos, t: 0.0, ang: 0.0 });
+                self.kick(8.0, 0.1);
+            }
+            Event::FoxStrike { pos } => {
+                self.sprites.push(Sprite { kind: Kind::FoxStrike, pos, t: 0.0, ang: 0.0 });
+                self.kick(10.0, 0.15);
+            }
+            Event::FoxSwipe { pos, ang, big } => {
+                self.sprites.push(Sprite { kind: Kind::FoxSwipe, pos, t: 0.0, ang });
+                if big {
+                    self.kick(4.0, 0.0);
+                }
+            }
+            Event::FoxDash { from, to } => {
+                let d = (to - from).normalize_or_zero();
+                self.sprites.push(Sprite { kind: Kind::FoxDash, pos: from, t: 0.0, ang: d.y.atan2(d.x) });
+                for _ in 0..14 {
+                    let p = from.lerp(to, gen_range(0.0, 1.0));
+                    self.part(p, CHEST + gen_range(-4.0, 4.0), d.perp() * gen_range(-30.0, 30.0) - d * 30.0, gen_range(0.0, 20.0), 0.4, 1.6, pick(FOX_MINT, FOX_LAV), 0.88);
+                }
+                self.kick(5.0, 0.05);
+            }
+            Event::FoxPoof { pos } => {
+                self.sprites.push(Sprite { kind: Kind::FoxPoof, pos, t: 0.0, ang: 0.0 });
+                self.kick(4.0, 0.05);
             }
             Event::Heal { pos, amount } => {
                 self.burst(pos, CHEST, 10, 60.0, 0.4, 1.6, MINT);
@@ -682,10 +736,25 @@ impl Fx {
     pub fn draw_air(&self, cam: &Camera, players: &[Player; 2]) {
         for s in &self.sprites {
             let (sh, k) = sheet(s.kind);
+            if matches!(s.kind, Kind::Tempest) {
+                let i = (s.t * sh.fps) as usize + 16;
+                if i < sh.frames {
+                    sh.draw_at(i, cam.proj(s.pos), vec2(76.0, 65.0), k * S, 1.0);
+                }
+                continue;
+            }
             if let Some(i) = sh.frame_at(s.t, false) {
                 match s.kind {
                     Kind::Step => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(20.0, 40.0), k * S, s.ang, 1.0),
                     Kind::Tempest => sh.draw_at(i, cam.proj(s.pos), vec2(74.0, 80.0), k * S, 1.0),
+                    Kind::Dash => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(12.0, 24.0), k * S, s.ang, 1.0),
+                    Kind::Blossom => sh.draw_at(i, cam.proj(s.pos), vec2(70.0, 71.0), k * S, 1.0),
+                    Kind::Return => sh.draw_at(i, cam.proj(s.pos), vec2(40.0, 60.0), k * S, 1.0),
+                    Kind::FoxBlast => sh.draw_at(i, cam.proj(s.pos), vec2(80.0, 47.0), k * S, 1.0),
+                    Kind::FoxStrike => sh.draw_at(i, cam.proj(s.pos), vec2(74.0, 44.0), k * S, 1.0),
+                    Kind::FoxSwipe => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(39.0, 31.0), k * S, s.ang, 1.0),
+                    Kind::FoxPoof => sh.draw_at(i, cam.air(s.pos, CHEST), vec2(49.0, 44.0), k * S, 1.0),
+                    Kind::FoxDash => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(58.0, 30.0), k * S, s.ang, 1.0),
                     Kind::Bloom => sh.draw(i, cam.air(s.pos, CHEST), k * S, 1.0),
                     _ => sh.draw(i, cam.air(s.pos, 8.0), k * S, 1.0),
                 }

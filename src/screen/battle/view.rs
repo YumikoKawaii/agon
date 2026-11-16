@@ -157,7 +157,7 @@ pub fn draw_player(cam: &Camera, p: &Player, debug: bool) {
         return;
     }
     draw_status(cam, p, false);
-    let tex = assets::skin(p.kit).frame(p.state, p.dir8(), p.age, p.anim_ticks());
+    let tex = assets::skin_in(p.kit, p.armed).frame(p.state, p.dir8(), p.age, p.anim_ticks());
     let tint = if p.state == State::Hit && p.age < HIT_FLASH_TICKS { HIT_TINT } else { status_tint(p) };
     draw_sprite(tex, s, tint);
     draw_status(cam, p, true);
@@ -335,14 +335,14 @@ fn draw_skills(p: &Player) {
     for (k, key) in ["LMB", "Q", "E", "R"].iter().enumerate() {
         let s = sizes[k];
         let sr = Rect::new(x, r.y + r.h - 16.0 - s, s, s);
-        let extra = if p.kit().skills[k].charged() {
+        let extra = if p.skill(k).charged() {
             Some(p.charges.to_string())
-        } else if p.kit().skills[k] == crate::core::Skill::Cable {
+        } else if p.skill(k) == crate::core::Skill::Cable {
             Some(if p.fury > 0.0 { "100".to_string() } else { (p.gas as i32).to_string() })
         } else {
             None
         };
-        draw_slot(sr, key, assets::skill_icon(p.kit().skills[k]), if k == 3 { gold } else { lav }, p.cooldown_frac(k), p.cd[k], extra, p.ready(k));
+        draw_slot(sr, key, assets::skill_icon(p.skill(k)), if k == 3 { gold } else { lav }, p.cooldown_frac(k), p.cd(k), extra, p.ready(k));
         x += s + gap;
         if k == 3 {
             draw_rectangle(x - gap / 2.0 - 1.0, r.y + 22.0, 2.0, r.h - 40.0, alpha(crate::ui::INK, 0.4));
@@ -395,5 +395,6 @@ fn passive_state(p: &Player) -> (f32, Option<String>, bool) {
         Passive::Hexed => (0.0, None, true),
         Passive::Intent => (0.0, Some(format!("{}/4", p.intent)), p.intent >= 3),
         Passive::Bond => (0.0, None, p.bond),
+        Passive::Fox => (0.0, None, !p.armed),
     }
 }

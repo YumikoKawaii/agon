@@ -1,0 +1,339 @@
+{
+ "frames": [
+  {
+   "filename": "fox-wisp 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-wisp 1.png",
+   "frame": {
+    "x": 69,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-wisp 2.png",
+   "frame": {
+    "x": 138,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-wisp 3.png",
+   "frame": {
+    "x": 207,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-wisp 4.png",
+   "frame": {
+    "x": 0,
+    "y": 34,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-wisp 5.png",
+   "frame": {
+    "x": 69,
+    "y": 34,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-wisp 6.png",
+   "frame": {
+    "x": 138,
+    "y": 34,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-wisp 7.png",
+   "frame": {
+    "x": 207,
+    "y": 34,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-wisp 8.png",
+   "frame": {
+    "x": 0,
+    "y": 68,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-wisp 9.png",
+   "frame": {
+    "x": 69,
+    "y": 68,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-wisp 10.png",
+   "frame": {
+    "x": 138,
+    "y": 68,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  },
+  {
+   "filename": "fox-wisp 11.png",
+   "frame": {
+    "x": 207,
+    "y": 68,
+    "w": 69,
+    "h": 34
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 69,
+    "h": 34
+   },
+   "sourceSize": {
+    "w": 69,
+    "h": 34
+   },
+   "pivot": {
+    "x": 0.782608695652174,
+    "y": 0.5
+   },
+   "duration": 83
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "fox-wisp.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 276,
+   "h": 102
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 54,
+   "y": 17
+  },
+  "frameTags": [
+   {
+    "name": "fox-wisp",
+    "from": 0,
+    "to": 11,
+    "direction": "forward"
+   }
+  ]
+ }
+}

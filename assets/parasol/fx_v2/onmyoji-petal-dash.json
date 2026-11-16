@@ -1,0 +1,287 @@
+{
+ "frames": [
+  {
+   "filename": "onmyoji-petal-dash 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 48
+   },
+   "pivot": {
+    "x": 0.10714285714285714,
+    "y": 0.5
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-petal-dash 1.png",
+   "frame": {
+    "x": 112,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 48
+   },
+   "pivot": {
+    "x": 0.10714285714285714,
+    "y": 0.5
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-petal-dash 2.png",
+   "frame": {
+    "x": 224,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 48
+   },
+   "pivot": {
+    "x": 0.10714285714285714,
+    "y": 0.5
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-petal-dash 3.png",
+   "frame": {
+    "x": 336,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 48
+   },
+   "pivot": {
+    "x": 0.10714285714285714,
+    "y": 0.5
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-petal-dash 4.png",
+   "frame": {
+    "x": 0,
+    "y": 48,
+    "w": 112,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 48
+   },
+   "pivot": {
+    "x": 0.10714285714285714,
+    "y": 0.5
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-petal-dash 5.png",
+   "frame": {
+    "x": 112,
+    "y": 48,
+    "w": 112,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 48
+   },
+   "pivot": {
+    "x": 0.10714285714285714,
+    "y": 0.5
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-petal-dash 6.png",
+   "frame": {
+    "x": 224,
+    "y": 48,
+    "w": 112,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 48
+   },
+   "pivot": {
+    "x": 0.10714285714285714,
+    "y": 0.5
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-petal-dash 7.png",
+   "frame": {
+    "x": 336,
+    "y": 48,
+    "w": 112,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 48
+   },
+   "pivot": {
+    "x": 0.10714285714285714,
+    "y": 0.5
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-petal-dash 8.png",
+   "frame": {
+    "x": 0,
+    "y": 96,
+    "w": 112,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 48
+   },
+   "pivot": {
+    "x": 0.10714285714285714,
+    "y": 0.5
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-petal-dash 9.png",
+   "frame": {
+    "x": 112,
+    "y": 96,
+    "w": 112,
+    "h": 48
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 48
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 48
+   },
+   "pivot": {
+    "x": 0.10714285714285714,
+    "y": 0.5
+   },
+   "duration": 63
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "onmyoji-petal-dash.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 448,
+   "h": 144
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 12,
+   "y": 24
+  },
+  "frameTags": [
+   {
+    "name": "onmyoji-petal-dash",
+    "from": 0,
+    "to": 9,
+    "direction": "forward"
+   }
+  ]
+ }
+}

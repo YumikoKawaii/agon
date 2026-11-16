@@ -1,0 +1,339 @@
+{
+ "frames": [
+  {
+   "filename": "onmyoji-blossom-spin 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-blossom-spin 1.png",
+   "frame": {
+    "x": 140,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-blossom-spin 2.png",
+   "frame": {
+    "x": 280,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-blossom-spin 3.png",
+   "frame": {
+    "x": 420,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-blossom-spin 4.png",
+   "frame": {
+    "x": 0,
+    "y": 136,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-blossom-spin 5.png",
+   "frame": {
+    "x": 140,
+    "y": 136,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-blossom-spin 6.png",
+   "frame": {
+    "x": 280,
+    "y": 136,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-blossom-spin 7.png",
+   "frame": {
+    "x": 420,
+    "y": 136,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-blossom-spin 8.png",
+   "frame": {
+    "x": 0,
+    "y": 272,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-blossom-spin 9.png",
+   "frame": {
+    "x": 140,
+    "y": 272,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-blossom-spin 10.png",
+   "frame": {
+    "x": 280,
+    "y": 272,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  },
+  {
+   "filename": "onmyoji-blossom-spin 11.png",
+   "frame": {
+    "x": 420,
+    "y": 272,
+    "w": 140,
+    "h": 136
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 136
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 136
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.5220588235294118
+   },
+   "duration": 63
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "onmyoji-blossom-spin.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 560,
+   "h": 408
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 70,
+   "y": 71
+  },
+  "frameTags": [
+   {
+    "name": "onmyoji-blossom-spin",
+    "from": 0,
+    "to": 11,
+    "direction": "forward"
+   }
+  ]
+ }
+}

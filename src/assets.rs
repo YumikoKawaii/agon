@@ -23,7 +23,7 @@ pub struct Skin {
 const BAR_W: f32 = 360.0;
 const BAR_H: f32 = 10.0;
 
-const TOTAL_STEPS: usize = KITS.len() * CLIPS.len() * DIRS.len() + 1;
+const TOTAL_STEPS: usize = (KITS.len() + 2) * CLIPS.len() * DIRS.len() + 1;
 
 fn draw_progress(done: usize, logo: Option<&Texture2D>, bar: Option<&Nine>) {
     clear_background(ui::BG);
@@ -154,8 +154,22 @@ pub struct ParasolFx {
     pub bolt: Sheet,
     pub bloom: Sheet,
     pub step: Sheet,
-    pub field: Sheet,
-    pub burst: Sheet,
+    pub tempest: Sheet,
+    pub dash: Sheet,
+    pub blossom: Sheet,
+    pub ret: Sheet,
+    pub top: Sheet,
+}
+
+pub struct FoxFx {
+    pub orb: Sheet,
+    pub wisp: Sheet,
+    pub blast: Sheet,
+    pub sigil: Sheet,
+    pub strike: Sheet,
+    pub swipe: Sheet,
+    pub poof: Sheet,
+    pub dash: Sheet,
 }
 
 pub struct SwordFx {
@@ -204,16 +218,41 @@ pub struct UiKit {
     pub icons: Vec<Texture2D>,
 }
 
-pub const ICONS: [&str; 16] = ["needle", "ray", "ward", "judgement", "cut", "swallow", "windstep", "formation", "hex", "potion", "broom", "cauldron", "grace", "hexed", "intent", "bond"];
+pub const ICONS: [&str; 32] = [
+    "needle", "ray", "ward", "judgement", "cut", "swallow", "windstep", "formation", "hex", "potion", "broom", "cauldron", "grace", "hexed", "intent", "paperbond", "talisman", "parasol", "petaldash", "blossom", "spiritreturn", "tempest",
+    "foxorb", "unpredictable", "shininglight", "blindinglight", "foxclaw", "foxswipe", "foxleap", "foxball", "foxreturn", "foxform",
+];
 pub const PASSIVE_ICON: usize = 12;
+const PARASOL_ICON: usize = 16;
+const FOX_ICON: usize = 22;
 
 pub fn skill_icon(s: crate::core::Skill) -> Option<&'static Texture2D> {
-    let i = s as usize;
-    (i < PASSIVE_ICON).then(|| &get().ui.icons[i])
+    use crate::core::Skill;
+    let i = match s {
+        Skill::Talisman => PARASOL_ICON,
+        Skill::Parasol => PARASOL_ICON + 1,
+        Skill::PetalDash => PARASOL_ICON + 2,
+        Skill::Blossom => PARASOL_ICON + 3,
+        Skill::SpiritStep => PARASOL_ICON + 4,
+        Skill::Storm => PARASOL_ICON + 5,
+        Skill::FoxOrb => FOX_ICON,
+        Skill::Unpredictable => FOX_ICON + 1,
+        Skill::ShiningLight => FOX_ICON + 2,
+        Skill::BlindLight => FOX_ICON + 3,
+        Skill::FoxClaw => FOX_ICON + 4,
+        Skill::FoxSwipe => FOX_ICON + 5,
+        Skill::FoxWisp => FOX_ICON + 6,
+        Skill::Vanish => FOX_ICON + 8,
+        _ => s as usize,
+    };
+    (i < PASSIVE_ICON || (PARASOL_ICON..ICONS.len()).contains(&i)).then(|| &get().ui.icons[i])
 }
 
 pub fn passive_icon(p: crate::core::kit::Passive) -> &'static Texture2D {
-    &get().ui.icons[PASSIVE_ICON + p as usize]
+    match p {
+        crate::core::kit::Passive::Fox => &get().ui.icons[FOX_ICON + 9],
+        _ => &get().ui.icons[PASSIVE_ICON + p as usize],
+    }
 }
 
 pub fn portrait(kit: usize) -> &'static Texture2D {
@@ -224,10 +263,13 @@ pub struct Assets {
     pub ui: UiKit,
     pub portraits: Vec<Texture2D>,
     pub skins: Vec<Skin>,
+    pub unarmed: Skin,
+    pub fox_form: Skin,
     pub spirit_sword: Texture2D,
     pub witch: WitchFx,
     pub sword: SwordFx,
     pub parasol: ParasolFx,
+    pub fox: FoxFx,
     pub status: Vec<Status>,
     pub bleed_pop: Status,
 }
@@ -250,6 +292,8 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     for kit in &KITS {
         skins.push(Skin::load(kit.skin, progress).await?);
     }
+    let unarmed = Skin::load("parasol_unarmed", progress).await?;
+    let fox_form = Skin::load("fox_form", progress).await?;
     progress.fetch_add(1, Ordering::Relaxed);
     let spirit_sword = texture("assets/sword/spirit_sword.png").await?;
     let witch = WitchFx {
@@ -266,11 +310,24 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
         release: Sheet::load("assets/sword/fx/release/sword-intent-release.png", 64.0, 51.0, 8, 16.0).await?,
     };
     let parasol = ParasolFx {
-        bolt: Sheet::load("assets/parasol/fx/sakura-talisman-bolt.png", 48.0, 32.0, 8, 12.0).await?,
+        bolt: Sheet::load("assets/parasol/fx_v2/onmyoji-talisman-bolt.png", 48.0, 24.0, 6, 12.0).await?,
+        dash: Sheet::load("assets/parasol/fx_v2/onmyoji-petal-dash.png", 112.0, 48.0, 10, 16.0).await?,
+        blossom: Sheet::load("assets/parasol/fx_v2/onmyoji-blossom-spin.png", 140.0, 136.0, 12, 16.0).await?,
+        top: Sheet::load("assets/parasol/fx_v2/parasol-top.png", 48.0, 48.0, 1, 1.0).await?,
+        ret: Sheet::load("assets/parasol/fx_v2/onmyoji-spirit-return.png", 85.0, 102.0, 10, 16.0).await?,
         bloom: Sheet::load("assets/parasol/fx/sakura-bloom-pop.png", 64.0, 64.0, 8, 16.0).await?,
         step: Sheet::load("assets/parasol/fx/sakura-spirit-step.png", 96.0, 80.0, 10, 16.0).await?,
-        field: Sheet::load("assets/parasol/fx/sakura-tempest-field.png", 128.0, 112.0, 16, 12.0).await?,
-        burst: Sheet::load("assets/parasol/fx/sakura-tempest-burst.png", 143.0, 178.0, 12, 16.0).await?,
+        tempest: Sheet::load("assets/parasol/fx_v2/onmyoji-tempest.png", 152.0, 122.0, 20, 12.0).await?,
+    };
+    let fox = FoxFx {
+        orb: Sheet::load("assets/fox/fx/fox-orb-v2.png", 61.0, 39.0, 24, 12.0).await?,
+        wisp: Sheet::load("assets/fox/fx/fox-wisp.png", 69.0, 34.0, 12, 12.0).await?,
+        blast: Sheet::load("assets/fox/fx/fox-blinding-blast-v2.png", 160.0, 109.0, 12, 16.0).await?,
+        sigil: Sheet::load("assets/fox/fx/fox-spirit-sigil.png", 144.0, 72.0, 24, 12.0).await?,
+        strike: Sheet::load("assets/fox/fx/fox-foxfire-flare.png", 148.0, 100.0, 12, 16.0).await?,
+        swipe: Sheet::load("assets/fox/fx/fox-swipe-v2.png", 76.0, 66.0, 8, 16.0).await?,
+        poof: Sheet::load("assets/fox/fx/fox-transform-v2.png", 93.0, 103.0, 14, 16.0).await?,
+        dash: Sheet::load("assets/fox/fx/fox-dash-v2.png", 134.0, 60.0, 12, 16.0).await?,
     };
     let status = vec![
         load_status("slow", 36.0, 43.0, 12, 10.0, vec2(17.0, 34.0), true).await?,
@@ -302,7 +359,7 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     for kit in &KITS {
         portraits.push(texture(&format!("assets/{}/portrait.png", kit.skin)).await?);
     }
-    Ok(Assets { ui, portraits, skins, spirit_sword, witch, sword, parasol, status, bleed_pop })
+    Ok(Assets { ui, portraits, skins, unarmed, fox_form, spirit_sword, witch, sword, parasol, fox, status, bleed_pop })
 }
 
 pub async fn load() -> AResult {
@@ -332,4 +389,14 @@ pub fn get() -> &'static Assets {
 
 pub fn skin(kit: usize) -> &'static Skin {
     &get().skins[kit.min(KITS.len() - 1)]
+}
+
+pub fn skin_in(kit: usize, armed: bool) -> &'static Skin {
+    if !armed && KITS[kit.min(KITS.len() - 1)].skin == "parasol" {
+        &get().unarmed
+    } else if !armed && KITS[kit.min(KITS.len() - 1)].skin == "fox" {
+        &get().fox_form
+    } else {
+        skin(kit)
+    }
 }

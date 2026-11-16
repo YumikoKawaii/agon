@@ -6,10 +6,10 @@ use macroquad::{
 };
 
 use crate::core::{
-    hex::{BOLT_SPEED, CAULDRON_R, CAULDRON_RANGE, POTION_R, POTION_RANGE, POTION_T},
+    hex::{BOLT_SPEED, BROOM_DIST, CAULDRON_R, CAULDRON_RANGE, POTION_R, POTION_RANGE, POTION_T},
     magic::{JUDGE_R, JUDGE_RANGE, RAY_LEN, RAY_W},
     seg_dist,
-    sword::{FORM_R, FORM_RANGE, INTENT_RANGE},
+    sword::{FORM_R, FORM_RANGE, INTENT_RANGE, WIND_DIST},
     Battle, Input, Skill, DT, RADIUS,
 };
 
@@ -149,13 +149,13 @@ impl Bot {
                 Skill::Judgement => dist < JUDGE_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
                 Skill::Cut => dist < 24.0 || (me.intent_ready() && dist < INTENT_RANGE - 20.0),
                 Skill::Swallow => dist < 45.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.08,
-                Skill::WindStep => dist > 80.0 && me.charges > 1 && gen_range(0.0, 1.0) < self.level.aggression * 0.02,
+                Skill::WindStep => (dist > 80.0 && me.charges > 1 && gen_range(0.0, 1.0) < self.level.aggression * 0.02) || (dist < WIND_DIST - 10.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.06),
                 Skill::Formation => dist < FORM_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.03,
                 Skill::Ward => false,
                 Skill::Hex => dist < 200.0,
                 Skill::Potion => dist < POTION_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.06,
                 Skill::Cauldron => dist < CAULDRON_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
-                Skill::Broom => false,
+                Skill::Broom => dist < BROOM_DIST - 10.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.06,
                 Skill::Slash => dist < 26.0,
                 Skill::Whirl => dist < 32.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.1,
                 Skill::Cable => dist > 50.0 && me.gas > 50.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
@@ -163,11 +163,21 @@ impl Bot {
                 Skill::Talisman => dist < 190.0,
                 Skill::Parasol => dist < crate::core::parasol::FLIGHT_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.05,
                 Skill::Storm => dist < crate::core::parasol::STORM_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
+                Skill::Blossom => dist < crate::core::parasol::BLOSSOM_R && gen_range(0.0, 1.0) < self.level.aggression * 0.1,
+                Skill::PetalDash => dist < 90.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.05,
                 Skill::SpiritStep => b.parasols.anchor(self.seat).is_some_and(|p| p.distance(b.players[1 - self.seat].pos) < crate::core::parasol::WAVE_R) && gen_range(0.0, 1.0) < self.level.aggression * 0.1,
+                Skill::FoxOrb => dist < 190.0,
+                Skill::BlindLight => dist < 170.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.06,
+                Skill::ShiningLight => dist < crate::core::fox::SHINE_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.05,
+                Skill::Unpredictable => dist < crate::core::fox::CHARGE_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
+                Skill::FoxClaw => dist < 26.0,
+                Skill::FoxWisp => dist < crate::core::fox::WISP_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.06,
+                Skill::FoxSwipe => dist < crate::core::fox::SWIPE_R && gen_range(0.0, 1.0) < self.level.aggression * 0.1,
+                Skill::Vanish => dist < crate::core::fox::CHARGE_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.05,
             }
         };
         let order = [3, 1, 2, 0];
-        order.into_iter().filter(|i| me.ready(*i)).map(|i| (i, me.kit().skills[i])).find(|(_, s)| wants(*s)).map(|(i, s)| {
+        order.into_iter().filter(|i| me.ready(*i)).map(|i| (i, me.skill(i))).find(|(_, s)| wants(*s)).map(|(i, s)| {
             let cast_t = |s: Skill| match s {
                 Skill::Potion => cast_t(s) + POTION_T,
                 _ => cast_t(s),
@@ -176,6 +186,9 @@ impl Bot {
                 Skill::Needle => Some(crate::core::magic::NEEDLE_SPEED),
                 Skill::Hex => Some(BOLT_SPEED),
                 Skill::Talisman => Some(crate::core::parasol::TALISMAN_SPEED),
+                Skill::FoxOrb => Some(crate::core::fox::ORB_SPEED),
+                Skill::BlindLight => Some(crate::core::fox::BLIND_SPEED),
+                Skill::FoxWisp => Some(crate::core::fox::WISP_SPEED),
                 _ => None,
             };
             (i, self.aim_at(b, seen, speed, cast_t(s)))
