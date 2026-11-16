@@ -108,6 +108,13 @@ impl Sheet {
         self.draw(i, at + (centre - anchor) * scale, scale, a);
     }
 
+    pub fn draw_rot(&self, i: usize, at: Vec2, pivot: Vec2, scale: f32, ang: f32, a: f32) {
+        let src = Rect::new((i % self.cols) as f32 * self.w, (i / self.cols) as f32 * self.h, self.w, self.h);
+        let size = vec2(self.w, self.h) * scale;
+        let tl = at - pivot * scale;
+        draw_texture_ex(&self.tex, tl.x, tl.y, Color::new(1.0, 1.0, 1.0, a), DrawTextureParams { source: Some(src), dest_size: Some(size), rotation: ang, pivot: Some(at), ..Default::default() });
+    }
+
     pub fn draw(&self, i: usize, at: Vec2, scale: f32, a: f32) {
         let src = Rect::new((i % self.cols) as f32 * self.w, (i / self.cols) as f32 * self.h, self.w, self.h);
         let size = vec2(self.w, self.h) * scale;
@@ -129,10 +136,18 @@ pub struct Status {
     pub ground: bool,
 }
 
+pub struct SwordFx {
+    pub wave: Sheet,
+    pub aura_back: Sheet,
+    pub aura_front: Sheet,
+    pub release: Sheet,
+}
+
 pub struct Assets {
     pub skins: Vec<Skin>,
     pub spirit_sword: Texture2D,
     pub witch: WitchFx,
+    pub sword: SwordFx,
     pub status: Vec<Status>,
     pub bleed_pop: Status,
 }
@@ -164,6 +179,12 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
         sigil: Sheet::load("assets/witch/fx/cauldron_sigil.png", 120.0, 123.0, 12, 12.0).await?,
         poof: Sheet::load("assets/witch/fx/broom_poof.png", 62.0, 62.0, 6, 12.0).await?,
     };
+    let sword = SwordFx {
+        wave: Sheet::load("assets/sword/fx/intent/part-wave_slash.png", 103.0, 49.0, 13, 16.0).await?,
+        aura_back: Sheet::load("assets/sword/fx/aura/behind.png", 52.0, 49.0, 24, 12.0).await?,
+        aura_front: Sheet::load("assets/sword/fx/aura/front.png", 54.0, 64.0, 24, 12.0).await?,
+        release: Sheet::load("assets/sword/fx/release/sword-intent-release.png", 64.0, 51.0, 8, 16.0).await?,
+    };
     let status = vec![
         load_status("slow", 36.0, 43.0, 12, 10.0, vec2(17.0, 34.0), true).await?,
         load_status("root", 64.0, 58.0, 22, 14.0, vec2(32.0, 44.0), true).await?,
@@ -175,7 +196,7 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
         load_status("stun", 39.0, 23.0, 12, 12.0, vec2(19.0, 15.0), false).await?,
     ];
     let bleed_pop = load_status("bleed_pop", 66.0, 69.0, 8, 16.0, vec2(35.0, 30.0), false).await?;
-    Ok(Assets { skins, spirit_sword, witch, status, bleed_pop })
+    Ok(Assets { skins, spirit_sword, witch, sword, status, bleed_pop })
 }
 
 pub async fn load() -> AResult {

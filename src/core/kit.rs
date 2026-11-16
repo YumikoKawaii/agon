@@ -86,7 +86,7 @@ pub const KITS: [Kit; 3] = [
         skin: "sword",
         skills: [Skill::Cut, Skill::Swallow, Skill::WindStep, Skill::Formation],
         hp: 80,
-        hint: "LMB swift cut (x3)   Q swallow strike (hit: +1 E charge)   E wind step (2 charges)   R sword formation",
+        hint: "LMB swift cut (x3, 3rd: sword intent wave)   Q swallow strike (hit: +1 E charge)   E wind step (2 charges)   R sword formation",
     },
 ];
 

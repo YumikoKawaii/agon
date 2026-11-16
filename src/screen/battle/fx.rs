@@ -11,7 +11,7 @@ use crate::{
         magic::{ward_segment, JUDGE_R, NEEDLE_R},
         hex::{CAULDRON_R, POTION_R},
         player::dir8,
-        sword::{FORM_N, FORM_R, LUNGE_REACH},
+        sword::{FORM_N, FORM_R, INTENT_R, LUNGE_REACH},
         Battle, Player,
     },
     screen::battle::view::{alpha, draw_sprite, glow, status_color, Camera, AQUA, BLOOD, CHEST, GOLD, ICE, LILAC, PALE, S, VIEW},
@@ -101,6 +101,7 @@ enum Kind {
     Burst,
     Poof,
     BleedPop,
+    Release,
 }
 
 struct Sprite {
@@ -116,6 +117,7 @@ fn sheet(kind: Kind) -> (&'static assets::Sheet, f32) {
         Kind::Burst => (&w.burst, 0.85),
         Kind::Poof => (&w.poof, 0.6),
         Kind::BleedPop => (&assets::get().bleed_pop.sheet, 0.6),
+        Kind::Release => (&assets::get().sword.release, 0.6),
     }
 }
 
@@ -216,6 +218,22 @@ impl Fx {
                 for _ in 0..10 {
                     let v = -dir * gen_range(40.0, 120.0) + dir.perp() * gen_range(-50.0, 50.0);
                     self.part(pos, CHEST, v, gen_range(0.0, 20.0), 0.3, 1.6, PALE, 0.88);
+                }
+            }
+            Event::Intent { pos, dir } => {
+                self.sprites.push(Sprite { kind: Kind::Release, pos: pos + dir * 8.0, t: 0.0 });
+                self.ring(pos, CHEST, 4.0, 26.0, 0.3, AQUA, 4.0);
+                for _ in 0..24 {
+                    let v = dir * gen_range(60.0, 200.0) + dir.perp() * gen_range(-80.0, 80.0);
+                    self.part(pos, CHEST, v, gen_range(0.0, 30.0), 0.35, 1.8, pick(AQUA, LILAC), 0.88);
+                }
+                self.kick(5.0, 0.06);
+            }
+            Event::IntentFade { pos, dir } => {
+                for _ in 0..16 {
+                    let a = gen_range(-1.0, 1.0);
+                    let p = pos + dir.perp() * a * INTENT_R;
+                    self.part(p, CHEST, dir * gen_range(20.0, 70.0), gen_range(0.0, 20.0), 0.35, 1.6, pick(AQUA, PALE), 0.9);
                 }
             }
             Event::SwallowHit { tip } => {
@@ -344,6 +362,18 @@ impl Fx {
             for _ in 0..(1 + (j.charge() * 4.0) as usize) {
                 let p = j.pos + Vec2::from_angle(gen_range(0.0, TAU)) * JUDGE_R * gen_range(0.85, 1.0);
                 self.part(p, 0.0, Vec2::ZERO, gen_range(40.0, 120.0), 0.5, gen_range(1.0, 2.2), pick(GOLD, PALE), 1.0);
+            }
+        }
+        for w in &b.blades.waves {
+            for _ in 0..3 {
+                let p = w.pos + w.dir.perp() * gen_range(-1.0, 1.0) * INTENT_R * 0.9;
+                self.part(p, CHEST + gen_range(-4.0, 4.0), -w.dir * gen_range(30.0, 90.0), 0.0, 0.3, 1.6, pick(AQUA, LILAC), 0.9);
+            }
+        }
+        for p in b.players.iter().filter(|p| p.intent_ready()) {
+            if gen_range(0, 2) == 0 {
+                let off = Vec2::from_angle(gen_range(0.0, TAU)) * gen_range(6.0, 12.0);
+                self.part(p.pos + off, gen_range(0.0, CHEST), -off * 1.5, gen_range(30.0, 70.0), 0.45, gen_range(1.0, 2.0), pick(AQUA, LILAC), 0.95);
             }
         }
         for l in &b.blades.lunges {

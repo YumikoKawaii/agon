@@ -1,0 +1,46 @@
+{
+ "app": "PixelLab VFX Creator",
+ "name": "Sword Intent Wave",
+ "fps": 16,
+ "frame_ms": 63,
+ "frames": 14,
+ "loop": false,
+ "canvas": {
+  "w": 109,
+  "h": 55
+ },
+ "anchor": {
+  "kind": "origin",
+  "x": 7,
+  "y": 27
+ },
+ "clips": [
+  {
+   "name": "part-wave_slash",
+   "title": "the wave slash part",
+   "role": "projectile",
+   "part": "wave_slash",
+   "depth": "front",
+   "loop": false,
+   "start_frame": 0,
+   "frames": 13,
+   "frame": {
+    "w": 103,
+    "h": 49
+   },
+   "sheets": [
+    {
+     "file": "part-wave_slash.png",
+     "first_frame": 0,
+     "frames": 13,
+     "columns": 4,
+     "rows": 4
+    }
+   ],
+   "offset": {
+    "x": -4,
+    "y": -24
+   }
+  }
+ ]
+}

@@ -1,0 +1,235 @@
+{
+ "frames": [
+  {
+   "filename": "sword-intent-release 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 51
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 51
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 51
+   },
+   "pivot": {
+    "x": 0.515625,
+    "y": 0.5294117647058824
+   },
+   "duration": 63
+  },
+  {
+   "filename": "sword-intent-release 1.png",
+   "frame": {
+    "x": 64,
+    "y": 0,
+    "w": 64,
+    "h": 51
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 51
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 51
+   },
+   "pivot": {
+    "x": 0.515625,
+    "y": 0.5294117647058824
+   },
+   "duration": 63
+  },
+  {
+   "filename": "sword-intent-release 2.png",
+   "frame": {
+    "x": 128,
+    "y": 0,
+    "w": 64,
+    "h": 51
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 51
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 51
+   },
+   "pivot": {
+    "x": 0.515625,
+    "y": 0.5294117647058824
+   },
+   "duration": 63
+  },
+  {
+   "filename": "sword-intent-release 3.png",
+   "frame": {
+    "x": 0,
+    "y": 51,
+    "w": 64,
+    "h": 51
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 51
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 51
+   },
+   "pivot": {
+    "x": 0.515625,
+    "y": 0.5294117647058824
+   },
+   "duration": 63
+  },
+  {
+   "filename": "sword-intent-release 4.png",
+   "frame": {
+    "x": 64,
+    "y": 51,
+    "w": 64,
+    "h": 51
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 51
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 51
+   },
+   "pivot": {
+    "x": 0.515625,
+    "y": 0.5294117647058824
+   },
+   "duration": 63
+  },
+  {
+   "filename": "sword-intent-release 5.png",
+   "frame": {
+    "x": 128,
+    "y": 51,
+    "w": 64,
+    "h": 51
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 51
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 51
+   },
+   "pivot": {
+    "x": 0.515625,
+    "y": 0.5294117647058824
+   },
+   "duration": 63
+  },
+  {
+   "filename": "sword-intent-release 6.png",
+   "frame": {
+    "x": 0,
+    "y": 102,
+    "w": 64,
+    "h": 51
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 51
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 51
+   },
+   "pivot": {
+    "x": 0.515625,
+    "y": 0.5294117647058824
+   },
+   "duration": 63
+  },
+  {
+   "filename": "sword-intent-release 7.png",
+   "frame": {
+    "x": 64,
+    "y": 102,
+    "w": 64,
+    "h": 51
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 64,
+    "h": 51
+   },
+   "sourceSize": {
+    "w": 64,
+    "h": 51
+   },
+   "pivot": {
+    "x": 0.515625,
+    "y": 0.5294117647058824
+   },
+   "duration": 63
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "sword-intent-release.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 192,
+   "h": 153
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 33,
+   "y": 27
+  },
+  "frameTags": [
+   {
+    "name": "sword-intent-release",
+    "from": 0,
+    "to": 7,
+    "direction": "forward"
+   }
+  ]
+ }
+}

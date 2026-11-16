@@ -16,7 +16,7 @@ pub const DASH_GAP: f32 = 2.0;
 pub const DASH_RECHARGE: f32 = 10.0;
 const KNOCK_DECAY: f32 = 0.85;
 const QUICK_CAST_AGE: u32 = 6;
-const COMBO_WINDOW: f32 = 1.0;
+const COMBO_WINDOW: f32 = 1.6;
 const COMBO_FINISHER_CD: f32 = 1.0;
 
 #[derive(Default, Clone, Copy, Debug)]
@@ -84,6 +84,10 @@ impl Player {
         };
         p.respawn();
         p
+    }
+
+    pub fn intent_ready(&self) -> bool {
+        self.combo == 2 && self.kit().skills[0] == Skill::Cut
     }
 
     pub fn kit(&self) -> &'static Kit {
@@ -246,6 +250,10 @@ impl Player {
         match skill {
             Skill::WindStep => {
                 self.charges -= 1;
+                if self.kit().skills[0] == Skill::Cut {
+                    self.combo = 2;
+                    self.combo_timer = COMBO_WINDOW;
+                }
                 if self.cd[slot] <= 0.0 {
                     self.cd[slot] = skill.cooldown();
                 }

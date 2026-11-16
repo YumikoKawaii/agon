@@ -9,7 +9,7 @@ use crate::core::{
     hex::{BOLT_SPEED, CAULDRON_R, CAULDRON_RANGE, POTION_R, POTION_RANGE, POTION_T},
     magic::{JUDGE_R, JUDGE_RANGE, RAY_LEN, RAY_W},
     seg_dist,
-    sword::{FORM_R, FORM_RANGE},
+    sword::{FORM_R, FORM_RANGE, INTENT_RANGE},
     Battle, Input, Skill, DT, RADIUS,
 };
 
@@ -147,7 +147,7 @@ impl Bot {
                 Skill::Needle => dist < 220.0,
                 Skill::Ray => dist < RAY_LEN - 30.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.05,
                 Skill::Judgement => dist < JUDGE_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
-                Skill::Cut => dist < 24.0,
+                Skill::Cut => dist < 24.0 || (me.intent_ready() && dist < INTENT_RANGE - 20.0),
                 Skill::Swallow => dist < 45.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.08,
                 Skill::WindStep => dist > 80.0 && me.charges > 1 && gen_range(0.0, 1.0) < self.level.aggression * 0.02,
                 Skill::Formation => dist < FORM_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.03,

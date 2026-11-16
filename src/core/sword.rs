@@ -30,6 +30,12 @@ const WIND_DIST: f32 = 65.0;
 const WIND_DMG: i32 = 6;
 const WIND_GHOSTS: usize = 4;
 
+pub const INTENT_SPEED: f32 = 260.0;
+pub const INTENT_RANGE: f32 = 150.0;
+pub const INTENT_R: f32 = 26.0;
+const INTENT_W: f32 = 10.0;
+const INTENT_DMG: i32 = 6;
+
 const BLEED: &[Apply] = &[Apply(EffectKind::Bleed, 180, 1)];
 const BLEED_POP_DMG: i32 = 4;
 
@@ -41,6 +47,20 @@ pub struct Lunge {
 }
 
 impl Lunge {
+    pub fn ang(&self) -> f32 {
+        self.dir.y.atan2(self.dir.x)
+    }
+}
+
+pub struct Wave {
+    pub owner: usize,
+    pub pos: Vec2,
+    pub dir: Vec2,
+    pub trav: f32,
+    hit: bool,
+}
+
+impl Wave {
     pub fn ang(&self) -> f32 {
         self.dir.y.atan2(self.dir.x)
     }
@@ -96,6 +116,7 @@ pub fn cut_shape(combo: u32) -> Cut {
 pub struct Blades {
     pub lunges: Vec<Lunge>,
     pub forms: Vec<Formation>,
+    pub waves: Vec<Wave>,
 }
 
 impl Blades {
@@ -110,6 +131,11 @@ impl Blades {
                 let c = cut_shape(combo);
                 let side = if combo % 2 == 0 { -1.0 } else { 1.0 };
                 events.push(Event::Cut { owner: i, ang: players[i].ang, r: c.r, half: c.half, side, big });
+                if big {
+                    self.waves.push(Wave { owner: i, pos, dir: f, trav: 0.0, hit: false });
+                    events.push(Event::Intent { pos, dir: f });
+                    return;
+                }
                 let to = players[t].pos - pos;
                 if to.length() < c.r + RADIUS && f.angle_between(to).abs() < c.half {
                     let stacks = if big && players[t].hurtbox().is_some() { players[t].effects.pop_bleed() } else { 0 };
@@ -150,6 +176,26 @@ impl Blades {
     }
 
     pub fn update(&mut self, players: &mut [Player; 2], events: &mut Vec<Event>) {
+        self.waves.retain_mut(|w| {
+            let step = INTENT_SPEED * DT;
+            w.pos += w.dir * step;
+            w.trav += step;
+            let t = 1 - w.owner;
+            let rel = players[t].pos - w.pos;
+            if !w.hit && rel.dot(w.dir).abs() < INTENT_W + RADIUS * 0.5 && rel.dot(w.dir.perp()).abs() < INTENT_R + RADIUS * 0.5 {
+                w.hit = true;
+                let stacks = if players[t].hurtbox().is_some() { players[t].effects.pop_bleed() } else { 0 };
+                let pop = stacks as i32 * BLEED_POP_DMG;
+                if strike(players, t, Hit::new(INTENT_DMG + pop, w.dir, Element::Blade, true, &[]), events) && pop > 0 {
+                    events.push(Event::BleedPop { pos: players[t].pos, dmg: pop });
+                }
+            }
+            let alive = w.trav < INTENT_RANGE && inside(w.pos, 0.0) == w.pos;
+            if !alive {
+                events.push(Event::IntentFade { pos: w.pos, dir: w.dir });
+            }
+            alive
+        });
         self.lunges.retain_mut(|l| {
             l.tick += 1;
             let o = l.owner;

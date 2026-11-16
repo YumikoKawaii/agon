@@ -5,12 +5,15 @@ use crate::{
     core::{
         magic::{JUDGE_R, JUDGE_RANGE, NEEDLE_R, RAY_CHARGE, RAY_LEN, RAY_SHOW, RAY_W, WARD_OFF, WARD_T},
         hex::{BOLT_R, CAULDRON_R, CAULDRON_RANGE, POTION_R, POTION_RANGE},
-        sword::{Formation, FORM_APPEAR, FORM_HOVER, FORM_N, FORM_R, FORM_RANGE, FORM_STAB, LUNGE_REACH},
+        sword::{Formation, INTENT_R, INTENT_RANGE, FORM_APPEAR, FORM_HOVER, FORM_N, FORM_R, FORM_RANGE, FORM_STAB, LUNGE_REACH},
         effect::EffectKind,
         Battle, Skill,
     },
-    screen::battle::view::{alpha, glow, magic_circle, Camera, AQUA, CHEST, FOOT, GOLD, ICE, LILAC, MINT, PALE, S},
+    screen::battle::view::{alpha, glow, magic_circle, Camera, SPRITE, AQUA, CHEST, FOOT, GOLD, ICE, LILAC, MINT, PALE, S},
 };
+
+const AURA_BACK_FEET: Vec2 = vec2(25.0, 43.0);
+const AURA_FRONT_FEET: Vec2 = vec2(26.0, 63.0);
 
 fn draw_sword(tex: &Texture2D, at: Vec2, ang: f32, scale: f32, a: f32) {
     let size = vec2(tex.width(), tex.height()) * 0.5 * S * scale;
@@ -19,6 +22,10 @@ fn draw_sword(tex: &Texture2D, at: Vec2, ang: f32, scale: f32, a: f32) {
 
 pub fn draw_ground(b: &Battle, cam: &Camera) {
     let time = get_time() as f32;
+    for p in b.players.iter().filter(|p| p.intent_ready()) {
+        let sh = &assets::get().sword.aura_back;
+        sh.draw_at(sh.frame_at(time, true).unwrap_or(0), cam.proj(p.pos), AURA_BACK_FEET, SPRITE * S, 1.0);
+    }
     for fm in &b.blades.forms {
         let c = cam.proj(fm.center);
         let open = (fm.t / FORM_APPEAR).min(1.0);
@@ -91,6 +98,19 @@ pub fn draw_air(b: &Battle, cam: &Camera, sword: &Texture2D) {
             draw_poly_lines(cell.x, cell.y, 6, 8.5 * S, 30.0, 2.0, alpha(PALE, 0.9 * fade));
             draw_poly_lines(cell.x, cell.y, 6, 5.0 * S, 30.0 + time * 90.0, 1.0, alpha(ICE, 0.6 * fade));
         }
+    }
+    let fx = &assets::get().sword;
+    for p in b.players.iter().filter(|p| p.intent_ready()) {
+        let sh = &fx.aura_front;
+        sh.draw_at(sh.frame_at(time, true).unwrap_or(0), cam.proj(p.pos), AURA_FRONT_FEET, SPRITE * S, 1.0);
+    }
+    for w in &b.blades.waves {
+        let k = (w.trav / INTENT_RANGE).clamp(0.0, 1.0);
+        let i = 2 + (k * 10.0) as usize;
+        let pivot = vec2(22.0 + (i - 2) as f32 * 7.0, 24.5);
+        let c = cam.air(w.pos, CHEST);
+        glow(c, 8.0 * S, AQUA, 0.25 * (1.0 - k * 0.5));
+        fx.wave.draw_rot(i, c, pivot, INTENT_R / 22.0 * S, w.ang(), 1.0);
     }
     for s in &b.spells.shots {
         let c = cam.air(s.pos, CHEST);

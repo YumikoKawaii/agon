@@ -21,6 +21,8 @@ pub enum Event {
     Cut { owner: usize, ang: f32, r: f32, half: f32, side: f32, big: bool },
     Swallow { pos: Vec2, dir: Vec2 },
     SwallowHit { tip: Vec2 },
+    Intent { pos: Vec2, dir: Vec2 },
+    IntentFade { pos: Vec2, dir: Vec2 },
     Wind { from: Vec2, to: Vec2, dir: Vec2 },
     Ghost { seat: usize, pos: Vec2, ang: f32, life: f32 },
     FormCast { caster: Vec2, center: Vec2 },
