@@ -1,6 +1,7 @@
 pub mod anim;
 pub mod battle;
 pub mod bot;
+pub mod effect;
 pub mod event;
 pub mod hex;
 pub mod kit;

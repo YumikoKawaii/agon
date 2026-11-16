@@ -1,0 +1,651 @@
+{
+ "frames": [
+  {
+   "filename": "agon-mark 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 1.png",
+   "frame": {
+    "x": 61,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 2.png",
+   "frame": {
+    "x": 122,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 3.png",
+   "frame": {
+    "x": 183,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 4.png",
+   "frame": {
+    "x": 244,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 5.png",
+   "frame": {
+    "x": 0,
+    "y": 31,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 6.png",
+   "frame": {
+    "x": 61,
+    "y": 31,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 7.png",
+   "frame": {
+    "x": 122,
+    "y": 31,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 8.png",
+   "frame": {
+    "x": 183,
+    "y": 31,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 9.png",
+   "frame": {
+    "x": 244,
+    "y": 31,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 10.png",
+   "frame": {
+    "x": 0,
+    "y": 62,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 11.png",
+   "frame": {
+    "x": 61,
+    "y": 62,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 12.png",
+   "frame": {
+    "x": 122,
+    "y": 62,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 13.png",
+   "frame": {
+    "x": 183,
+    "y": 62,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 14.png",
+   "frame": {
+    "x": 244,
+    "y": 62,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 15.png",
+   "frame": {
+    "x": 0,
+    "y": 93,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 16.png",
+   "frame": {
+    "x": 61,
+    "y": 93,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 17.png",
+   "frame": {
+    "x": 122,
+    "y": 93,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 18.png",
+   "frame": {
+    "x": 183,
+    "y": 93,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 19.png",
+   "frame": {
+    "x": 244,
+    "y": 93,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 20.png",
+   "frame": {
+    "x": 0,
+    "y": 124,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 21.png",
+   "frame": {
+    "x": 61,
+    "y": 124,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 22.png",
+   "frame": {
+    "x": 122,
+    "y": 124,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-mark 23.png",
+   "frame": {
+    "x": 183,
+    "y": 124,
+    "w": 61,
+    "h": 31
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 61,
+    "h": 31
+   },
+   "sourceSize": {
+    "w": 61,
+    "h": 31
+   },
+   "pivot": {
+    "x": 0.4918032786885246,
+    "y": 0.41935483870967744
+   },
+   "duration": 83
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "agon-mark.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 305,
+   "h": 155
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 30,
+   "y": 13
+  },
+  "frameTags": [
+   {
+    "name": "agon-mark",
+    "from": 0,
+    "to": 23,
+    "direction": "forward"
+   }
+  ]
+ }
+}

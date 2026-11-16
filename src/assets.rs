@@ -103,6 +103,11 @@ impl Sheet {
         }
     }
 
+    pub fn draw_at(&self, i: usize, at: Vec2, anchor: Vec2, scale: f32, a: f32) {
+        let centre = vec2(self.w, self.h) / 2.0;
+        self.draw(i, at + (centre - anchor) * scale, scale, a);
+    }
+
     pub fn draw(&self, i: usize, at: Vec2, scale: f32, a: f32) {
         let src = Rect::new((i % self.cols) as f32 * self.w, (i / self.cols) as f32 * self.h, self.w, self.h);
         let size = vec2(self.w, self.h) * scale;
@@ -118,10 +123,23 @@ pub struct WitchFx {
     pub poof: Sheet,
 }
 
+pub struct Status {
+    pub sheet: Sheet,
+    pub anchor: Vec2,
+    pub ground: bool,
+}
+
 pub struct Assets {
     pub skins: Vec<Skin>,
     pub spirit_sword: Texture2D,
     pub witch: WitchFx,
+    pub status: Vec<Status>,
+    pub bleed_pop: Status,
+}
+
+async fn load_status(name: &str, w: f32, h: f32, frames: usize, fps: f32, anchor: Vec2, ground: bool) -> AResult<Status> {
+    let sheet = Sheet::load(&format!("assets/fx/{name}.png"), w, h, frames, fps).await?;
+    Ok(Status { sheet, anchor, ground })
 }
 
 static INSTANCE: OnceLock<Assets> = OnceLock::new();
@@ -146,7 +164,18 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
         sigil: Sheet::load("assets/witch/fx/cauldron_sigil.png", 120.0, 123.0, 12, 12.0).await?,
         poof: Sheet::load("assets/witch/fx/broom_poof.png", 62.0, 62.0, 6, 12.0).await?,
     };
-    Ok(Assets { skins, spirit_sword, witch })
+    let status = vec![
+        load_status("slow", 36.0, 43.0, 12, 10.0, vec2(17.0, 34.0), true).await?,
+        load_status("root", 64.0, 58.0, 22, 14.0, vec2(32.0, 44.0), true).await?,
+        load_status("bleed", 29.0, 41.0, 24, 12.0, vec2(14.0, 4.0), false).await?,
+        load_status("burn", 54.0, 57.0, 12, 12.0, vec2(27.0, 46.0), true).await?,
+        load_status("mark", 61.0, 31.0, 24, 12.0, vec2(30.0, 13.0), false).await?,
+        load_status("shield", 61.0, 61.0, 12, 10.0, vec2(30.0, 30.0), false).await?,
+        load_status("vulnerable", 46.0, 52.0, 16, 10.0, vec2(24.0, 37.0), false).await?,
+        load_status("stun", 39.0, 23.0, 12, 12.0, vec2(19.0, 15.0), false).await?,
+    ];
+    let bleed_pop = load_status("bleed_pop", 66.0, 69.0, 8, 16.0, vec2(35.0, 30.0), false).await?;
+    Ok(Assets { skins, spirit_sword, witch, status, bleed_pop })
 }
 
 pub async fn load() -> AResult {

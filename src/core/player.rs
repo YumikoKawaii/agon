@@ -4,6 +4,7 @@ use macroquad::math::{vec2, Vec2};
 
 use crate::core::{
     anim::{Frame, State},
+    effect::Effects,
     kit::{kit, Kit, Skill, WIND_CHARGES},
     ARENA, DT, RADIUS,
 };
@@ -44,6 +45,7 @@ pub struct Player {
     pub dash_cd: f32,
     pub untargetable: bool,
     pub target: Vec2,
+    pub effects: Effects,
     pub(crate) cast: Option<Skill>,
     knock: Vec2,
     timer: u32,
@@ -72,6 +74,7 @@ impl Player {
             dash_cd: 0.0,
             untargetable: false,
             target: spawn.0,
+            effects: Effects::default(),
             cast: None,
             knock: Vec2::ZERO,
             timer: 0,
@@ -104,6 +107,7 @@ impl Player {
         self.dash_gap = 0.0;
         self.dash_cd = 0.0;
         self.untargetable = false;
+        self.effects.reset();
         self.cast = None;
         self.reset_to(State::Idle);
     }
@@ -170,6 +174,14 @@ impl Player {
 
     pub fn step(&mut self, input: Input) {
         self.tick_timers();
+        if self.effects.stunned() {
+            if self.state != State::Hit {
+                self.set_state(State::Idle);
+            }
+            self.drift();
+            self.advance();
+            return;
+        }
         if self.lock > 0 {
             self.lock -= 1;
             self.drift();
@@ -197,8 +209,9 @@ impl Player {
     }
 
     fn act(&mut self, input: Input, ready: Option<usize>) {
-        let dir = input.dir.normalize_or_zero();
-        if input.dodge && self.can_dash() {
+        let rooted = self.effects.rooted();
+        let dir = if rooted { Vec2::ZERO } else { input.dir.normalize_or_zero() };
+        if input.dodge && self.can_dash() && !rooted {
             self.dashes -= 1;
             self.dash_gap = DASH_GAP;
             if self.dash_cd <= 0.0 {
@@ -209,7 +222,7 @@ impl Player {
         } else if let Some(slot) = ready {
             self.begin_cast(slot, input.aim);
         } else if dir != Vec2::ZERO {
-            self.pos += dir * SPEED * DT;
+            self.pos += dir * SPEED * self.effects.speed_mul() * DT;
             self.ang = dir.y.atan2(dir.x);
             self.set_state(State::Run);
         } else {

@@ -1,0 +1,339 @@
+{
+ "frames": [
+  {
+   "filename": "agon-burn 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-burn 1.png",
+   "frame": {
+    "x": 54,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-burn 2.png",
+   "frame": {
+    "x": 108,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-burn 3.png",
+   "frame": {
+    "x": 162,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-burn 4.png",
+   "frame": {
+    "x": 0,
+    "y": 57,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-burn 5.png",
+   "frame": {
+    "x": 54,
+    "y": 57,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-burn 6.png",
+   "frame": {
+    "x": 108,
+    "y": 57,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-burn 7.png",
+   "frame": {
+    "x": 162,
+    "y": 57,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-burn 8.png",
+   "frame": {
+    "x": 0,
+    "y": 114,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-burn 9.png",
+   "frame": {
+    "x": 54,
+    "y": 114,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-burn 10.png",
+   "frame": {
+    "x": 108,
+    "y": 114,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  },
+  {
+   "filename": "agon-burn 11.png",
+   "frame": {
+    "x": 162,
+    "y": 114,
+    "w": 54,
+    "h": 57
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 54,
+    "h": 57
+   },
+   "sourceSize": {
+    "w": 54,
+    "h": 57
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.8070175438596491
+   },
+   "duration": 83
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "agon-burn.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 216,
+   "h": 171
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 27,
+   "y": 46
+  },
+  "frameTags": [
+   {
+    "name": "agon-burn",
+    "from": 0,
+    "to": 11,
+    "direction": "forward"
+   }
+  ]
+ }
+}

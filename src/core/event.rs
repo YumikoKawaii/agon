@@ -1,5 +1,7 @@
 use macroquad::math::Vec2;
 
+use crate::core::effect::EffectKind;
+
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
 pub enum Element {
     Frost,
@@ -29,4 +31,9 @@ pub enum Event {
     CauldronCast { caster: Vec2, at: Vec2 },
     CauldronBurst { pos: Vec2 },
     Hit { pos: Vec2, element: Element, dmg: i32, big: bool },
+    Status { pos: Vec2, kind: EffectKind },
+    Dot { pos: Vec2, kind: EffectKind, dmg: i32 },
+    Absorb { pos: Vec2, amount: i32 },
+    MarkPop { pos: Vec2 },
+    BleedPop { pos: Vec2, dmg: i32 },
 }

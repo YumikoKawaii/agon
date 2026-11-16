@@ -1,7 +1,8 @@
 use macroquad::math::Vec2;
 
 use crate::core::{
-    battle::strike,
+    battle::{bless, strike, Hit},
+    effect::{Apply, EffectKind},
     event::{Element, Event},
     inside,
     player::Player,
@@ -18,7 +19,11 @@ pub const RAY_LEN: f32 = 280.0;
 pub const RAY_CHARGE: f32 = 0.4;
 pub const RAY_SHOW: f32 = 0.3;
 pub const RAY_W: f32 = 7.0;
-const RAY_DMG: i32 = 22;
+const RAY_DMG: i32 = 19;
+const NEEDLE_FX: &[Apply] = &[Apply(EffectKind::Slow, 30, 15)];
+const RAY_FX: &[Apply] = &[Apply(EffectKind::Slow, 72, 40)];
+const JUDGE_FX: &[Apply] = &[Apply(EffectKind::Mark, 180, 10)];
+const WARD_SHIELD: Apply = Apply(EffectKind::Shield, 120, 8);
 
 pub const WARD_T: f32 = 1.5;
 pub const WARD_W: f32 = 22.0;
@@ -28,7 +33,7 @@ const WARD_REFUND: f32 = 2.0;
 pub const JUDGE_RANGE: f32 = 130.0;
 pub const JUDGE_R: f32 = 42.0;
 pub const JUDGE_T: f32 = 1.0;
-const JUDGE_DMG: i32 = 35;
+const JUDGE_DMG: i32 = 30;
 
 pub struct Shot {
     pub pos: Vec2,
@@ -89,6 +94,7 @@ pub fn ward_block(wards: &[Ward], players: &mut [Player; 2], owner: usize, pos: 
         players[o].cd[slot] = (players[o].cd[slot] - WARD_REFUND).max(0.0);
     }
     events.push(Event::Blocked { pos });
+    bless(players, o, WARD_SHIELD, events);
     true
 }
 
@@ -143,22 +149,13 @@ impl Spells {
         self.shots.retain_mut(|s| {
             s.pos += s.vel * DT;
             s.life -= DT;
-            let blocker = wards.iter().map(|w| w.owner).filter(|&o| o != s.owner).find(|&o| {
-                let (a, b) = ward_segment(&players[o]);
-                seg_dist(s.pos, a, b) < NEEDLE_R + 3.0
-            });
-            if let Some(o) = blocker {
-                if let Some(slot) = players[o].kit().skills.iter().position(|k| *k == Skill::Ward) {
-                    players[o].cd[slot] = (players[o].cd[slot] - WARD_REFUND).max(0.0);
-                }
-                events.push(Event::Blocked { pos: s.pos });
+            if ward_block(wards, players, s.owner, s.pos, NEEDLE_R, events) {
                 return false;
             }
             let t = 1 - s.owner;
             let hit = players[t].hurtbox().is_some_and(|r| players[t].pos.distance(s.pos) < r + NEEDLE_R);
             if hit {
-                players[t].take_hit(s.vel.normalize_or_zero(), NEEDLE_DMG);
-                events.push(Event::Hit { pos: s.pos, element: Element::Frost, dmg: NEEDLE_DMG, big: false });
+                strike(players, t, Hit::new(NEEDLE_DMG, s.vel.normalize_or_zero(), Element::Frost, false, NEEDLE_FX), events);
             }
             let alive = s.pos.cmpge(Vec2::ZERO).all() && s.pos.cmple(ARENA).all();
             !hit && s.life > 0.0 && alive
@@ -175,7 +172,7 @@ impl Spells {
                 r.fired = true;
                 let t = 1 - r.owner;
                 if seg_dist(players[t].pos, r.origin, r.end()) < RAY_W + RADIUS {
-                    strike(players, t, r.dir * 2.5 / 3.0, RAY_DMG, Element::Frost, true, events);
+                    strike(players, t, Hit::new(RAY_DMG, r.dir * 2.5 / 3.0, Element::Frost, true, RAY_FX), events);
                 }
                 events.push(Event::RayFired { origin: r.origin, dir: r.dir });
             }
@@ -192,7 +189,7 @@ impl Spells {
             let t = 1 - j.owner;
             let d = players[t].pos - j.pos;
             if d.length() < JUDGE_R + RADIUS {
-                strike(players, t, d.normalize_or(Vec2::X) * 4.0 / 3.0, JUDGE_DMG, Element::Holy, true, events);
+                strike(players, t, Hit::new(JUDGE_DMG, d.normalize_or(Vec2::X) * 4.0 / 3.0, Element::Holy, true, JUDGE_FX), events);
             }
             events.push(Event::JudgeStrike { pos: j.pos });
             false

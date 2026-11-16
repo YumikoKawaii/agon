@@ -5,7 +5,11 @@ use macroquad::{prelude::*, rand::gen_range};
 use crate::core::player::{DASH_CHARGES, DASH_RECHARGE};
 use crate::{
     assets,
-    core::{anim::State, Player, ARENA, RADIUS},
+    core::{
+        anim::State,
+        effect::{EffectKind, KINDS},
+        Player, ARENA, RADIUS,
+    },
 };
 
 pub const S: f32 = 3.0;
@@ -23,6 +27,8 @@ pub const PALE: Color = Color::new(0.88, 0.97, 1.0, 1.0);
 pub const GOLD: Color = Color::new(1.0, 0.86, 0.45, 1.0);
 pub const AQUA: Color = Color::new(0.45, 1.0, 0.92, 1.0);
 pub const LILAC: Color = Color::new(0.78, 0.55, 1.0, 1.0);
+pub const MINT: Color = Color::new(0.72, 0.96, 0.78, 1.0);
+pub const BLOOD: Color = Color::new(1.0, 0.56, 0.66, 1.0);
 pub const SEAT_COLORS: [Color; 2] = [SKYBLUE, ORANGE];
 const FLOOR: [Color; 2] = [Color::new(0.2, 0.22, 0.29, 1.0), Color::new(0.227, 0.247, 0.322, 1.0)];
 const CAGE: Color = Color::new(0.541, 0.565, 0.651, 1.0);
@@ -149,11 +155,86 @@ pub fn draw_player(cam: &Camera, p: &Player, debug: bool) {
     if p.untargetable {
         return;
     }
+    draw_status(cam, p, false);
     let tex = assets::skin(p.kit).frame(p.state, p.dir8(), p.age, p.anim_ticks());
-    let tint = if p.state == State::Hit && p.age < HIT_FLASH_TICKS { HIT_TINT } else { WHITE };
+    let tint = if p.state == State::Hit && p.age < HIT_FLASH_TICKS { HIT_TINT } else { status_tint(p) };
     draw_sprite(tex, s, tint);
+    draw_status(cam, p, true);
     if debug {
         draw_text(&format!("{:?} {} d{}", p.state, p.frame, p.dir8()), s.x - 40.0, s.y - 22.0 * S, 20.0, WHITE);
+    }
+}
+
+pub fn status_color(k: EffectKind) -> Color {
+    match k {
+        EffectKind::Slow => ICE,
+        EffectKind::Root => LILAC,
+        EffectKind::Bleed => BLOOD,
+        EffectKind::Burn => MINT,
+        EffectKind::Mark => GOLD,
+        EffectKind::Shield => GOLD,
+        EffectKind::Vulnerable => LILAC,
+        EffectKind::Stun => PALE,
+    }
+}
+
+pub fn status_name(k: EffectKind) -> &'static str {
+    match k {
+        EffectKind::Slow => "SLOW",
+        EffectKind::Root => "ROOT",
+        EffectKind::Bleed => "BLEED",
+        EffectKind::Burn => "BURN",
+        EffectKind::Mark => "MARK",
+        EffectKind::Shield => "SHIELD",
+        EffectKind::Vulnerable => "CURSE",
+        EffectKind::Stun => "STUN",
+    }
+}
+
+fn status_tint(p: &Player) -> Color {
+    let pulse = 0.75 + 0.25 * (get_time() as f32 * 8.0).sin();
+    let e = &p.effects;
+    if e.stunned() {
+        Color::new(0.8, 0.8, 0.85, 1.0)
+    } else if e.on(EffectKind::Slow) {
+        Color::new(0.7, 0.9, 1.0, 1.0)
+    } else if e.on(EffectKind::Burn) {
+        Color::new(0.85 + 0.15 * pulse, 0.8, 1.0, 1.0)
+    } else if e.on(EffectKind::Vulnerable) {
+        Color::new(0.9, 0.78, 1.0, 1.0)
+    } else {
+        WHITE
+    }
+}
+
+fn status_z(k: EffectKind) -> f32 {
+    match k {
+        EffectKind::Stun => 24.0,
+        EffectKind::Bleed => 16.0,
+        _ => CHEST,
+    }
+}
+
+fn draw_status(cam: &Camera, p: &Player, front: bool) {
+    let all = &assets::get().status;
+    let time = get_time() as f32;
+    for k in KINDS {
+        if !p.effects.on(k) {
+            continue;
+        }
+        let st = &all[k.i()];
+        if st.ground == front {
+            continue;
+        }
+        let i = if k == EffectKind::Root {
+            ((p.effects.progress(k) * st.sheet.frames as f32) as usize).min(st.sheet.frames - 1)
+        } else {
+            st.sheet.frame_at(time, true).unwrap_or(0)
+        };
+        let at = if st.ground { cam.proj(p.pos) } else { cam.air(p.pos, status_z(k)) };
+        let fade = (p.effects.left(k) as f32 / 12.0).min(1.0);
+        let a = if k == EffectKind::Shield { 0.8 * fade } else { fade };
+        st.sheet.draw_at(i, at, st.anchor, SPRITE * S, a);
     }
 }
 
@@ -180,6 +261,21 @@ pub fn draw_hud(players: &[Player; 2]) {
                 let tw = measure_text(&left, None, 18, 1.0).width;
                 draw_text(&left, bx + 48.0 - tw - 3.0, 61.0, 18.0, WHITE);
             }
+        }
+        let mut n = 0.0;
+        for k in KINDS.iter().copied().filter(|k| p.effects.on(*k)) {
+            let label = match k {
+                EffectKind::Bleed => format!("{} x{}", status_name(k), p.effects.stacks),
+                EffectKind::Shield => format!("{} {}", status_name(k), p.effects.power[k.i()]),
+                _ => status_name(k).to_string(),
+            };
+            let tw = measure_text(&label, None, 16, 1.0).width + 10.0;
+            let ex = if i == 0 { x + n } else { x + w - n - tw };
+            let col = status_color(k);
+            draw_rectangle(ex, 72.0, tw, 18.0, alpha(col, 0.25));
+            draw_rectangle(ex, 87.0, tw * (1.0 - p.effects.progress(k)), 3.0, col);
+            draw_text(&label, ex + 5.0, 85.0, 16.0, col);
+            n += tw + 4.0;
         }
         let bx = if i == 0 { x + 4.0 * 52.0 } else { x + w - 48.0 - 4.0 * 52.0 };
         draw_rectangle(bx, 44.0, 48.0, 22.0, slot);

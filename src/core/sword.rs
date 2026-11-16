@@ -3,7 +3,8 @@ use std::f32::consts::TAU;
 use macroquad::{math::Vec2, rand::gen_range};
 
 use crate::core::{
-    battle::strike,
+    battle::{strike, Hit},
+    effect::{Apply, EffectKind},
     event::{Element, Event},
     inside,
     kit::WIND_CHARGES,
@@ -28,6 +29,9 @@ const LUNGE_DMG: i32 = 7;
 const WIND_DIST: f32 = 65.0;
 const WIND_DMG: i32 = 6;
 const WIND_GHOSTS: usize = 4;
+
+const BLEED: &[Apply] = &[Apply(EffectKind::Bleed, 180, 1)];
+const BLEED_POP_DMG: i32 = 4;
 
 pub struct Lunge {
     pub owner: usize,
@@ -108,7 +112,12 @@ impl Blades {
                 events.push(Event::Cut { owner: i, ang: players[i].ang, r: c.r, half: c.half, side, big });
                 let to = players[t].pos - pos;
                 if to.length() < c.r + RADIUS && f.angle_between(to).abs() < c.half {
-                    strike(players, t, f, c.dmg, Element::Blade, big, events);
+                    let stacks = if big && players[t].hurtbox().is_some() { players[t].effects.pop_bleed() } else { 0 };
+                    let apply = if big { &[][..] } else { BLEED };
+                    let pop = stacks as i32 * BLEED_POP_DMG;
+                    if strike(players, t, Hit::new(c.dmg + pop, f, Element::Blade, big, apply), events) && pop > 0 {
+                        events.push(Event::BleedPop { pos: players[t].pos, dmg: pop });
+                    }
                 }
             }
             Skill::Swallow => {
@@ -128,7 +137,7 @@ impl Blades {
                 }
                 events.push(Event::Wind { from: pos, to: end, dir: f });
                 if seg_dist(players[t].pos, pos, end) < RADIUS + 8.0 {
-                    strike(players, t, f, WIND_DMG, Element::Blade, false, events);
+                    strike(players, t, Hit::new(WIND_DMG, f, Element::Blade, false, &[]), events);
                 }
             }
             Skill::Formation => {
@@ -154,7 +163,7 @@ impl Blades {
             }
             let tip = players[o].pos + l.dir * LUNGE_REACH;
             let t = 1 - o;
-            if !l.hit && seg_dist(players[t].pos, players[o].pos, tip) < RADIUS + 5.0 && strike(players, t, l.dir, LUNGE_DMG, Element::Blade, true, events) {
+            if !l.hit && seg_dist(players[t].pos, players[o].pos, tip) < RADIUS + 5.0 && strike(players, t, Hit::new(LUNGE_DMG, l.dir, Element::Blade, true, BLEED), events) {
                 l.hit = true;
                 players[o].charges = (players[o].charges + 1).min(WIND_CHARGES);
                 events.push(Event::SwallowHit { tip });
@@ -169,7 +178,7 @@ impl Blades {
                     continue;
                 }
                 let pos = fm.sword_pos(n);
-                if players[t].pos.distance(pos) < RADIUS + 5.0 && strike(players, t, -fm.dir(n), FORM_DMG, Element::Blade, false, events) {
+                if players[t].pos.distance(pos) < RADIUS + 5.0 && strike(players, t, Hit::new(FORM_DMG, -fm.dir(n), Element::Blade, false, BLEED), events) {
                     fm.hit[n] = true;
                 }
             }

@@ -61,6 +61,12 @@ impl Bot {
         }
         let seen = self.memory[0];
         self.dodge_cd = self.dodge_cd.saturating_sub(1);
+        if !me.effects.rooted() {
+            if let Some(z) = b.zones.iter().find(|z| z.owner != self.seat && me.pos.distance(z.pos) < z.r + 10.0) {
+                let out = (me.pos - z.pos).normalize_or(Vec2::X);
+                return Input { dir: out, aim: seen.pos, ..Input::default() };
+            }
+        }
 
         if self.idle_ticks > 0 {
             self.idle_ticks -= 1;

@@ -6,6 +6,7 @@ use crate::{
     assets,
     core::{
         anim::State,
+        effect::EffectKind,
         event::{Element, Event},
         magic::{ward_segment, JUDGE_R, NEEDLE_R},
         hex::{CAULDRON_R, POTION_R},
@@ -13,7 +14,7 @@ use crate::{
         sword::{FORM_N, FORM_R, LUNGE_REACH},
         Battle, Player,
     },
-    screen::battle::view::{alpha, draw_sprite, glow, Camera, AQUA, CHEST, GOLD, ICE, LILAC, PALE, S, VIEW},
+    screen::battle::view::{alpha, draw_sprite, glow, status_color, Camera, AQUA, BLOOD, CHEST, GOLD, ICE, LILAC, PALE, S, VIEW},
 };
 
 const SHAKE_DECAY: f32 = 0.86;
@@ -73,6 +74,7 @@ struct Num {
     pos: Vec2,
     t: f32,
     dmg: i32,
+    tag: Option<Color>,
 }
 
 struct Pillar {
@@ -98,6 +100,7 @@ enum Kind {
     Potion,
     Burst,
     Poof,
+    BleedPop,
 }
 
 struct Sprite {
@@ -112,6 +115,7 @@ fn sheet(kind: Kind) -> (&'static assets::Sheet, f32) {
         Kind::Potion => (&w.potion, 0.7),
         Kind::Burst => (&w.burst, 0.85),
         Kind::Poof => (&w.poof, 0.6),
+        Kind::BleedPop => (&assets::get().bleed_pop.sheet, 0.6),
     }
 }
 
@@ -278,8 +282,42 @@ impl Fx {
                 self.burst(pos, CHEST, n, if big { 140.0 } else { 80.0 }, 0.45, if big { 3.0 } else { 2.0 }, col);
                 self.burst(pos, CHEST, n / 2, 60.0, 0.3, 1.5, WHITE);
                 self.ring(pos, CHEST, 2.0, if big { 26.0 } else { 12.0 }, 0.3, col, 3.0);
-                self.nums.push(Num { pos: pos + vec2(gen_range(-4.0, 4.0), 0.0), t: NUM_LIFE, dmg });
+                self.nums.push(Num { pos: pos + vec2(gen_range(-4.0, 4.0), 0.0), t: NUM_LIFE, dmg, tag: None });
                 self.kick(if big { 7.0 } else { 3.0 }, 0.0);
+            }
+            Event::Status { pos, kind } => {
+                let col = status_color(kind);
+                self.ring(pos, CHEST, 3.0, 20.0, 0.35, col, 3.0);
+                self.burst(pos, CHEST, 14, 90.0, 0.5, 2.2, col);
+                for n in 0..10 {
+                    let a = n as f32 / 10.0 * TAU;
+                    self.part(pos + Vec2::from_angle(a) * 12.0, 0.0, Vec2::from_angle(a) * -20.0, gen_range(60.0, 120.0), 0.5, 1.6, pick(col, WHITE), 0.92);
+                }
+                if kind == EffectKind::Stun || kind == EffectKind::Root {
+                    self.kick(6.0, 0.08);
+                }
+            }
+            Event::Dot { pos, kind, dmg } => {
+                let col = status_color(kind);
+                self.burst(pos, CHEST, 6, 40.0, 0.35, 1.6, col);
+                self.nums.push(Num { pos: pos + vec2(gen_range(-6.0, 6.0), 0.0), t: NUM_LIFE, dmg, tag: Some(col) });
+            }
+            Event::Absorb { pos, amount } => {
+                self.ring(pos, CHEST, 6.0, 22.0, 0.3, GOLD, 4.0);
+                self.burst(pos, CHEST, 18, 120.0, 0.4, 2.0, pick(GOLD, PALE));
+                self.nums.push(Num { pos: pos + vec2(0.0, -4.0), t: NUM_LIFE, dmg: -amount, tag: Some(GOLD) });
+            }
+            Event::MarkPop { pos } => {
+                self.ring(pos, CHEST, 2.0, 34.0, 0.4, GOLD, 5.0);
+                self.ring(pos, 0.0, 4.0, 30.0, 0.5, PALE, 3.0);
+                self.burst(pos, CHEST, 30, 180.0, 0.6, 2.6, pick(GOLD, WHITE));
+                self.kick(10.0, 0.2);
+            }
+            Event::BleedPop { pos, dmg } => {
+                self.sprites.push(Sprite { kind: Kind::BleedPop, pos, t: 0.0 });
+                self.burst(pos, CHEST, 20 + dmg as usize * 2, 160.0, 0.6, 2.4, pick(BLOOD, AQUA));
+                self.ring(pos, CHEST, 2.0, 28.0, 0.3, BLOOD, 4.0);
+                self.kick(9.0, 0.12);
             }
         }
     }
@@ -440,9 +478,10 @@ impl Fx {
         for n in &self.nums {
             let k = n.t / NUM_LIFE;
             let c = cam.air(n.pos, 16.0 + (1.0 - k) * 12.0);
-            let size = if n.dmg >= 20 { 40.0 } else { 26.0 } * (1.0 + 0.4 * ((1.0 - k) * 8.0).min(1.0) * k);
-            let txt = n.dmg.to_string();
-            let col = if n.dmg >= 30 { GOLD } else if n.dmg >= 20 { PALE } else { WHITE };
+            let base = if n.tag.is_some() { 20.0 } else if n.dmg >= 20 { 40.0 } else { 26.0 };
+            let size = base * (1.0 + 0.4 * ((1.0 - k) * 8.0).min(1.0) * k);
+            let txt = if n.dmg < 0 { format!("({})", -n.dmg) } else { n.dmg.to_string() };
+            let col = n.tag.unwrap_or(if n.dmg >= 30 { GOLD } else if n.dmg >= 20 { PALE } else { WHITE });
             draw_text(&txt, c.x - size * 0.25 + 2.0, c.y + 2.0, size, alpha(BLACK, k));
             draw_text(&txt, c.x - size * 0.25, c.y, size, alpha(col, k));
         }

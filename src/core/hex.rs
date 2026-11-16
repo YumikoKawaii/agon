@@ -1,7 +1,8 @@
 use macroquad::math::Vec2;
 
 use crate::core::{
-    battle::strike,
+    battle::{strike, Hit, Zone},
+    effect::{Apply, EffectKind},
     event::{Element, Event},
     inside,
     magic::{ward_block, Ward},
@@ -11,14 +12,19 @@ use crate::core::{
 
 pub const BOLT_SPEED: f32 = 190.0;
 pub const BOLT_R: f32 = 4.5;
-const BOLT_DMG: i32 = 12;
+const BOLT_DMG: i32 = 10;
+const BOLT_FX: &[Apply] = &[Apply(EffectKind::Burn, 120, 1)];
+const BROOM_FX: &[Apply] = &[Apply(EffectKind::Stun, 24, 0)];
+const CAULDRON_FX: &[Apply] = &[Apply(EffectKind::Root, 40, 0), Apply(EffectKind::Vulnerable, 150, 25)];
+pub const POOL_LIFE: f32 = 3.0;
+const POOL_BURN: Apply = Apply(EffectKind::Burn, 60, 2);
 const BOLT_LIFE: f32 = 1.2;
 const BOLT_TIP: f32 = 8.0;
 
 pub const POTION_RANGE: f32 = 150.0;
 pub const POTION_T: f32 = 0.5;
 pub const POTION_R: f32 = 22.0;
-const POTION_DMG: i32 = 22;
+const POTION_DMG: i32 = 18;
 
 pub const BROOM_DIST: f32 = 80.0;
 const BROOM_DMG: i32 = 15;
@@ -27,7 +33,7 @@ const BROOM_GHOSTS: usize = 4;
 pub const CAULDRON_RANGE: f32 = 140.0;
 pub const CAULDRON_R: f32 = 45.0;
 pub const CAULDRON_T: f32 = 0.8;
-const CAULDRON_DMG: i32 = 40;
+const CAULDRON_DMG: i32 = 34;
 
 pub struct Bolt {
     pub pos: Vec2,
@@ -100,7 +106,7 @@ impl Hexes {
                 events.push(Event::Broom { from: pos, to: end, dir: f });
                 let t = 1 - i;
                 if seg_dist(players[t].pos, pos, end) < RADIUS + 8.0 {
-                    strike(players, t, f, BROOM_DMG, Element::Hex, false, events);
+                    strike(players, t, Hit::new(BROOM_DMG, f, Element::Hex, false, BROOM_FX), events);
                 }
             }
             Skill::Cauldron => {
@@ -112,7 +118,7 @@ impl Hexes {
         }
     }
 
-    pub fn update(&mut self, players: &mut [Player; 2], wards: &[Ward], events: &mut Vec<Event>) {
+    pub fn update(&mut self, players: &mut [Player; 2], wards: &[Ward], zones: &mut Vec<Zone>, events: &mut Vec<Event>) {
         self.bolts.retain_mut(|b| {
             b.pos += b.vel * DT;
             b.life -= DT;
@@ -122,7 +128,7 @@ impl Hexes {
             let t = 1 - b.owner;
             let hit = players[t].hurtbox().is_some_and(|r| players[t].pos.distance(b.pos) < r + BOLT_R);
             if hit {
-                strike(players, t, b.vel.normalize_or_zero(), BOLT_DMG, Element::Hex, false, events);
+                strike(players, t, Hit::new(BOLT_DMG, b.vel.normalize_or_zero(), Element::Hex, false, BOLT_FX), events);
             }
             let alive = b.pos.cmpge(Vec2::ZERO).all() && b.pos.cmple(ARENA).all();
             !hit && b.life > 0.0 && alive
@@ -139,8 +145,9 @@ impl Hexes {
             let t = 1 - p.owner;
             let d = players[t].pos - p.to;
             if d.length() < POTION_R + RADIUS {
-                strike(players, t, d.normalize_or(Vec2::X), POTION_DMG, Element::Hex, true, events);
+                strike(players, t, Hit::new(POTION_DMG, d.normalize_or(Vec2::X), Element::Hex, true, &[]), events);
             }
+            zones.push(Zone { pos: p.to, r: POTION_R, t: 0.0, life: POOL_LIFE, owner: p.owner, apply: POOL_BURN });
             events.push(Event::PotionBurst { pos: p.to });
             false
         });
@@ -152,7 +159,7 @@ impl Hexes {
             let t = 1 - c.owner;
             let d = players[t].pos - c.pos;
             if d.length() < CAULDRON_R + RADIUS {
-                strike(players, t, d.normalize_or(Vec2::X) * 4.0 / 3.0, CAULDRON_DMG, Element::Hex, true, events);
+                strike(players, t, Hit::new(CAULDRON_DMG, d.normalize_or(Vec2::X) * 4.0 / 3.0, Element::Hex, true, CAULDRON_FX), events);
             }
             events.push(Event::CauldronBurst { pos: c.pos });
             false

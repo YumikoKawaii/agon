@@ -6,9 +6,10 @@ use crate::{
         magic::{JUDGE_R, JUDGE_RANGE, NEEDLE_R, RAY_CHARGE, RAY_LEN, RAY_SHOW, RAY_W, WARD_OFF, WARD_T},
         hex::{BOLT_R, CAULDRON_R, CAULDRON_RANGE, POTION_R, POTION_RANGE},
         sword::{Formation, FORM_APPEAR, FORM_HOVER, FORM_N, FORM_R, FORM_RANGE, FORM_STAB, LUNGE_REACH},
+        effect::EffectKind,
         Battle, Skill,
     },
-    screen::battle::view::{alpha, glow, magic_circle, Camera, AQUA, CHEST, FOOT, GOLD, ICE, LILAC, PALE, S},
+    screen::battle::view::{alpha, glow, magic_circle, Camera, AQUA, CHEST, FOOT, GOLD, ICE, LILAC, MINT, PALE, S},
 };
 
 fn draw_sword(tex: &Texture2D, at: Vec2, ang: f32, scale: f32, a: f32) {
@@ -43,6 +44,19 @@ pub fn draw_ground(b: &Battle, cam: &Camera) {
         sig.draw(sig.frame_at(time, true).unwrap_or(0), g, r / (CAULDRON_R * S) * 0.8 * S, 0.6 + 0.4 * k);
         let bub = (k * 8.0 * std::f32::consts::TAU).sin().abs();
         draw_circle_lines(g.x, g.y, r * (1.0 - k), 2.0, alpha(WHITE, 0.3 + 0.4 * bub));
+    }
+    let burn = &assets::get().status[EffectKind::Burn.i()];
+    for z in &b.zones {
+        let g = cam.proj(z.pos);
+        let k = z.fade().min(z.t * 4.0).min(1.0);
+        let r = z.r * S;
+        draw_circle(g.x, g.y, r, alpha(LILAC, 0.18 * k));
+        magic_circle(g, r, time * 1.5, MINT, 0.5 * k, 2.0);
+        let frame = burn.sheet.frame_at(time, true).unwrap_or(0);
+        for n in 0..5 {
+            let off = if n == 0 { Vec2::ZERO } else { Vec2::from_angle(n as f32 * 1.57 + 0.4) * z.r * 0.55 };
+            burn.sheet.draw_at((frame + n * 3) % burn.sheet.frames, cam.proj(z.pos + off), burn.anchor, 0.35 * S, 0.85 * k);
+        }
     }
     for p in &b.hexes.potions {
         let g = cam.proj(p.to);

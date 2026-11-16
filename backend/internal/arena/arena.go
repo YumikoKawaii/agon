@@ -19,7 +19,7 @@ import (
 )
 
 const (
-	PacketLen   = 44
+	PacketLen   = 70
 	deathsAt    = 36
 	DeathsToWin = 3
 	closeDelay  = 2 * time.Second

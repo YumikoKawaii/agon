@@ -1,4 +1,7 @@
-pub const PACKET_LEN: usize = 44;
+use crate::core::effect::N;
+
+pub const PACKET_LEN: usize = 70;
+const FX: usize = 44;
 
 #[derive(Clone, Copy, Default, Debug)]
 pub struct Packet {
@@ -12,6 +15,9 @@ pub struct Packet {
     pub cast_seq: u16,
     pub cast_slot: u8,
     pub dodge_seq: u8,
+    pub fx_ticks: [u16; N],
+    pub fx_power: [u8; N],
+    pub fx_stacks: u8,
 }
 
 impl Packet {
@@ -27,6 +33,11 @@ impl Packet {
         b[40..42].copy_from_slice(&self.cast_seq.to_le_bytes());
         b[42] = self.cast_slot;
         b[43] = self.dodge_seq;
+        for i in 0..N {
+            b[FX + i * 2..FX + i * 2 + 2].copy_from_slice(&self.fx_ticks[i].to_le_bytes());
+            b[FX + N * 2 + i] = self.fx_power[i];
+        }
+        b[FX + N * 3] = self.fx_stacks;
         b
     }
 
@@ -36,6 +47,12 @@ impl Packet {
         }
         let u = |i: usize| u32::from_le_bytes([b[i], b[i + 1], b[i + 2], b[i + 3]]);
         let f = |i: usize| f32::from_bits(u(i));
+        let mut fx_ticks = [0u16; N];
+        let mut fx_power = [0u8; N];
+        for i in 0..N {
+            fx_ticks[i] = u16::from_le_bytes([b[FX + i * 2], b[FX + i * 2 + 1]]);
+            fx_power[i] = b[FX + N * 2 + i];
+        }
         Some(Packet {
             tick: u(0),
             dir: [f(4), f(8)],
@@ -47,6 +64,9 @@ impl Packet {
             cast_seq: u16::from_le_bytes([b[40], b[41]]),
             cast_slot: b[42],
             dodge_seq: b[43],
+            fx_ticks,
+            fx_power,
+            fx_stacks: b[FX + N * 3],
         })
     }
 }

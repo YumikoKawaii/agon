@@ -95,6 +95,7 @@ impl Sync {
             foe.pos = foe.pos.lerp(Vec2::from(p.pos), SNAP_BLEND);
             foe.ang = p.ang;
             foe.hp = p.hp;
+            foe.effects.sync(p.fx_ticks, p.fx_power, p.fx_stacks);
         }
     }
 
@@ -107,6 +108,7 @@ impl Sync {
         if input.dodge {
             self.dodge_seq = self.dodge_seq.wrapping_add(1);
         }
+        let (fx_ticks, fx_power, fx_stacks) = me.effects.wire();
         self.link.send(&Packet {
             tick: self.tick,
             dir: input.dir.into(),
@@ -118,6 +120,9 @@ impl Sync {
             cast_seq: self.cast_seq,
             cast_slot: self.cast_slot,
             dodge_seq: self.dodge_seq,
+            fx_ticks,
+            fx_power,
+            fx_stacks,
         });
     }
 }
