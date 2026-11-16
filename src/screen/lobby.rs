@@ -12,7 +12,7 @@ use crate::{
 };
 
 const SEAT_W: f32 = 300.0;
-const SEAT_GAP: f32 = 40.0;
+const SEAT_GAP: f32 = 140.0;
 
 fn seats() -> [Rect; 2] {
     let x0 = (screen_width() - (SEAT_W * 2.0 + SEAT_GAP)) / 2.0;
@@ -101,20 +101,21 @@ impl Screen for Lobby {
     }
 
     fn draw(&self, _ctx: &Context) {
-        ui::text_centered(&format!("Room {}", self.room.id), 110.0, 56, WHITE);
+        ui::text_centered(&format!("Room {}", self.room.id), 110.0, 56, ui::GOLD);
+        ui::text_centered("VS", 350.0, 64, ui::GOLD);
         ui::text_centered("share this id with your opponent", 145.0, ui::SMALL, ui::DIM);
         for (i, r) in seats().into_iter().enumerate() {
             let seat = self.room.seat(i);
             ui::panel(r, seat.ready);
-            draw_text(if i == 0 { "host" } else { "guest" }, r.x + 14.0, r.y + 28.0, 20.0, ui::DIM);
+            ui::text_in(if i == 0 { "HOST" } else { "GUEST" }, r, r.y + 54.0, 20, ui::INK);
             if seat.username.is_empty() {
-                ui::text_in("waiting...", r, r.y + 160.0, ui::BODY, ui::DIM);
+                ui::text_in("waiting...", r, r.y + 160.0, ui::BODY, ui::INK);
                 continue;
             }
-            draw_idle(seat.kit, r.x, r.y + 30.0, r.w, 2.5);
-            ui::text_in(&format!("{}  ({})", seat.username, kit(seat.kit).name), r, r.y + 240.0, ui::SMALL, WHITE);
-            let (label, color) = if seat.ready { ("READY", ui::ACCENT) } else { ("not ready", ui::DIM) };
-            ui::text_in(label, r, r.y + 275.0, 24, color);
+            draw_idle(seat.kit, r.x, r.y + 60.0, r.w, 2.2);
+            ui::text_in(&format!("{}  ({})", seat.username, kit(seat.kit).name), r, r.y + 232.0, ui::SMALL, ui::INK);
+            let (label, color) = if seat.ready { ("READY", Color::new(0.2, 0.55, 0.45, 1.0)) } else { ("not ready", ui::INK) };
+            ui::text_in(label, r, r.y + 262.0, 24, color);
         }
         let idle = self.ready.is_none() && self.endpoint.is_none();
         ui::button(ready_rect(), if self.me() { "Unready" } else { "Ready" }, idle && self.room.waiting());

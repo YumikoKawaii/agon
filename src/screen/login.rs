@@ -77,8 +77,9 @@ impl Screen for Login {
     fn draw(&self, _ctx: &Context) {
         let l = layout();
         let idle = self.pending.is_none();
-        ui::text_centered("AGON", 160.0, ui::TITLE, ui::ACCENT);
-        ui::text_centered("sign in or create an account", 200.0, ui::SMALL + 2, ui::DIM);
+        ui::logo(110.0, 1.6);
+        ui::text_centered("sign in or create an account", 190.0, ui::SMALL + 2, ui::DIM);
+        ui::form(205.0, 310.0);
         self.user.draw(l.user, "username", self.focus == 0);
         self.pass.draw(l.pass, "password", self.focus == 1);
         ui::button(l.sign_in, "Sign in", idle);

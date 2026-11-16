@@ -19,10 +19,10 @@ struct Layout {
 
 fn layout() -> Layout {
     Layout {
-        create: ui::centered(360.0, 230.0, 56.0),
+        create: ui::centered(360.0, 222.0, 56.0),
         room_id: ui::centered(360.0, 360.0, 48.0),
-        join: ui::centered(360.0, 430.0, 52.0),
-        back: ui::centered(360.0, 510.0, 52.0),
+        join: ui::centered(360.0, 428.0, 52.0),
+        back: ui::centered(360.0, 530.0, 52.0),
     }
 }
 
@@ -72,10 +72,11 @@ impl Screen for Rooms {
     fn draw(&self, ctx: &Context) {
         let l = layout();
         let idle = self.pending.is_none();
-        ui::text_centered("Room", 140.0, 56, WHITE);
+        ui::text_centered("Play online", 140.0, 56, ui::GOLD);
         ui::text_centered(&format!("playing as {}", kit(ctx.user.kit).name), 180.0, ui::SMALL + 2, ui::DIM);
+        ui::form(196.0, 310.0);
         ui::button(l.create, "Create room", idle);
-        ui::text_centered("or join by id", 335.0, ui::SMALL, ui::DIM);
+        ui::text_centered("or join by id", 315.0, ui::SMALL, ui::INK);
         self.room_id.draw(l.room_id, "room id", true);
         ui::button(l.join, "Join", idle);
         ui::button(l.back, "Back", idle);

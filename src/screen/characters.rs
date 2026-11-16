@@ -19,7 +19,7 @@ fn cards() -> Vec<Rect> {
 }
 
 fn confirm_rect() -> Rect {
-    ui::centered(320.0, 580.0, 56.0)
+    ui::centered(320.0, 590.0, 56.0)
 }
 
 pub fn draw_idle(kit: usize, x: f32, y: f32, w: f32, scale: f32) {
@@ -70,12 +70,22 @@ impl Screen for Characters {
     }
 
     fn draw(&self, _ctx: &Context) {
-        ui::text_centered("Choose your character", 110.0, ui::HEADING, WHITE);
+        ui::text_centered("Choose your character", 110.0, ui::HEADING, ui::GOLD);
+        ui::text_centered(KITS[self.pick].hint, 568.0, ui::SMALL - 4, ui::DIM);
         for (i, r) in cards().into_iter().enumerate() {
             ui::panel(r, self.pick == i);
-            draw_idle(i, r.x, r.y + 20.0, r.w, 3.0);
-            ui::text_in(KITS[i].name, r, r.y + 250.0, 28, WHITE);
-            ui::text_in(&format!("HP {}", KITS[i].hp), r, r.y + 285.0, ui::SMALL, ui::DIM);
+            draw_idle(i, r.x, r.y + 30.0, r.w, 2.6);
+            ui::text_in(KITS[i].name, r, r.y + 282.0, 26, ui::INK);
+            ui::text_in(&format!("HP {}", KITS[i].hp), r, r.y + 308.0, ui::SMALL, ui::INK);
+            let (s, gap) = (34.0, 8.0);
+            let x0 = r.x + (r.w - (4.0 * s + 3.0 * gap)) / 2.0;
+            for (k, skill) in KITS[i].skills.iter().enumerate() {
+                let ir = Rect::new(x0 + k as f32 * (s + gap), r.y + 320.0, s, s);
+                ui::slot(ir, WHITE);
+                if let Some(t) = assets::skill_icon(*skill) {
+                    draw_texture_ex(t, ir.x + 4.0, ir.y + 4.0, WHITE, DrawTextureParams { dest_size: Some(vec2(s - 8.0, s - 8.0)), ..Default::default() });
+                }
+            }
         }
         ui::button(confirm_rect(), "Confirm", self.pending.is_none());
         self.status.draw();

@@ -3,7 +3,7 @@ use macroquad::prelude::*;
 use crate::{
     assets,
     context::Context,
-    core::{self, bot::{self, Bot}, Input, DEATHS_TO_WIN, DT, KITS},
+    core::{self, bot::{self, Bot}, Input, DEATHS_TO_WIN, DT},
     net::{
         api::{Endpoint, Seat},
         Link,
@@ -23,7 +23,7 @@ use self::{
     view::{letterbox, Camera, VIEW},
 };
 
-const BARS: Color = Color::new(0.0, 0.0, 0.0, 1.0);
+const BARS: Color = ui::BG;
 
 const PRACTICE_FOE_KIT: usize = 1;
 const LEVEL_KEYS: [KeyCode; 3] = [KeyCode::Key4, KeyCode::Key5, KeyCode::Key6];
@@ -221,16 +221,40 @@ impl Battle {
         spells::draw_aim(b, cam);
         view::draw_cursor(cam);
         self.fx.draw_flash();
-        view::draw_hud(&b.players);
+        let line = self.scoreline(ctx);
+        let (title, rest) = line.split_once("   ").unwrap_or((line.as_str(), ""));
+        view::draw_hud(&b.players, title);
         let centered = |t: &str, y: f32, size: u16, c: Color| {
             let w = measure_text(t, None, size, 1.0).width;
             draw_text(t, (VIEW.x - w) / 2.0, y, size as f32, c);
         };
-        centered(&self.scoreline(ctx), 20.0, 20, LIGHTGRAY);
         if let Mode::Online(sync) = &self.mode {
-            centered(&sync.banner(), VIEW.y / 2.0 - 120.0, 64, WHITE);
+            let banner = sync.banner();
+            if let Some(won) = sync.outcome() {
+                draw_rectangle(0.0, 0.0, VIEW.x, VIEW.y, Color::new(0.08, 0.06, 0.14, 0.6));
+                let r = Rect::new(VIEW.x / 2.0 - 280.0, VIEW.y / 2.0 - 140.0, 560.0, 240.0);
+                ui::panel_scaled(r, 1.0);
+                let (title, col) = if won { ("VICTORY", ui::GOLD) } else { ("DEFEAT", Color::new(0.75, 0.3, 0.4, 1.0)) };
+                centered(title, r.y + 110.0, 80, ui::INK);
+                centered(title, r.y + 106.0, 80, col);
+                centered(&format!("{} {} - {} {}", ctx.user.username, sync.foe_deaths, b.deaths[0], sync.foe), r.y + 160.0, 26, ui::INK);
+                centered("returning to lobby...", r.y + 196.0, 18, ui::INK);
+            } else if !banner.is_empty() {
+                let w = measure_text(&banner, None, 40, 1.0).width + 80.0;
+                ui::panel_scaled(Rect::new((VIEW.x - w) / 2.0, VIEW.y / 2.0 - 160.0, w, 80.0), 0.5);
+                centered(&banner, VIEW.y / 2.0 - 108.0, 40, ui::INK);
+            }
         }
-        draw_text("WASD move   Mouse aim   RMB roll   Tab boxes", 40.0, VIEW.y - 34.0, 22.0, LIGHTGRAY);
-        draw_text(KITS[b.players[0].kit].hint, 40.0, VIEW.y - 10.0, 22.0, LIGHTGRAY);
-    }
+        let mut y = VIEW.y - 40.0;
+        for part in ["WASD move   Tab boxes", rest.trim()] {
+            draw_text(part, 20.0, y, 16.0, ui::DIM);
+            y += 22.0;
+        }
+        let hint = core::KITS[b.players[0].kit].hint;
+        let mut y = VIEW.y - 40.0;
+        for part in hint.splitn(3, "   ").collect::<Vec<_>>().chunks(2).map(|c| c.join("   ")) {
+            let w = measure_text(&part, None, 16, 1.0).width;
+            draw_text(&part, VIEW.x - 20.0 - w, y, 16.0, ui::DIM);
+            y += 22.0;
+        }    }
 }

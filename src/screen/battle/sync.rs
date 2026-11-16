@@ -52,6 +52,10 @@ impl Sync {
         }
     }
 
+    pub fn outcome(&self) -> Option<bool> {
+        self.result.map(|(w, _)| w == self.seat)
+    }
+
     pub fn banner(&self) -> String {
         match self.result {
             Some((w, _)) if w == self.seat => "VICTORY".to_string(),

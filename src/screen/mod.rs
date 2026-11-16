@@ -1,7 +1,7 @@
 use crate::context::Context;
 
 mod battle;
-mod characters;
+pub mod characters;
 mod lobby;
 mod login;
 mod main_menu;

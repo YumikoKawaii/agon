@@ -25,14 +25,28 @@ const BAR_H: f32 = 10.0;
 
 const TOTAL_STEPS: usize = KITS.len() * CLIPS.len() * DIRS.len() + 1;
 
-fn draw_progress(done: usize) {
+fn draw_progress(done: usize, logo: Option<&Texture2D>, bar: Option<&Nine>) {
     clear_background(ui::BG);
-    ui::text_centered("AGON", screen_height() / 2.0 - 40.0, ui::TITLE, ui::ACCENT);
-    let r = ui::centered(BAR_W, screen_height() / 2.0 + 10.0, BAR_H);
-    draw_rectangle(r.x, r.y, r.w, r.h, ui::PANEL);
-    draw_rectangle(r.x, r.y, r.w * done as f32 / TOTAL_STEPS as f32, r.h, ui::ACCENT);
-    draw_rectangle_lines(r.x, r.y, r.w, r.h, 1.0, ui::EDGE);
-    ui::text_centered(&format!("loading {}%", done * 100 / TOTAL_STEPS), r.y + 40.0, ui::SMALL, ui::DIM);
+    let cy = screen_height() / 2.0;
+    match logo {
+        Some(t) => {
+            let size = vec2(t.width(), t.height()) * 2.0;
+            draw_texture_ex(t, (screen_width() - size.x) / 2.0, cy - 40.0 - size.y, WHITE, DrawTextureParams { dest_size: Some(size), ..Default::default() });
+        }
+        None => ui::text_centered("AGON", cy - 40.0, ui::TITLE, ui::ACCENT),
+    }
+    let frac = done as f32 / TOTAL_STEPS as f32;
+    let r = ui::centered(BAR_W, cy + 10.0, BAR_H * 2.6);
+    match bar {
+        Some(b) => {
+            b.draw(r, r.h / 22.0, WHITE);
+            let (px, py) = (r.h * 0.5, r.h * 0.3);
+            draw_rectangle(r.x + px, r.y + py, r.w - 2.0 * px, r.h - 2.0 * py, Color::new(0.23, 0.2, 0.31, 1.0));
+            draw_rectangle(r.x + px, r.y + py, (r.w - 2.0 * px) * frac, r.h - 2.0 * py, Color::new(0.9, 0.72, 0.36, 1.0));
+        }
+        None => draw_rectangle(r.x, r.y, r.w * frac, r.h, ui::ACCENT),
+    }
+    ui::text_centered(&format!("loading {}%", done * 100 / TOTAL_STEPS), r.y + r.h + 30.0, ui::SMALL, ui::DIM);
 }
 
 impl Skin {
@@ -143,7 +157,64 @@ pub struct SwordFx {
     pub release: Sheet,
 }
 
+pub struct Nine {
+    pub tex: Texture2D,
+    pub src: Rect,
+    pub inset: f32,
+}
+
+impl Nine {
+    async fn load(path: &str, src: Option<Rect>, inset: f32) -> AResult<Nine> {
+        let tex = texture(path).await?;
+        let src = src.unwrap_or(Rect::new(0.0, 0.0, tex.width(), tex.height()));
+        Ok(Nine { tex, src, inset })
+    }
+
+    pub fn draw(&self, r: Rect, scale: f32, tint: Color) {
+        let (s, i) = (self.src, self.inset);
+        let d = i * scale;
+        let xs = [(s.x, i, r.x, d), (s.x + i, s.w - 2.0 * i, r.x + d, r.w - 2.0 * d), (s.x + s.w - i, i, r.x + r.w - d, d)];
+        let ys = [(s.y, i, r.y, d), (s.y + i, s.h - 2.0 * i, r.y + d, r.h - 2.0 * d), (s.y + s.h - i, i, r.y + r.h - d, d)];
+        for (sx, sw, dx, dw) in xs {
+            for (sy, sh, dy, dh) in ys {
+                if dw <= 0.0 || dh <= 0.0 {
+                    continue;
+                }
+                draw_texture_ex(&self.tex, dx, dy, tint, DrawTextureParams { source: Some(Rect::new(sx, sy, sw, sh)), dest_size: Some(vec2(dw, dh)), ..Default::default() });
+            }
+        }
+    }
+}
+
+pub struct UiKit {
+    pub panel: Nine,
+    pub button: Nine,
+    pub field: Nine,
+    pub bar: Nine,
+    pub logo: Texture2D,
+    pub reticle: Texture2D,
+    pub icons: Vec<Texture2D>,
+}
+
+pub const ICONS: [&str; 13] = ["needle", "ray", "ward", "judgement", "cut", "swallow", "windstep", "formation", "hex", "potion", "broom", "cauldron", "dash"];
+pub const DASH_ICON: usize = 12;
+
+pub fn skill_icon(s: crate::core::Skill) -> Option<&'static Texture2D> {
+    let i = s as usize;
+    (i < DASH_ICON).then(|| &get().ui.icons[i])
+}
+
+pub fn dash_icon() -> &'static Texture2D {
+    &get().ui.icons[DASH_ICON]
+}
+
+pub fn portrait(kit: usize) -> &'static Texture2D {
+    &get().portraits[kit.min(KITS.len() - 1)]
+}
+
 pub struct Assets {
+    pub ui: UiKit,
+    pub portraits: Vec<Texture2D>,
     pub skins: Vec<Skin>,
     pub spirit_sword: Texture2D,
     pub witch: WitchFx,
@@ -196,10 +267,31 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
         load_status("stun", 39.0, 23.0, 12, 12.0, vec2(19.0, 15.0), false).await?,
     ];
     let bleed_pop = load_status("bleed_pop", 66.0, 69.0, 8, 16.0, vec2(35.0, 30.0), false).await?;
-    Ok(Assets { skins, spirit_sword, witch, sword, status, bleed_pop })
+    let ui = UiKit {
+        panel: Nine::load("assets/ui/panel.png", None, 28.0).await?,
+        button: Nine::load("assets/ui/btn_full.png", Some(Rect::new(44.0, 95.0, 168.0, 68.0)), 14.0).await?,
+        field: Nine::load("assets/ui/field.png", Some(Rect::new(4.0, 4.0, 62.0, 22.0)), 6.0).await?,
+        bar: Nine::load("assets/ui/bars.png", None, 10.0).await?,
+        logo: texture("assets/ui/logo.png").await?,
+        reticle: texture("assets/ui/reticle.png").await?,
+        icons: {
+            let mut v = Vec::new();
+            for n in ICONS {
+                v.push(texture(&format!("assets/ui/skills/{n}.png")).await?);
+            }
+            v
+        },
+    };
+    let mut portraits = Vec::new();
+    for kit in &KITS {
+        portraits.push(texture(&format!("assets/{}/portrait.png", kit.skin)).await?);
+    }
+    Ok(Assets { ui, portraits, skins, spirit_sword, witch, sword, status, bleed_pop })
 }
 
 pub async fn load() -> AResult {
+    let logo = texture("assets/ui/logo.png").await.ok();
+    let bar = Nine::load("assets/ui/bars.png", None, 10.0).await.ok();
     let progress = Arc::new(AtomicUsize::new(0));
     let result = Arc::new(Mutex::new(None));
     let (p, r) = (progress.clone(), result.clone());
@@ -213,7 +305,7 @@ pub async fn load() -> AResult {
             let _ = INSTANCE.set(loaded?);
             return Ok(());
         }
-        draw_progress(progress.load(Ordering::Relaxed));
+        draw_progress(progress.load(Ordering::Relaxed), logo.as_ref(), bar.as_ref());
         next_frame().await;
     }
 }

@@ -27,7 +27,12 @@ const ITEMS: [(Item, &str); 6] = [
 ];
 
 fn layout() -> Vec<(Item, &'static str, Rect)> {
-    ITEMS.iter().enumerate().map(|(i, (item, label))| (*item, *label, ui::centered(320.0, 250.0 + i as f32 * 66.0, 56.0))).collect()
+    let x = screen_width() / 2.0 - 360.0;
+    ITEMS.iter().enumerate().map(|(i, (item, label))| (*item, *label, Rect::new(x, 230.0 + i as f32 * 66.0, 320.0, 56.0))).collect()
+}
+
+fn showcase() -> Rect {
+    Rect::new(screen_width() / 2.0 + 40.0, 230.0, 320.0, 386.0)
 }
 
 pub struct MainMenu;
@@ -58,8 +63,12 @@ impl Screen for MainMenu {
     }
 
     fn draw(&self, ctx: &Context) {
-        ui::text_centered("AGON", 160.0, ui::TITLE, ui::ACCENT);
-        ui::text_centered(&format!("signed in as {}   |   {}", ctx.user.username, kit(ctx.user.kit).name), 205.0, ui::SMALL + 2, ui::DIM);
+        ui::logo(110.0, 1.6);
+        let s = showcase();
+        ui::panel(s, false);
+        crate::screen::characters::draw_idle(ctx.user.kit, s.x, s.y + 30.0, s.w, 3.5);
+        ui::text_in(kit(ctx.user.kit).name, s, s.y + 320.0, 30, ui::INK);
+        ui::text_in(&ctx.user.username, s, s.y + 352.0, ui::SMALL, ui::INK);
         for (_, label, r) in layout() {
             ui::button(r, label, true);
         }
