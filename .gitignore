@@ -1,3 +1,4 @@
 /target
 *.wasm
 /dist
+.DS_Store
