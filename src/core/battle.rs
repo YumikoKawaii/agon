@@ -50,7 +50,7 @@ impl Battle {
         self.push_apart();
         self.spells.update(&mut self.players, &mut self.events);
         self.blades.update(&mut self.players, &mut self.events);
-        self.hexes.update(&mut self.players, &mut self.events);
+        self.hexes.update(&mut self.players, &self.spells.wards, &mut self.events);
         for seat in 0..2 {
             if self.players[seat].hp <= 0 {
                 self.players[seat].respawn();

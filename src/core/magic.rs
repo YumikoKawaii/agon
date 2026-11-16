@@ -78,6 +78,20 @@ pub fn ward_segment(p: &Player) -> (Vec2, Vec2) {
     (c - f.perp() * WARD_W, c + f.perp() * WARD_W)
 }
 
+pub fn ward_block(wards: &[Ward], players: &mut [Player; 2], owner: usize, pos: Vec2, r: f32, events: &mut Vec<Event>) -> bool {
+    let Some(o) = wards.iter().map(|w| w.owner).filter(|&o| o != owner).find(|&o| {
+        let (a, b) = ward_segment(&players[o]);
+        seg_dist(pos, a, b) < r + 3.0
+    }) else {
+        return false;
+    };
+    if let Some(slot) = players[o].kit().skills.iter().position(|k| *k == Skill::Ward) {
+        players[o].cd[slot] = (players[o].cd[slot] - WARD_REFUND).max(0.0);
+    }
+    events.push(Event::Blocked { pos });
+    true
+}
+
 pub fn judge_target(p: &Player) -> Vec2 {
     inside(p.pos + (p.target - p.pos).clamp_length_max(JUDGE_RANGE), JUDGE_R * 0.6)
 }

@@ -4,6 +4,7 @@ use crate::core::{
     battle::strike,
     event::{Element, Event},
     inside,
+    magic::{ward_block, Ward},
     player::Player,
     seg_dist, Skill, ARENA, DT, RADIUS,
 };
@@ -111,10 +112,13 @@ impl Hexes {
         }
     }
 
-    pub fn update(&mut self, players: &mut [Player; 2], events: &mut Vec<Event>) {
+    pub fn update(&mut self, players: &mut [Player; 2], wards: &[Ward], events: &mut Vec<Event>) {
         self.bolts.retain_mut(|b| {
             b.pos += b.vel * DT;
             b.life -= DT;
+            if ward_block(wards, players, b.owner, b.pos, BOLT_R, events) {
+                return false;
+            }
             let t = 1 - b.owner;
             let hit = players[t].hurtbox().is_some_and(|r| players[t].pos.distance(b.pos) < r + BOLT_R);
             if hit {
@@ -126,6 +130,10 @@ impl Hexes {
         self.potions.retain_mut(|p| {
             p.t += DT;
             if p.t < POTION_T {
+                let at = p.from.lerp(p.to, p.k());
+                if ward_block(wards, players, p.owner, at, 4.0, events) {
+                    return false;
+                }
                 return true;
             }
             let t = 1 - p.owner;
