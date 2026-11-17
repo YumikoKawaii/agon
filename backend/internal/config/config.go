@@ -1,7 +1,8 @@
 package config
 
 import (
-	"fmt"
+	"net"
+	"net/url"
 	"os"
 )
 
@@ -11,6 +12,7 @@ type Config struct {
 	DBUser     string
 	DBPassword string
 	DBName     string
+	DBSSLMode  string
 	ServerPort string
 	StaticDir  string
 	JWTSecret  string
@@ -21,10 +23,11 @@ type Config struct {
 func Load() *Config {
 	return &Config{
 		DBHost:     getEnv("DB_HOST", "localhost"),
-		DBPort:     getEnv("DB_PORT", "3306"),
+		DBPort:     getEnv("DB_PORT", "5432"),
 		DBUser:     getEnv("DB_USER", "agon"),
 		DBPassword: getEnv("DB_PASSWORD", "agon"),
 		DBName:     getEnv("DB_NAME", "agon"),
+		DBSSLMode:  getEnv("DB_SSLMODE", "disable"),
 		ServerPort: getEnv("SERVER_PORT", "7777"),
 		StaticDir:  getEnv("STATIC_DIR", "./static"),
 		JWTSecret:  os.Getenv("JWT_SECRET"),
@@ -33,12 +36,23 @@ func Load() *Config {
 	}
 }
 
+func (c *Config) url(scheme string) string {
+	u := url.URL{
+		Scheme:   scheme,
+		User:     url.UserPassword(c.DBUser, c.DBPassword),
+		Host:     net.JoinHostPort(c.DBHost, c.DBPort),
+		Path:     "/" + c.DBName,
+		RawQuery: url.Values{"sslmode": {c.DBSSLMode}}.Encode(),
+	}
+	return u.String()
+}
+
 func (c *Config) DSN() string {
-	return fmt.Sprintf("%s:%s@tcp(%s:%s)/%s?parseTime=true&charset=utf8mb4", c.DBUser, c.DBPassword, c.DBHost, c.DBPort, c.DBName)
+	return c.url("postgres")
 }
 
 func (c *Config) MigrateURL() string {
-	return fmt.Sprintf("mysql://%s:%s@tcp(%s:%s)/%s?multiStatements=true", c.DBUser, c.DBPassword, c.DBHost, c.DBPort, c.DBName)
+	return c.url("pgx5")
 }
 
 func getEnv(key, defaultVal string) string {

@@ -9,8 +9,8 @@ services:
     image: yumikokawaii/agon:latest
     restart: unless-stopped
     environment:
-      DB_HOST: mysql
-      DB_PORT: "3306"
+      DB_HOST: ${DB_HOST:-akashic-postgres-1}
+      DB_PORT: "5432"
       DB_USER: ${DB_USER:-agon}
       DB_PASSWORD: ${DB_PASSWORD:?set DB_PASSWORD in .env}
       DB_NAME: ${DB_NAME:-agon}
@@ -20,31 +20,12 @@ services:
     ports:
       - "127.0.0.1:${SERVER_PORT:-7777}:7777/tcp"
       - "4433:4433/udp"
-    depends_on:
-      mysql:
-        condition: service_healthy
+    networks:
+      - default
+      - shared-db
     logging: *logging
 
-  mysql:
-    image: mysql:8.4
-    restart: unless-stopped
-    command:
-      - --innodb-buffer-pool-size=64M
-      - --performance-schema=OFF
-      - --max-connections=50
-      - --skip-name-resolve
-    environment:
-      MYSQL_ROOT_PASSWORD: ${DB_ROOT_PASSWORD:?set DB_ROOT_PASSWORD in .env}
-      MYSQL_USER: ${DB_USER:-agon}
-      MYSQL_PASSWORD: ${DB_PASSWORD}
-      MYSQL_DATABASE: ${DB_NAME:-agon}
-    volumes:
-      - agon-mysql:/var/lib/mysql
-    healthcheck:
-      test: ["CMD-SHELL", "mysqladmin ping -h localhost -u root -p$$MYSQL_ROOT_PASSWORD"]
-      interval: 5s
-      retries: 40
-    logging: *logging
-
-volumes:
-  agon-mysql:
+networks:
+  shared-db:
+    external: true
+    name: ${DB_NETWORK:-akashic_default}

@@ -29,7 +29,7 @@ func (r *userRepo) FindByID(id int64) (*model.User, error) {
 
 func (r *userRepo) FindByName(name string) (*model.User, error) {
 	var u model.User
-	if err := r.db.Where("name = ?", name).First(&u).Error; err != nil {
+	if err := r.db.Where("lower(name) = lower(?)", name).First(&u).Error; err != nil {
 		return nil, translate(err)
 	}
 	return &u, nil

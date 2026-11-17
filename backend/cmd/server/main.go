@@ -9,9 +9,9 @@ import (
 
 	"connectrpc.com/connect"
 	"github.com/golang-migrate/migrate/v4"
-	_ "github.com/golang-migrate/migrate/v4/database/mysql"
+	_ "github.com/golang-migrate/migrate/v4/database/pgx/v5"
 	_ "github.com/golang-migrate/migrate/v4/source/file"
-	"gorm.io/driver/mysql"
+	"gorm.io/driver/postgres"
 	"gorm.io/gorm"
 	"gorm.io/gorm/logger"
 
@@ -39,7 +39,7 @@ func main() {
 		log.Fatalf("migration failed: %v", err)
 	}
 
-	db, err := gorm.Open(mysql.Open(cfg.DSN()), &gorm.Config{
+	db, err := gorm.Open(postgres.Open(cfg.DSN()),&gorm.Config{
 		Logger:         logger.Default.LogMode(logger.Warn),
 		TranslateError: true,
 	})
