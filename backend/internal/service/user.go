@@ -7,7 +7,7 @@ import (
 	"github.com/yumikokawaii/agon/internal/repository"
 )
 
-const Kits = 4
+const Kits = 6
 
 type UserService struct {
 	users repository.UserRepository
