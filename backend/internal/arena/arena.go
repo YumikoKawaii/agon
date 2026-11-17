@@ -11,6 +11,7 @@ import (
 	"net/http"
 	"strconv"
 	"sync"
+	"sync/atomic"
 	"time"
 
 	"github.com/quic-go/quic-go"
@@ -49,31 +50,32 @@ type match struct {
 
 type Arena struct {
 	wt      *webtransport.Server
+	host    string
 	url     string
-	hash    string
 	results chan Result
+	cert    atomic.Pointer[tls.Certificate]
 
 	mu      sync.Mutex
+	hash    string
 	matches map[string]*match
 	tickets map[string]ticket
 }
 
 func New(port, host string) (*Arena, error) {
-	cert, err := selfSigned(host)
-	if err != nil {
-		return nil, err
-	}
-	sum := sha256.Sum256(cert.Leaf.Raw)
 	a := &Arena{
+		host:    host,
 		url:     "https://" + net.JoinHostPort(host, port) + "/match",
-		hash:    hex.EncodeToString(sum[:]),
 		results: make(chan Result, 16),
 		matches: map[string]*match{},
 		tickets: map[string]ticket{},
 	}
+	if err := a.rotate(); err != nil {
+		return nil, err
+	}
+	tlsConf := &tls.Config{GetCertificate: func(*tls.ClientHelloInfo) (*tls.Certificate, error) { return a.cert.Load(), nil }}
 	h3 := &http3.Server{
 		Addr:      ":" + port,
-		TLSConfig: http3.ConfigureTLSConfig(&tls.Config{Certificates: []tls.Certificate{cert}}),
+		TLSConfig: http3.ConfigureTLSConfig(tlsConf),
 		QUICConfig: &quic.Config{
 			EnableDatagrams:                  true,
 			EnableStreamResetPartialDelivery: true,
@@ -88,11 +90,39 @@ func New(port, host string) (*Arena, error) {
 	return a, nil
 }
 
-func (a *Arena) Serve() error { return a.wt.ListenAndServe() }
+func (a *Arena) Serve() error {
+	go a.keepFresh()
+	return a.wt.ListenAndServe()
+}
+
+func (a *Arena) rotate() error {
+	cert, err := selfSigned(a.host)
+	if err != nil {
+		return err
+	}
+	sum := sha256.Sum256(cert.Leaf.Raw)
+	a.cert.Store(&cert)
+	a.mu.Lock()
+	a.hash = hex.EncodeToString(sum[:])
+	a.mu.Unlock()
+	return nil
+}
+
+func (a *Arena) keepFresh() {
+	for range time.Tick(certRotate) {
+		if err := a.rotate(); err != nil {
+			log.Printf("arena: rotate cert: %v", err)
+		}
+	}
+}
 
 func (a *Arena) Results() <-chan Result { return a.results }
 
-func (a *Arena) Address() (string, string) { return a.url, a.hash }
+func (a *Arena) Address() (string, string) {
+	a.mu.Lock()
+	defer a.mu.Unlock()
+	return a.url, a.hash
+}
 
 func (a *Arena) Open(matchID string) {
 	a.mu.Lock()

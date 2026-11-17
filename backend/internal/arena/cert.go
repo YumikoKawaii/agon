@@ -12,7 +12,10 @@ import (
 	"time"
 )
 
-const certTTL = 10 * 24 * time.Hour
+const (
+	certTTL    = 10 * 24 * time.Hour
+	certRotate = 24 * time.Hour
+)
 
 func selfSigned(host string) (tls.Certificate, error) {
 	key, err := ecdsa.GenerateKey(elliptic.P256(), rand.Reader)
