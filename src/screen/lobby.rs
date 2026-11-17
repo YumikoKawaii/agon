@@ -35,12 +35,17 @@ pub struct Lobby {
     endpoint: Option<Pending<Endpoint>>,
     joined_match: String,
     status: Status,
+    lost: bool,
+    retry: f32,
+    probe: Option<Pending<RoomReply>>,
 }
+
+const RETRY_DELAY: f32 = 1.0;
 
 impl Lobby {
     pub fn new(ctx: &Context, room: Room) -> Self {
         let seat = room.seat_of(&ctx.user.username);
-        Lobby { watch: ctx.api.watch_room(&room.id), seat, room, ready: None, endpoint: None, joined_match: String::new(), status: Status::default() }
+        Lobby { watch: ctx.api.watch_room(&room.id), seat, room, ready: None, endpoint: None, joined_match: String::new(), status: Status::default(), lost: false, retry: 0.0, probe: None }
     }
 
     fn me(&self) -> bool {
@@ -57,9 +62,9 @@ impl Lobby {
 }
 
 impl Screen for Lobby {
-    fn update(&mut self, ctx: &mut Context, _dt: f32) -> StackCommand {
+    fn update(&mut self, ctx: &mut Context, dt: f32) -> StackCommand {
         ui::frame(80.0, 650.0);
-        let (latest, closed) = self.watch.poll();
+        let (latest, closed) = if self.lost { (None, false) } else { self.watch.poll() };
         if let Some(room) = latest {
             self.apply(ctx, room);
         }
@@ -67,7 +72,30 @@ impl Screen for Lobby {
             return StackCommand::Pop;
         }
         if closed {
-            self.watch = ctx.api.watch_room(&self.room.id);
+            self.lost = true;
+            self.retry = RETRY_DELAY;
+        }
+        if self.lost && self.probe.is_none() {
+            self.retry -= dt;
+            if self.retry <= 0.0 {
+                self.probe = Some(ctx.api.get_room(&self.room.id));
+            }
+        }
+        if let Some(result) = self.probe.as_mut().and_then(Pending::poll) {
+            self.probe = None;
+            match result {
+                Ok(r) => {
+                    self.status.error.clear();
+                    self.apply(ctx, r.room);
+                    self.watch = ctx.api.watch_room(&self.room.id);
+                    self.lost = false;
+                }
+                Err(e) if e.unauthenticated => return signed_out(ctx),
+                Err(e) => {
+                    self.status.error = e.message;
+                    self.retry = RETRY_DELAY;
+                }
+            }
         }
         if let Some(result) = self.ready.as_mut().and_then(Pending::poll) {
             self.ready = None;

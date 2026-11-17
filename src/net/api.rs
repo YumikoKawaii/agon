@@ -215,6 +215,10 @@ impl Api {
         self.call("RoomService/JoinRoom", RoomReq { room_id }.serialize_json())
     }
 
+    pub fn get_room(&self, room_id: &str) -> Pending<RoomReply> {
+        self.call("RoomService/GetRoom", RoomReq { room_id }.serialize_json())
+    }
+
     pub fn leave_room(&self, room_id: &str) -> Pending<Empty> {
         self.call("RoomService/LeaveRoom", RoomReq { room_id }.serialize_json())
     }
