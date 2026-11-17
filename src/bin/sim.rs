@@ -1,4 +1,5 @@
 #[path = "../core/mod.rs"]
+#[allow(dead_code, unused_imports)]
 mod core;
 
 use core::{

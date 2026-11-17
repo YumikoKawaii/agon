@@ -156,7 +156,6 @@ pub struct Status {
 pub struct ParasolFx {
     pub bolt: Sheet,
     pub bloom: Sheet,
-    pub step: Sheet,
     pub tempest: Sheet,
     pub dash: Sheet,
     pub blossom: Sheet,
@@ -358,7 +357,6 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
         top: Sheet::load("assets/parasol/fx_v2/parasol-top.png", 48.0, 48.0, 1, 1.0).await?,
         ret: Sheet::load("assets/parasol/fx_v2/onmyoji-spirit-return.png", 85.0, 102.0, 10, 16.0).await?,
         bloom: Sheet::load("assets/parasol/fx/sakura-bloom-pop.png", 64.0, 64.0, 8, 16.0).await?,
-        step: Sheet::load("assets/parasol/fx/sakura-spirit-step.png", 96.0, 80.0, 10, 16.0).await?,
         tempest: Sheet::load("assets/parasol/fx_v2/onmyoji-tempest.png", 152.0, 122.0, 20, 12.0).await?,
     };
     let fox = FoxFx {

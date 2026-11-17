@@ -171,7 +171,7 @@ pub fn draw_air(b: &Battle, cam: &Camera, sword: &Texture2D) {
             _ => sh.draw_rot(sh.frame_at(o.age, true).unwrap_or(0), c, vec2(44.0, 19.0), r / 8.0 * S, ang, 1.0),
         }
     }
-    draw_seren(b, cam, time);
+    draw_seren(b, cam);
     draw_wards(b, cam, time);
     let fx = &assets::get().sword;
     for p in b.players.iter().filter(|p| p.intent_ready()) {
@@ -337,7 +337,7 @@ fn rune_circle(c: Vec2, r: f32, rot: f32, col: Color, a: f32) {
     star(c, r * 0.42, 0.3, 4, rot * 2.0, alpha(WHITE, a * 0.8), 1.0);
 }
 
-fn draw_seren(b: &Battle, cam: &Camera, time: f32) {
+fn draw_seren(b: &Battle, cam: &Camera) {
     let fx = &assets::get().seren;
     let r = crate::core::seren::SHOT_R;
     for s in &b.serens.shots {

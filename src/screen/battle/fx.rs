@@ -124,7 +124,6 @@ enum Kind {
     BleedPop,
     Release,
     Bloom,
-    Step,
     Tempest,
     Dash,
     Blossom,
@@ -158,7 +157,6 @@ fn sheet(kind: Kind) -> (&'static assets::Sheet, f32) {
         Kind::BleedPop => (&assets::get().bleed_pop.sheet, 0.6),
         Kind::Release => (&assets::get().sword.release, 0.6),
         Kind::Bloom => (&assets::get().parasol.bloom, 0.5),
-        Kind::Step => (&assets::get().parasol.step, 0.6),
         Kind::Tempest => (&assets::get().parasol.tempest, STORM_R / 52.0),
         Kind::Dash => (&assets::get().parasol.dash, 1.0),
         Kind::Blossom => (&assets::get().parasol.blossom, crate::core::parasol::BLOSSOM_R / 60.0),
@@ -590,7 +588,7 @@ impl Fx {
                 self.ring(pos, CHEST, 18.0, 3.0, 0.8, ICE, 2.0);
                 self.ring(pos, CHEST, 26.0, 4.0, 0.8, GOLD, 1.5);
             }
-            Event::SerenBeam { over, .. } => {
+            Event::SerenBeam { over } => {
                 self.kick(if over { 22.0 } else { 14.0 }, if over { 0.35 } else { 0.2 });
             }
             Event::SerenFull { pos } => {
@@ -768,7 +766,6 @@ impl Fx {
             }
             if let Some(i) = sh.frame_at(s.t, false) {
                 match s.kind {
-                    Kind::Step => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(20.0, 40.0), k * S, s.ang, 1.0),
                     Kind::Tempest => sh.draw_at(i, cam.proj(s.pos), vec2(74.0, 80.0), k * S, 1.0),
                     Kind::Dash => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(12.0, 24.0), k * S, s.ang, 1.0),
                     Kind::Blossom => sh.draw_at(i, cam.proj(s.pos), vec2(70.0, 71.0), k * S, 1.0),

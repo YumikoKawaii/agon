@@ -329,7 +329,7 @@ impl Serens {
             let i = b.owner;
             if !b.fired && b.t >= BEAM_CHARGE {
                 b.fired = true;
-                events.push(Event::SerenBeam { origin: b.origin, dir: b.dir, over: b.over });
+                events.push(Event::SerenBeam { over: b.over });
                 let t = 1 - i;
                 if seg_dist(players[t].pos, b.origin, b.end()) < b.width() + RADIUS {
                     strike(players, t, Hit::new(boost(BEAM_DMG, over_mul(b.over)), b.dir, Element::Arcane, true, BEAM_FX).knock(), events);

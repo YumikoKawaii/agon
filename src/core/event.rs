@@ -66,6 +66,6 @@ pub enum Event {
     SerenFists { pos: Vec2 },
     SerenDash { from: Vec2, to: Vec2 },
     SerenCharge { pos: Vec2 },
-    SerenBeam { origin: Vec2, dir: Vec2, over: bool },
+    SerenBeam { over: bool },
     SerenFull { pos: Vec2 },
 }
