@@ -10,6 +10,7 @@ use crate::{
 
 const RESULT_HOLD: f32 = 3.0;
 const SNAP_BLEND: f32 = 0.5;
+const SLOTS: usize = 4;
 
 pub struct Sync {
     link: Link,
@@ -82,7 +83,7 @@ impl Sync {
         let mut input = Input { dir: Vec2::from(p.dir), aim: Vec2::from(p.aim), slot: None };
         if p.cast_seq != self.seen_cast {
             self.seen_cast = p.cast_seq;
-            input.slot = Some(p.cast_slot as usize);
+            input.slot = Some(p.cast_slot as usize).filter(|s| *s < SLOTS);
         }
         input
     }
