@@ -11,11 +11,20 @@ use crate::{
 
 const CARD_W: f32 = 220.0;
 const CARD_GAP: f32 = 20.0;
+const CARD_H: f32 = 380.0;
+const CARD_MARGIN: f32 = 24.0;
 const SOUTH: usize = 2;
 
+fn card_scale() -> f32 {
+    let n = KITS.len() as f32;
+    ((screen_width() - CARD_MARGIN * 2.0) / (CARD_W * n + CARD_GAP * (n - 1.0))).min(1.0)
+}
+
 fn cards() -> Vec<Rect> {
-    let x0 = (screen_width() - (CARD_W * KITS.len() as f32 + CARD_GAP * (KITS.len() - 1) as f32)) / 2.0;
-    (0..KITS.len()).map(|i| Rect::new(x0 + i as f32 * (CARD_W + CARD_GAP), 160.0 + ui::oy(), CARD_W, 380.0)).collect()
+    let k = card_scale();
+    let (w, gap) = (CARD_W * k, CARD_GAP * k);
+    let x0 = (screen_width() - (w * KITS.len() as f32 + gap * (KITS.len() - 1) as f32)) / 2.0;
+    (0..KITS.len()).map(|i| Rect::new(x0 + i as f32 * (w + gap), 160.0 + ui::oy(), w, CARD_H * k)).collect()
 }
 
 fn confirm_rect() -> Rect {
@@ -79,18 +88,20 @@ impl Screen for Characters {
         for (i, part) in KITS[self.pick].hint.split("   ").enumerate() {
             ui::text_centered(part, 562.0 + i as f32 * 20.0, ui::SMALL - 4, ui::DIM);
         }
+        let k = card_scale();
+        let px = |v: f32| (v * k).round() as u16;
         for (i, r) in cards().into_iter().enumerate() {
             ui::panel(r, self.pick == i);
-            draw_idle(i, r.x, r.y + 30.0, r.w, 2.6);
-            ui::text_in(KITS[i].name, r, r.y + 282.0, 26, ui::INK);
-            ui::text_in(&format!("HP {}", KITS[i].hp), r, r.y + 308.0, ui::SMALL, ui::INK);
-            let (s, gap) = (34.0, 8.0);
+            draw_idle(i, r.x, r.y + 30.0 * k, r.w, 2.6 * k);
+            ui::text_in(KITS[i].name, r, r.y + 282.0 * k, px(26.0), ui::INK);
+            ui::text_in(&format!("HP {}", KITS[i].hp), r, r.y + 308.0 * k, px(ui::SMALL as f32), ui::INK);
+            let (s, gap, pad) = (34.0 * k, 8.0 * k, 4.0 * k);
             let x0 = r.x + (r.w - (4.0 * s + 3.0 * gap)) / 2.0;
-            for (k, skill) in KITS[i].skills.iter().enumerate() {
-                let ir = Rect::new(x0 + k as f32 * (s + gap), r.y + 320.0, s, s);
+            for (n, skill) in KITS[i].skills.iter().enumerate() {
+                let ir = Rect::new(x0 + n as f32 * (s + gap), r.y + 320.0 * k, s, s);
                 ui::slot(ir, WHITE);
                 if let Some(t) = assets::skill_icon(*skill) {
-                    draw_texture_ex(t, ir.x + 4.0, ir.y + 4.0, WHITE, DrawTextureParams { dest_size: Some(vec2(s - 8.0, s - 8.0)), ..Default::default() });
+                    draw_texture_ex(t, ir.x + pad, ir.y + pad, WHITE, DrawTextureParams { dest_size: Some(vec2(s - 2.0 * pad, s - 2.0 * pad)), ..Default::default() });
                 }
             }
         }
