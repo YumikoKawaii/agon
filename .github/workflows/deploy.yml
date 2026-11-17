@@ -1,0 +1,75 @@
+name: Deploy
+
+on:
+  push:
+    branches:
+      - master
+  workflow_dispatch:
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Build image
+        run: docker build -t yumikokawaii/agon:latest .
+
+      - name: Save image to tar
+        run: |
+          docker save yumikokawaii/agon:latest -o agon.tar
+          chmod 644 agon.tar
+
+      - name: Find runner IP
+        id: runner
+        run: echo "ip=$(curl -fsS --retry 3 https://api.ipify.org)" >> "$GITHUB_OUTPUT"
+
+      - name: Allow runner through the SSH rate limit
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: sudo -n ufw insert 1 allow from ${{ steps.runner.outputs.ip }} to any port 22 proto tcp comment 'github-actions-deploy'
+
+      - name: Copy image and compose file to server
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          source: "agon.tar,deploy/docker-compose.yml"
+          target: /tmp/agon-deploy/
+          strip_components: 0
+
+      - name: Load image and restart services
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: |
+            docker load -i /tmp/agon-deploy/agon.tar
+            mkdir -p ~/agon
+            mv /tmp/agon-deploy/deploy/docker-compose.yml ~/agon/docker-compose.yml
+            rm -rf /tmp/agon-deploy
+
+            cd ~/agon
+            docker compose up -d
+
+            docker image prune -f
+
+      - name: Remove runner firewall rule
+        if: always() && steps.runner.outputs.ip != ''
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.EC2_HOST }}
+          username: ${{ secrets.EC2_USER }}
+          key: ${{ secrets.EC2_SSH_KEY }}
+          script: sudo -n ufw delete allow from ${{ steps.runner.outputs.ip }} to any port 22 proto tcp || true
