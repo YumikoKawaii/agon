@@ -21,6 +21,7 @@ impl MainState {
     fn tick(&mut self) {
         self.screens.update(&mut self.ctx, get_frame_time().min(0.25));
         clear_background(ui::BG);
+        ui::backdrop();
         self.screens.draw(&self.ctx);
     }
 }

@@ -390,7 +390,7 @@ impl Picker {
                     let r = skill_rect(i);
                     ui::slot(r, WHITE);
                     if let Some(t) = assets::skill_icon(*s) {
-                        draw_texture_ex(t, r.x + 4.0, r.y + 4.0, WHITE, DrawTextureParams { dest_size: Some(vec2(r.w - 8.0, r.h - 8.0)), ..Default::default() });
+                        ui::skill_art(t, Rect::new(r.x + 3.0, r.y + 3.0, r.w - 6.0, r.h - 6.0), WHITE);
                     }
                     if r.contains(m) {
                         line = parts.get(i).copied().unwrap_or("");

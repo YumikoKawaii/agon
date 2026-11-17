@@ -252,8 +252,235 @@ fn draw_status(cam: &Camera, p: &Player, front: bool) {
     }
 }
 
-const PLATE: Vec2 = vec2(470.0, 96.0);
 const HP_FILL: [Color; 2] = [Color::new(0.5, 0.84, 0.76, 1.0), Color::new(0.91, 0.46, 0.54, 1.0)];
+const SUBTLE: Color = Color::new(0.36, 0.32, 0.46, 1.0);
+const DOCK: Rect = Rect { x: (VIEW.x - 660.0) / 2.0, y: VIEW.y - 126.0, w: 660.0, h: 118.0 };
+const FOE: Rect = Rect { x: VIEW.x - 340.0, y: 8.0, w: 320.0, h: 84.0 };
+const HALF: Vec2 = vec2(470.0, 118.0);
+const TOP: Rect = Rect { x: VIEW.x / 2.0 - 260.0, y: 0.0, w: 520.0, h: 170.0 };
+
+pub enum Hud {
+    Focus { names: [String; 2], score: Option<[u32; 2]> },
+    Equal { tags: [String; 2] },
+}
+
+fn half(i: usize) -> Rect {
+    let x = if i == 0 { 14.0 } else { VIEW.x - 14.0 - HALF.x };
+    Rect::new(x, 6.0, HALF.x, HALF.y)
+}
+
+pub fn hud_zones(hud: &Hud) -> [Rect; 3] {
+    match hud {
+        Hud::Focus { .. } => [Rect::new(DOCK.x, DOCK.y - 34.0, DOCK.w, DOCK.h + 34.0), FOE, TOP],
+        Hud::Equal { .. } => {
+            let grow = |r: Rect| Rect::new(r.x, r.y, r.w, r.h + 34.0);
+            [grow(half(0)), grow(half(1)), TOP]
+        }
+    }
+}
+
+fn hp_frac(p: &Player) -> f32 {
+    (p.hp.max(0) as f32 / p.max_hp() as f32).clamp(0.0, 1.0)
+}
+
+pub fn ease_lag(lag: f32, p: &Player, dt: f32) -> f32 {
+    let f = hp_frac(p);
+    if f >= lag {
+        f
+    } else {
+        (lag - (lag - f).max(0.05) * dt * 2.2).max(f)
+    }
+}
+
+fn hp_bar(r: Rect, p: &Player, lag: f32, side: usize, right: bool) {
+    crate::ui::bar(r, hp_frac(p), lag, HP_FILL[side], right);
+}
+
+fn status_chips(p: &Player, x: f32, y: f32, right: bool) {
+    let mut n = 0.0;
+    for k in KINDS.iter().copied().filter(|k| p.effects.on(*k)) {
+        let label = match k {
+            EffectKind::Bleed => format!("{} x{}", status_name(k), p.effects.stacks),
+            EffectKind::Shield => format!("{} {}", status_name(k), p.effects.power[k.i()]),
+            _ => status_name(k).to_string(),
+        };
+        let tw = measure_text(&label, None, 16, 1.0).width + 16.0;
+        let ex = if right { x - n - tw } else { x + n };
+        let col = status_color(k);
+        crate::ui::pill(Rect::new(ex, y, tw, 22.0), crate::ui::INK);
+        draw_rectangle(ex + 8.0, y + 18.0, (tw - 16.0) * (1.0 - p.effects.progress(k)), 2.0, col);
+        draw_text(&label, ex + 8.0, y + 16.0, 16.0, col);
+        n += tw + 6.0;
+    }
+}
+
+fn sweep(r: Rect, frac: f32, col: Color) {
+    let frac = frac.clamp(0.0, 1.0);
+    if frac <= 0.0 {
+        return;
+    }
+    let c = r.center();
+    let half = r.w / 2.0;
+    let edge = |a: f32| {
+        let d = Vec2::from_angle(a);
+        c + d * (half / d.x.abs().max(d.y.abs()))
+    };
+    let steps = (64.0 * frac).ceil().max(1.0) as usize;
+    let start = -PI / 2.0;
+    let span = TAU * frac;
+    for i in 0..steps {
+        let a0 = start + span * i as f32 / steps as f32;
+        let a1 = start + span * (i + 1) as f32 / steps as f32;
+        draw_triangle(c, edge(a0), edge(a1), col);
+    }
+}
+
+fn hud_slot(r: Rect, key: &str, icon: Option<&Texture2D>, frac: f32, wait: f32, extra: Option<String>, ready: bool, ult: bool) {
+    if ready {
+        let pulse = 0.55 + 0.45 * (get_time() as f32 * 4.0).sin().abs();
+        let g = if ult { crate::ui::GOLD } else { alpha(crate::ui::GOLD, 0.85) };
+        draw_rectangle(r.x - 6.0, r.y - 6.0, r.w + 12.0, r.h + 12.0, alpha(crate::ui::GOLD, 0.18 * pulse));
+        draw_rectangle(r.x - 4.0, r.y - 4.0, r.w + 8.0, r.h + 8.0, g);
+    }
+    draw_rectangle(r.x - 2.0, r.y - 2.0, r.w + 4.0, r.h + 4.0, crate::ui::INK);
+    draw_rectangle(r.x, r.y, r.w, r.h, Color::new(0.91, 0.85, 0.7, 1.0));
+    draw_rectangle(r.x, r.y, r.w, r.h * 0.3, alpha(WHITE, 0.3));
+    match icon {
+        Some(tex) => {
+            let c = if ready { WHITE } else { Color::new(0.6, 0.6, 0.66, 1.0) };
+            crate::ui::skill_art(tex, r, c);
+        }
+        None => text_mid(key, r.x + r.w / 2.0, r.y + r.h / 2.0 + 8.0, 24.0, crate::ui::INK),
+    }
+    if frac > 0.0 {
+        sweep(r, frac, Color::new(0.1, 0.08, 0.18, 0.62));
+    }
+    let ks = if r.w < 50.0 { 12 } else { 14 };
+    crate::ui::keycap(key, r.x + r.w / 2.0, r.y - 10.0, ks);
+    if wait > 0.0 {
+        let s = secs(wait);
+        let size = (r.w * 0.42).round();
+        let w = measure_text(&s, None, size as u16, 1.0).width;
+        crate::ui::text_out(&s, r.x + (r.w - w) / 2.0, r.y + r.h / 2.0 + size * 0.32, size as u16, WHITE, 1.5);
+    }
+    if let Some(e) = extra {
+        let w = measure_text(&e, None, 16, 1.0).width + 8.0;
+        draw_rectangle(r.x + r.w - w - 2.0, r.y + r.h - 18.0, w, 16.0, crate::ui::INK);
+        draw_text(&e, r.x + r.w - w + 2.0, r.y + r.h - 5.0, 16.0, WHITE);
+    }
+}
+
+fn passive_slot(p: &Player, r: Rect, label: bool) {
+    let (frac, extra, on) = passive_state(p);
+    let name = p.kit().passive.name();
+    hud_slot(r, if label { name } else { "P" }, Some(assets::passive_icon(p.kit().passive)), frac, 0.0, extra, on, false);
+}
+
+fn skill_row(p: &Player, x: f32, y: f32, size: f32, gap: f32, right: bool, label: bool) {
+    let keys = ["LMB", "Q", "E", "R"];
+    let psize = (size * 0.86).round();
+    let total = size * 4.0 + gap * 4.0 + 10.0 + psize;
+    let at = |off: f32, w: f32| if right { x + total - off - w } else { x + off };
+    for (k, key) in keys.iter().enumerate() {
+        let off = k as f32 * (size + gap);
+        let r = Rect::new(at(off, size), y, size, size);
+        let extra = p.skill(k).charged().then(|| p.charges.to_string());
+        hud_slot(r, key, assets::skill_icon(p.skill(k)), p.cooldown_frac(k), p.cd(k), extra, p.ready(k), k == 3);
+    }
+    let off = 4.0 * (size + gap) + 10.0;
+    let sep = at(off - gap / 2.0 - 4.0, 2.0);
+    let mut dy = y + 4.0;
+    while dy < y + size - 4.0 {
+        draw_rectangle(sep, dy, 2.0, 6.0, alpha(crate::ui::INK, 0.35));
+        dy += 10.0;
+    }
+    passive_slot(p, Rect::new(at(off, psize), y + size - psize, psize, psize), label);
+}
+
+fn draw_dock(p: &Player, name: &str, lag: f32) {
+    let d = DOCK;
+    crate::ui::panel_scaled(d, 0.5);
+    let pr = Rect::new(d.x + 18.0, d.y + 17.0, 84.0, 84.0);
+    crate::ui::portrait_box(p.kit, pr, crate::ui::MINT, false);
+    let cx = pr.x + pr.w + 18.0;
+    let cw = d.x + d.w - 20.0 - cx;
+    draw_text(name, cx, d.y + 28.0, 20.0, crate::ui::INK);
+    let nw = measure_text(name, None, 20, 1.0).width;
+    draw_text(p.kit().name, cx + nw + 10.0, d.y + 28.0, 16.0, SUBTLE);
+    let hp = format!("{} / {}", p.hp.max(0), p.max_hp());
+    let hw = measure_text(&hp, None, 17, 1.0).width;
+    draw_text(&hp, cx + cw - hw, d.y + 28.0, 17.0, crate::ui::INK);
+    hp_bar(Rect::new(cx - 4.0, d.y + 32.0, cw + 8.0, 16.0), p, lag, 0, false);
+    skill_row(p, cx, d.y + 60.0, 46.0, 14.0, false, true);
+    status_chips(p, d.x + 18.0, d.y - 28.0, false);
+}
+
+fn draw_foe(p: &Player, name: &str, lag: f32) {
+    let r = FOE;
+    crate::ui::panel_scaled(r, 0.45);
+    let pr = Rect::new(r.x + r.w - 16.0 - 54.0, r.y + 14.0, 54.0, 54.0);
+    crate::ui::portrait_box(p.kit, pr, crate::ui::ROSE, true);
+    let right = pr.x - 12.0;
+    let left = r.x + 18.0;
+    let nw = measure_text(name, None, 18, 1.0).width;
+    draw_text(name, right - nw, r.y + 28.0, 18.0, crate::ui::INK);
+    let kw = measure_text(p.kit().name, None, 14, 1.0).width;
+    draw_text(p.kit().name, right - nw - kw - 6.0, r.y + 28.0, 14.0, SUBTLE);
+    draw_text(&format!("{}/{}", p.hp.max(0), p.max_hp()), left, r.y + 28.0, 15.0, crate::ui::INK);
+    hp_bar(Rect::new(left - 4.0, r.y + 33.0, right - left + 8.0, 16.0), p, lag, 1, true);
+    status_chips(p, right, r.y + 56.0, true);
+}
+
+fn draw_half(i: usize, p: &Player, tag: &str, lag: f32) {
+    let r = half(i);
+    let right = i == 1;
+    crate::ui::panel_scaled(r, 0.5);
+    let ps = 76.0;
+    let pr = Rect::new(if right { r.x + r.w - 18.0 - ps } else { r.x + 18.0 }, r.y + 22.0, ps, ps);
+    crate::ui::portrait_box(p.kit, pr, if right { crate::ui::ROSE } else { crate::ui::MINT }, right);
+    let (cx, cw) = if right { (r.x + 20.0, pr.x - 16.0 - r.x - 20.0) } else { (pr.x + ps + 16.0, r.x + r.w - 20.0 - pr.x - ps - 16.0) };
+    let name = p.kit().name;
+    let nw = measure_text(name, None, 20, 1.0).width;
+    let tw = crate::ui::chip_w(tag, 13);
+    let hp = format!("{}/{}", p.hp.max(0), p.max_hp());
+    let hw = measure_text(&hp, None, 16, 1.0).width;
+    if right {
+        draw_text(name, cx + cw - nw, r.y + 28.0, 20.0, crate::ui::INK);
+        crate::ui::chip(tag, cx + cw - nw - tw - 6.0, r.y + 13.0, 13, crate::ui::LAV_D, WHITE);
+        draw_text(&hp, cx, r.y + 28.0, 16.0, crate::ui::INK);
+    } else {
+        draw_text(name, cx, r.y + 28.0, 20.0, crate::ui::INK);
+        crate::ui::chip(tag, cx + nw + 6.0, r.y + 13.0, 13, crate::ui::LAV_D, WHITE);
+        draw_text(&hp, cx + cw - hw, r.y + 28.0, 16.0, crate::ui::INK);
+    }
+    hp_bar(Rect::new(cx - 4.0, r.y + 33.0, cw + 8.0, 16.0), p, lag, i, right);
+    let size: f32 = 42.0;
+    let gap: f32 = 10.0;
+    let total = size * 4.0 + gap * 4.0 + 10.0 + (size * 0.86).round();
+    let sx = if right { cx + cw - total } else { cx };
+    skill_row(p, sx, r.y + 62.0, size, gap, right, false);
+    status_chips(p, if right { r.x + r.w - 16.0 } else { r.x + 16.0 }, r.y + r.h + 6.0, right);
+}
+
+fn draw_score(score: [u32; 2]) {
+    let r = Rect::new(VIEW.x / 2.0 - 130.0, 8.0, 260.0, 92.0);
+    crate::ui::panel_scaled(r, 0.45);
+    let t = format!("{}  -  {}", score[0], score[1]);
+    let w = measure_text(&t, None, 44, 1.0).width;
+    crate::ui::text_out(&t, (VIEW.x - w) / 2.0, r.y + 50.0, 44, WHITE, 2.0);
+    let n = crate::core::DEATHS_TO_WIN;
+    for side in 0..2 {
+        for k in 0..n {
+            let off = 18.0 + k as f32 * 20.0;
+            let x = if side == 0 { VIEW.x / 2.0 - off } else { VIEW.x / 2.0 + off };
+            let on = k < score[side];
+            let c = if !on { alpha(crate::ui::INK, 0.2) } else if side == 0 { crate::ui::MINT_D } else { crate::ui::ROSE_D };
+            draw_poly(x, r.y + 72.0, 4, 8.0, 0.0, crate::ui::INK);
+            draw_poly(x, r.y + 72.0, 4, 6.0, 0.0, c);
+        }
+    }
+}
+
 
 fn secs(t: f32) -> String {
     if t < 1.0 {
@@ -268,112 +495,8 @@ fn text_mid(t: &str, cx: f32, y: f32, size: f32, c: Color) {
     draw_text(t, cx - w / 2.0, y, size, c);
 }
 
-fn draw_plate(i: usize, p: &Player) {
-    let right = i == 1;
-    let x = if right { VIEW.x - 20.0 - PLATE.x } else { 20.0 };
-    let r = Rect::new(x, 6.0, PLATE.x, PLATE.y);
-    crate::ui::panel_scaled(r, 0.5);
-    let pr = Rect::new(if right { r.x + r.w - 92.0 } else { r.x + 14.0 }, r.y + 12.0, 78.0, 72.0);
-    draw_rectangle(pr.x + 4.0, pr.y + 4.0, pr.w - 8.0, pr.h - 8.0, Color::new(0.82, 0.9, 0.86, 1.0));
-    let tex = assets::portrait(p.kit);
-    let side = pr.h - 8.0;
-    draw_texture_ex(tex, pr.x + (pr.w - side) / 2.0, pr.y + 4.0, WHITE, DrawTextureParams { dest_size: Some(vec2(side, side)), flip_x: right, ..Default::default() });
-    crate::ui::frame_border(pr);
-    let bx = if right { r.x + 18.0 } else { pr.x + pr.w + 10.0 };
-    let bw = r.w - pr.w - 44.0;
-    let name = p.kit().name;
-    let hp = format!("{}/{}", p.hp.max(0), p.max_hp());
-    let (nl, hl) = (measure_text(name, None, 22, 1.0).width, measure_text(&hp, None, 20, 1.0).width);
-    let (nx, hx) = if right { (bx + bw - nl, bx) } else { (bx, bx + bw - hl) };
-    draw_text(name, nx, r.y + 32.0, 22.0, crate::ui::INK);
-    draw_text(&hp, hx, r.y + 32.0, 20.0, crate::ui::INK);
-    crate::ui::bar(Rect::new(bx, r.y + 38.0, bw, 22.0), p.hp.max(0) as f32 / p.max_hp() as f32, HP_FILL[i], right);
-    let mut n = 0.0;
-    for k in KINDS.iter().copied().filter(|k| p.effects.on(*k)) {
-        let label = match k {
-            EffectKind::Bleed => format!("{} x{}", status_name(k), p.effects.stacks),
-            EffectKind::Shield => format!("{} {}", status_name(k), p.effects.power[k.i()]),
-            _ => status_name(k).to_string(),
-        };
-        let tw = measure_text(&label, None, 16, 1.0).width + 12.0;
-        let ex = if right { bx + bw - n - tw } else { bx + n };
-        let col = status_color(k);
-        draw_rectangle(ex, r.y + 66.0, tw, 18.0, crate::ui::INK);
-        draw_rectangle(ex + 1.0, r.y + 82.0, (tw - 2.0) * (1.0 - p.effects.progress(k)), 2.0, col);
-        draw_text(&label, ex + 6.0, r.y + 80.0, 16.0, col);
-        n += tw + 4.0;
-    }
-}
-
-fn draw_slot(r: Rect, key: &str, icon: Option<&Texture2D>, tint: Color, frac: f32, wait: f32, extra: Option<String>, ready: bool) {
-    let t = if ready { tint } else { Color::new(tint.r * 0.6, tint.g * 0.6, tint.b * 0.65, 1.0) };
-    crate::ui::slot(r, t);
-    match icon {
-        Some(tex) => {
-            let s = r.w - 18.0;
-            let c = if ready { WHITE } else { Color::new(0.55, 0.55, 0.6, 1.0) };
-            draw_texture_ex(tex, r.x + 9.0, r.y + 9.0, c, DrawTextureParams { dest_size: Some(vec2(s, s)), ..Default::default() });
-        }
-        None => text_mid(key, r.x + r.w / 2.0, r.y + r.h / 2.0 + 8.0, 24.0, if ready { crate::ui::INK } else { WHITE }),
-    }
-    if frac > 0.0 {
-        let h = (r.h - 12.0) * frac.clamp(0.0, 1.0);
-        draw_rectangle(r.x + 6.0, r.y + 6.0, r.w - 12.0, h, Color::new(0.1, 0.08, 0.18, 0.55));
-    }
-    let kw = measure_text(key, None, 14, 1.0).width + 8.0;
-    draw_rectangle(r.x + (r.w - kw) / 2.0, r.y - 9.0, kw, 16.0, crate::ui::INK);
-    text_mid(key, r.x + r.w / 2.0, r.y + 3.0, 14.0, WHITE);
-    if wait > 0.0 {
-        let s = secs(wait);
-        text_mid(&s, r.x + r.w / 2.0 + 1.0, r.y + r.h / 2.0 + 11.0, 30.0, crate::ui::INK);
-        text_mid(&s, r.x + r.w / 2.0, r.y + r.h / 2.0 + 10.0, 30.0, WHITE);
-    }
-    if let Some(e) = extra {
-        let w = measure_text(&e, None, 16, 1.0).width + 8.0;
-        draw_rectangle(r.x + r.w - w - 2.0, r.y + r.h - 18.0, w, 16.0, crate::ui::INK);
-        draw_text(&e, r.x + r.w - w + 2.0, r.y + r.h - 5.0, 16.0, WHITE);
-    }
-}
-
-fn draw_skills(p: &Player) {
-    let sizes = [70.0, 70.0, 70.0, 84.0, 62.0];
-    let gap = 12.0;
-    let total: f32 = sizes.iter().sum::<f32>() + gap * 5.0 + 40.0;
-    let r = Rect::new((VIEW.x - total) / 2.0, VIEW.y - 112.0, total, 104.0);
-    crate::ui::panel_scaled(r, 0.5);
-    let lav = Color::new(1.0, 1.0, 1.0, 1.0);
-    let gold = Color::new(1.0, 0.9, 0.55, 1.0);
-    let mint = Color::new(0.7, 1.15, 1.0, 1.0);
-    let mut x = r.x + 20.0;
-    for (k, key) in ["LMB", "Q", "E", "R"].iter().enumerate() {
-        let s = sizes[k];
-        let sr = Rect::new(x, r.y + r.h - 16.0 - s, s, s);
-        let extra = if p.skill(k).charged() {
-            Some(p.charges.to_string())
-        } else {
-            None
-        };
-        draw_slot(sr, key, assets::skill_icon(p.skill(k)), if k == 3 { gold } else { lav }, p.cooldown_frac(k), p.cd(k), extra, p.ready(k));
-        x += s + gap;
-        if k == 3 {
-            draw_rectangle(x - gap / 2.0 - 1.0, r.y + 22.0, 2.0, r.h - 40.0, alpha(crate::ui::INK, 0.4));
-            x += gap;
-        }
-    }
-    let s = sizes[4];
-    let sr = Rect::new(x, r.y + r.h - 16.0 - s, s, s);
-    let (frac, extra, on) = passive_state(p);
-    draw_slot(sr, "P", Some(assets::passive_icon(p.kit().passive)), mint, frac, 0.0, extra, on);
-    text_mid(p.kit().passive.name(), sr.x + s / 2.0, r.y + 18.0, 14.0, crate::ui::INK);
-}
-
 pub fn score_rect() -> Rect {
     Rect::new(VIEW.x / 2.0 - 260.0, 108.0, 520.0, 56.0)
-}
-
-pub fn hud_zones() -> [Rect; 3] {
-    let sizes = 70.0 * 3.0 + 84.0 + 62.0 + 12.0 * 5.0 + 40.0;
-    [Rect::new(0.0, 0.0, VIEW.x, PLATE.y + 12.0), Rect::new((VIEW.x - sizes) / 2.0, VIEW.y - 124.0, sizes, 124.0), score_rect()]
 }
 
 pub fn body_rect(cam: &Camera, p: &Player) -> Rect {
@@ -381,17 +504,21 @@ pub fn body_rect(cam: &Camera, p: &Player) -> Rect {
     Rect::new(s.x - 40.0, s.y - 120.0, 80.0, 132.0)
 }
 
-pub fn draw_hud(players: &[Player; 2], title: Option<&str>) {
-    for (i, p) in players.iter().enumerate() {
-        draw_plate(i, p);
+pub fn draw_hud(players: &[Player; 2], hud: &Hud, lag: [f32; 2]) {
+    match hud {
+        Hud::Focus { names, score } => {
+            draw_foe(&players[1], &names[1], lag[1]);
+            draw_dock(&players[0], &names[0], lag[0]);
+            if let Some(s) = score {
+                draw_score(*s);
+            }
+        }
+        Hud::Equal { tags } => {
+            for (i, p) in players.iter().enumerate() {
+                draw_half(i, p, &tags[i], lag[i]);
+            }
+        }
     }
-    if let Some(title) = title {
-        let tw = measure_text(title, None, 24, 1.0).width.max(120.0) + 60.0;
-        let tr = Rect::new((VIEW.x - tw) / 2.0, 14.0, tw, 52.0);
-        crate::ui::panel_scaled(tr, 0.4);
-        text_mid(title, VIEW.x / 2.0, tr.y + 34.0, 24.0, crate::ui::INK);
-    }
-    draw_skills(&players[0]);
 }
 
 pub fn draw_cursor(cam: &Camera) {

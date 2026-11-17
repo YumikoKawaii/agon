@@ -60,6 +60,180 @@ pub fn text_in(t: &str, r: Rect, y: f32, size: u16, c: Color) {
 
 pub const INK: Color = Color::new(0.16, 0.14, 0.25, 1.0);
 pub const GOLD: Color = Color::new(0.95, 0.76, 0.38, 1.0);
+pub const MINT: Color = Color::new(0.56, 0.86, 0.79, 1.0);
+pub const MINT_D: Color = Color::new(0.31, 0.66, 0.58, 1.0);
+pub const LAV_D: Color = Color::new(0.48, 0.39, 0.77, 1.0);
+pub const ROSE: Color = Color::new(0.93, 0.58, 0.67, 1.0);
+pub const ROSE_D: Color = Color::new(0.82, 0.42, 0.53, 1.0);
+pub const CREAM: Color = Color::new(0.96, 0.91, 0.79, 1.0);
+pub const PALE: Color = Color::new(0.91, 0.88, 0.98, 1.0);
+const NIGHT: [Color; 2] = [Color::new(0.23, 0.18, 0.39, 1.0), Color::new(0.16, 0.29, 0.34, 1.0)];
+
+pub fn with_alpha(c: Color, a: f32) -> Color {
+    Color::new(c.r, c.g, c.b, a.clamp(0.0, 1.0))
+}
+
+pub fn backdrop() {
+    let (w, h) = (screen_width(), screen_height());
+    let bands = 48;
+    for i in 0..bands {
+        let t = i as f32 / (bands - 1) as f32;
+        let c = Color::new(NIGHT[0].r + (NIGHT[1].r - NIGHT[0].r) * t, NIGHT[0].g + (NIGHT[1].g - NIGHT[0].g) * t, NIGHT[0].b + (NIGHT[1].b - NIGHT[0].b) * t, 1.0);
+        let y = h * i as f32 / bands as f32;
+        draw_rectangle(0.0, y, w, h / bands as f32 + 1.0, c);
+    }
+    for (x, y, r, c, a) in [(0.25, 1.05, 0.55, MINT, 0.10), (0.92, -0.05, 0.45, ROSE, 0.08)] {
+        for k in 0..6 {
+            let f = 1.0 - k as f32 / 6.0;
+            draw_circle(w * x, h * y, w * r * f, with_alpha(c, a * 0.35));
+        }
+    }
+    let t = get_time() as f32;
+    for i in 0..70u32 {
+        let hx = (i.wrapping_mul(2_654_435_761) >> 8) as f32 / 16_777_216.0;
+        let hy = (i.wrapping_mul(2_246_822_519).wrapping_add(97) >> 8) as f32 / 16_777_216.0;
+        let tw = 0.5 + 0.5 * (t * (0.6 + hx * 1.4) + i as f32).sin();
+        let s = if i % 7 == 0 { 2.5 } else { 1.5 };
+        let y = (hy * h - t * (4.0 + hx * 6.0)).rem_euclid(h);
+        draw_rectangle((hx * w).round(), y.round(), s, s, with_alpha(WHITE, 0.25 + 0.6 * tw));
+    }
+}
+
+pub fn pedestal(centre: Vec2, w: f32) {
+    for k in 0..5 {
+        let f = 1.0 - k as f32 / 5.0;
+        draw_ellipse(centre.x, centre.y - w * 0.05, w * 0.75 * f, w * 0.28 * f, 0.0, with_alpha(MINT, 0.07));
+    }
+    draw_ellipse(centre.x, centre.y + w * 0.035, w * 0.5, w * 0.12, 0.0, Color::new(0.0, 0.0, 0.0, 0.3));
+    draw_ellipse(centre.x, centre.y, w * 0.5, w * 0.12, 0.0, MINT_D);
+    draw_ellipse(centre.x, centre.y - w * 0.02, w * 0.38, w * 0.07, 0.0, with_alpha(WHITE, 0.18));
+    draw_ellipse_lines(centre.x, centre.y, w * 0.5, w * 0.12, 0.0, 3.0, INK);
+}
+
+pub fn pill(r: Rect, c: Color) {
+    let rad = r.h / 2.0;
+    draw_rectangle(r.x + rad, r.y, r.w - 2.0 * rad, r.h, c);
+    draw_circle(r.x + rad, r.y + rad, rad, c);
+    draw_circle(r.x + r.w - rad, r.y + rad, rad, c);
+}
+
+pub fn chip_w(t: &str, size: u16) -> f32 {
+    measure_text(t, None, size, 1.0).width + size as f32 * 1.2
+}
+
+pub fn chip(t: &str, x: f32, y: f32, size: u16, bg: Color, fg: Color) -> Rect {
+    let r = Rect::new(x, y, chip_w(t, size), size as f32 * 1.35);
+    pill(r, bg);
+    text_in(t, r, r.y + r.h * 0.5 + size as f32 * 0.3, size, fg);
+    r
+}
+
+pub fn keycap(t: &str, cx: f32, y: f32, size: u16) {
+    let w = measure_text(t, None, size, 1.0).width + 10.0;
+    let r = Rect::new(cx - w / 2.0, y, w, size as f32 + 4.0);
+    draw_rectangle(r.x, r.y, r.w, r.h, INK);
+    text_in(t, r, r.y + r.h * 0.5 + size as f32 * 0.32, size, CREAM);
+}
+
+pub fn text_out(t: &str, x: f32, y: f32, size: u16, c: Color, out: f32) {
+    for (dx, dy) in [(-1.0, 0.0), (1.0, 0.0), (0.0, -1.0), (0.0, 1.0), (-1.0, -1.0), (1.0, 1.0), (-1.0, 1.0), (1.0, -1.0)] {
+        draw_text(t, x + dx * out, y + dy * out, size as f32, INK);
+    }
+    draw_text(t, x, y + out * 1.5, size as f32, INK);
+    draw_text(t, x, y, size as f32, c);
+}
+
+pub fn text_out_in(t: &str, r: Rect, y: f32, size: u16, c: Color, out: f32) {
+    let w = measure_text(t, None, size, 1.0).width;
+    text_out(t, r.x + (r.w - w) / 2.0, y, size, c, out);
+}
+
+pub fn wrap(t: &str, width: f32, size: u16) -> Vec<String> {
+    let mut lines = Vec::new();
+    let mut cur = String::new();
+    for word in t.split_whitespace() {
+        let next = if cur.is_empty() { word.to_string() } else { format!("{cur} {word}") };
+        if !cur.is_empty() && measure_text(&next, None, size, 1.0).width > width {
+            lines.push(std::mem::take(&mut cur));
+            cur = word.to_string();
+        } else {
+            cur = next;
+        }
+    }
+    if !cur.is_empty() {
+        lines.push(cur);
+    }
+    lines
+}
+
+pub fn ghost(r: Rect, label: &str, enabled: bool) {
+    let h = enabled && hovered(r);
+    draw_rectangle(r.x, r.y, r.w, r.h, Color::new(0.16, 0.14, 0.25, if h { 0.85 } else { 0.6 }));
+    draw_rectangle_lines(r.x, r.y, r.w, r.h, 2.0, with_alpha(WHITE, if h { 0.6 } else { 0.25 }));
+    text_in(label, r, r.y + r.h / 2.0 + 7.0, SMALL, if enabled { PALE } else { DIM });
+}
+
+pub fn plain(r: Rect, label: &str, enabled: bool) {
+    let h = enabled && hovered(r);
+    draw_rectangle(r.x, r.y, r.w, r.h, with_alpha(INK, if h { 0.16 } else { 0.08 }));
+    draw_rectangle_lines(r.x, r.y, r.w, r.h, 2.0, with_alpha(INK, if h { 0.5 } else { 0.3 }));
+    text_in(label, r, r.y + r.h / 2.0 + 7.0, SMALL, if enabled { INK } else { DIM });
+}
+
+pub fn mint_button(r: Rect, label: &str, enabled: bool) {
+    let h = enabled && hovered(r);
+    let tint = if !enabled { Color::new(0.5, 0.55, 0.55, 1.0) } else if h { Color::new(0.75, 1.1, 1.0, 1.0) } else { Color::new(0.62, 1.0, 0.9, 1.0) };
+    let y = if h && is_mouse_button_down(MouseButton::Left) { 2.0 } else { 0.0 };
+    kit().button.draw(Rect::new(r.x, r.y + y, r.w, r.h), r.h / 68.0 * 1.6, tint);
+    text_out_in(label, r, r.y + y + r.h / 2.0 + 8.0, BODY, if enabled { WHITE } else { DIM }, 1.0);
+}
+
+pub fn card(r: Rect, on: bool) {
+    let h = hovered(r);
+    let lift = if h && !on { 3.0 } else { 0.0 };
+    let r = Rect::new(r.x, r.y - lift, r.w, r.h);
+    kit().panel.draw(r, 0.5, if on || h { WHITE } else { Color::new(0.93, 0.93, 0.93, 1.0) });
+    if on {
+        draw_rectangle_lines(r.x - 5.0, r.y - 5.0, r.w + 10.0, r.h + 10.0, 4.0, GOLD);
+    }
+}
+
+pub fn icon(t: &Texture2D, r: Rect) {
+    draw_rectangle(r.x - 2.0, r.y - 2.0, r.w + 4.0, r.h + 4.0, INK);
+    skill_art(t, r, WHITE);
+}
+
+const AZURE: [Color; 2] = [Color::new(0.81, 0.86, 0.98, 1.0), Color::new(0.35, 0.45, 0.79, 1.0)];
+
+pub fn skill_art(t: &Texture2D, r: Rect, tint: Color) {
+    if !crate::assets::zoomed_icon(t) {
+        draw_texture_ex(t, r.x, r.y, tint, DrawTextureParams { dest_size: Some(r.size()), ..Default::default() });
+        return;
+    }
+    let bands = 8;
+    for i in 0..bands {
+        let f = i as f32 / (bands - 1) as f32;
+        let c = Color::new(AZURE[0].r + (AZURE[1].r - AZURE[0].r) * f, AZURE[0].g + (AZURE[1].g - AZURE[0].g) * f, AZURE[0].b + (AZURE[1].b - AZURE[0].b) * f, 1.0);
+        let c = Color::new(c.r * tint.r, c.g * tint.g, c.b * tint.b, 1.0);
+        draw_rectangle(r.x, r.y + r.h * i as f32 / bands as f32, r.w, r.h / bands as f32 + 0.5, c);
+    }
+    let side = t.width() / 1.42;
+    let o = (t.width() - side) / 2.0;
+    draw_texture_ex(t, r.x, r.y, tint, DrawTextureParams { dest_size: Some(r.size()), source: Some(Rect::new(o, o, side, side)), ..Default::default() });
+}
+
+pub fn portrait_box(kit: usize, r: Rect, bg: Color, flip: bool) {
+    draw_rectangle(r.x - 3.0, r.y - 3.0, r.w + 6.0, r.h + 6.0, INK);
+    draw_rectangle(r.x, r.y, r.w, r.h, bg);
+    draw_rectangle(r.x, r.y, r.w, r.h * 0.4, with_alpha(WHITE, 0.15));
+    let t = crate::assets::portrait(kit);
+    let src = Rect::new(t.width() * 0.2, t.height() * 0.12, t.width() * 0.6, t.height() * 0.6);
+    draw_texture_ex(t, r.x, r.y, WHITE, DrawTextureParams { dest_size: Some(r.size()), source: Some(src), flip_x: flip, ..Default::default() });
+}
+
+pub fn content_x(w: f32) -> f32 {
+    ((screen_width() - w) / 2.0).max(16.0)
+}
 
 pub fn form(top: f32, h: f32) {
     panel_scaled(centered(440.0, top, h), 0.55);
@@ -81,13 +255,16 @@ pub fn reticle(at: Vec2, scale: f32) {
     draw_texture_ex(t, at.x - size.x / 2.0, at.y - size.y / 2.0, WHITE, DrawTextureParams { dest_size: Some(size), ..Default::default() });
 }
 
-pub fn bar(r: Rect, frac: f32, fill: Color, right: bool) {
+pub fn bar(r: Rect, frac: f32, lag: f32, fill: Color, right: bool) {
     kit().bar.draw(r, r.h / 22.0, WHITE);
     let (px, py) = (r.h * 0.5, r.h * 0.3);
     let inner = r.w - 2.0 * px;
     let w = inner * frac.clamp(0.0, 1.0);
     let x = if right { r.x + r.w - px - w } else { r.x + px };
     draw_rectangle(r.x + px, r.y + py, inner, r.h - 2.0 * py, Color::new(0.23, 0.2, 0.31, 1.0));
+    let lw = inner * lag.clamp(0.0, 1.0);
+    let lx = if right { r.x + r.w - px - lw } else { r.x + px };
+    draw_rectangle(lx, r.y + py, lw, r.h - 2.0 * py, Color::new(1.0, 1.0, 1.0, 0.85));
     draw_rectangle(x, r.y + py, w, r.h - 2.0 * py, fill);
     draw_rectangle(x, r.y + py, w, (r.h - 2.0 * py) * 0.35, Color::new(1.0, 1.0, 1.0, 0.3));
 }
@@ -105,15 +282,6 @@ pub fn frame_border(r: Rect) {
 
 pub fn slot(r: Rect, tint: Color) {
     kit().button.draw(r, r.h / 68.0 * 1.2, tint);
-}
-
-pub fn panel(r: Rect, highlight: bool) {
-    let tint = if highlight { Color::new(1.0, 0.95, 0.8, 1.0) } else if hovered(r) { Color::new(1.0, 1.0, 0.95, 1.0) } else { Color::new(0.92, 0.92, 0.92, 1.0) };
-    let r = if highlight { Rect::new(r.x - 6.0, r.y - 10.0, r.w + 12.0, r.h + 12.0) } else { r };
-    kit().panel.draw(r, 1.0, tint);
-    if highlight {
-        draw_rectangle(r.x + 30.0, r.y + r.h - 34.0, r.w - 60.0, 4.0, GOLD);
-    }
 }
 
 pub fn button(r: Rect, label: &str, enabled: bool) {

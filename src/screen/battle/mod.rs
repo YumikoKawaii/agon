@@ -47,6 +47,7 @@ pub struct Battle {
     canvas: RenderTarget,
     hud: RenderTarget,
     fade: std::cell::Cell<[f32; 3]>,
+    lag: std::cell::Cell<[f32; 2]>,
     picker: Picker,
 }
 
@@ -68,7 +69,7 @@ impl Battle {
         canvas.texture.set_filter(FilterMode::Nearest);
         let hud = render_target(VIEW.x as u32, VIEW.y as u32);
         hud.texture.set_filter(FilterMode::Nearest);
-        Battle { core, fx: Fx::default(), cam: Camera::default(), mode, pending: Input::default(), acc: 0.0, debug: false, canvas, hud, fade: std::cell::Cell::new([1.0; 3]), picker: Picker::default() }
+        Battle { core, fx: Fx::default(), cam: Camera::default(), mode, pending: Input::default(), acc: 0.0, debug: false, canvas, hud, fade: std::cell::Cell::new([1.0; 3]), lag: std::cell::Cell::new([1.0; 2]), picker: Picker::default() }
     }
 
     pub fn practice(kit: usize) -> Self {
@@ -113,6 +114,17 @@ impl Battle {
             self.mode = Mode::Watch([Bot::new(bot::LEVELS[lv[0]].1, 0), Bot::new(bot::LEVELS[lv[1]].1, 1)], lv);
         }
         self.fx = Fx::default();
+        self.lag.set([1.0; 2]);
+    }
+
+    fn hud(&self, ctx: &Context) -> view::Hud {
+        let me = ctx.user.username.clone();
+        match &self.mode {
+            Mode::Watch(_, lv) => view::Hud::Equal { tags: [0, 1].map(|i| format!("{} · {}", ["A", "B"][i], bot::LEVELS[lv[i]].0)) },
+            Mode::Online(s) => view::Hud::Focus { names: [me, s.foe.clone()], score: Some([s.foe_deaths, self.core.deaths[0]]) },
+            Mode::Practice(..) => view::Hud::Focus { names: [me, "Bot".to_string()], score: None },
+            Mode::Training => view::Hud::Focus { names: [me, "Dummy".to_string()], score: None },
+        }
     }
 
     fn apply(&mut self, action: Action) {
@@ -277,16 +289,22 @@ impl Battle {
         self.fx.draw_air(cam, &b.players);
         self.fx.draw_numbers(cam);
         view::draw_cage(cam, true);
+        let hud = self.hud(ctx);
+        let mut lag = self.lag.get();
+        for (l, p) in lag.iter_mut().zip(&b.players) {
+            *l = view::ease_lag(*l, p, get_frame_time());
+        }
+        self.lag.set(lag);
         spells::draw_aim(b, cam);
         self.fx.draw_flash();
         let line = self.scoreline(ctx);
-        let (title, rest) = line.split_once("   ").unwrap_or((line.as_str(), ""));
+        let (_, rest) = line.split_once("   ").unwrap_or((line.as_str(), ""));
         let cam_for = |rt: &RenderTarget| Camera2D { zoom: vec2(2.0 / VIEW.x, 2.0 / VIEW.y), target: VIEW / 2.0, render_target: Some(rt.clone()), ..Default::default() };
         set_camera(&cam_for(&self.hud));
         clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
         let m = cam.mouse_view();
         let bar = self.bar();
-        view::draw_hud(&b.players, if bar.is_some() { None } else { Some(title) });
+        view::draw_hud(&b.players, &hud, lag);
         if let Some(bar) = &bar {
             self.picker.draw_bar(m, bar);
         }
@@ -298,7 +316,7 @@ impl Battle {
             draw_text(&t, (VIEW.x - w) / 2.0, r.y + 37.0, 26.0, ui::INK);
         }
         set_camera(&cam_for(&self.canvas));
-        let zones = view::hud_zones();
+        let zones = view::hud_zones(&hud);
         let mut fade = self.fade.get();
         for (z, f) in zones.iter().zip(fade.iter_mut()) {
             let covered = b.players.iter().any(|p| view::body_rect(cam, p).overlaps(z));
@@ -332,17 +350,10 @@ impl Battle {
         }
         self.picker.draw_panel(m);
         view::draw_cursor(cam);
-        let mut y = VIEW.y - 40.0;
+        let mut y = if let view::Hud::Equal { .. } = hud { VIEW.y - 40.0 } else { 28.0 };
         let keys = if self.bar().is_some() { "WASD move   C characters   Tab boxes" } else { "WASD move   Tab boxes" };
         for part in [keys, rest.trim()] {
             draw_text(part, 20.0, y, 16.0, ui::DIM);
-            y += 22.0;
-        }
-        let hint = core::KITS[b.players[0].kit].hint;
-        let mut y = VIEW.y - 40.0;
-        for part in hint.splitn(3, "   ").collect::<Vec<_>>().chunks(2).map(|c| c.join("   ")) {
-            let w = measure_text(&part, None, 16, 1.0).width;
-            draw_text(&part, VIEW.x - 20.0 - w, y, 16.0, ui::DIM);
             y += 22.0;
         }
     }

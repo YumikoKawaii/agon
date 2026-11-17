@@ -17,12 +17,22 @@ struct Layout {
     back: Rect,
 }
 
+const CARD: Vec2 = vec2(380.0, 300.0);
+const GAP: f32 = 40.0;
+
+fn cards() -> [Rect; 2] {
+    let x = (screen_width() - CARD.x * 2.0 - GAP) / 2.0;
+    let y = 210.0 + ui::oy();
+    [Rect::new(x, y, CARD.x, CARD.y), Rect::new(x + CARD.x + GAP, y, CARD.x, CARD.y)]
+}
+
 fn layout() -> Layout {
+    let [a, b] = cards();
     Layout {
-        create: ui::centered(360.0, 222.0, 56.0),
-        room_id: ui::centered(360.0, 360.0, 48.0),
-        join: ui::centered(360.0, 428.0, 52.0),
-        back: ui::centered(360.0, 530.0, 52.0),
+        create: Rect::new(a.x + 40.0, a.y + a.h - 100.0, a.w - 80.0, 60.0),
+        room_id: Rect::new(b.x + 40.0, b.y + 130.0, b.w - 80.0, 48.0),
+        join: Rect::new(b.x + 40.0, b.y + b.h - 100.0, b.w - 80.0, 60.0),
+        back: ui::centered(160.0, 550.0, 46.0),
     }
 }
 
@@ -74,14 +84,21 @@ impl Screen for Rooms {
         ui::frame(110.0, 600.0);
         let l = layout();
         let idle = self.pending.is_none();
-        ui::text_centered("Play online", 140.0, 56, ui::GOLD);
-        ui::text_centered(&format!("playing as {}", kit(ctx.user.kit).name), 180.0, ui::SMALL + 2, ui::DIM);
-        ui::form(196.0, 310.0);
-        ui::button(l.create, "Create room", idle);
-        ui::text_centered("or join by id", 315.0, ui::SMALL, ui::INK);
+        let head = Rect::new(0.0, 0.0, screen_width(), 0.0);
+        ui::text_out_in("Play online", head, 150.0 + ui::oy(), 64, ui::GOLD, 3.0);
+        ui::text_in(&format!("playing as {}", kit(ctx.user.kit).name), head, 186.0 + ui::oy(), ui::SMALL + 2, ui::PALE);
+        let [a, b] = cards();
+        ui::panel_scaled(a, 0.55);
+        ui::panel_scaled(b, 0.55);
+        ui::text_in("Host", a, a.y + 62.0, 36, ui::INK);
+        for (i, line) in ["Create a room and share", "its id with your opponent."].iter().enumerate() {
+            ui::text_in(line, a, a.y + 108.0 + i as f32 * 24.0, 20, Color::new(0.36, 0.32, 0.46, 1.0));
+        }
+        ui::text_in("Join", b, b.y + 62.0, 36, ui::INK);
+        ui::mint_button(l.create, "Create room", idle);
         self.room_id.draw(l.room_id, "room id", true);
-        ui::button(l.join, "Join", idle);
-        ui::button(l.back, "Back", idle);
+        ui::button(l.join, "Join", idle && !self.room_id.value.is_empty());
+        ui::ghost(l.back, "Back", idle);
         self.status.draw();
     }
 }

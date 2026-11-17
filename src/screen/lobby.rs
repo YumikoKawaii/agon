@@ -7,24 +7,47 @@ use crate::{
         api::{Endpoint, Room, RoomReply},
         Pending, RoomWatch,
     },
-    screen::{characters::draw_idle, signed_out, Battle, Screen, StackCommand},
+    screen::{signed_out, Battle, Screen, StackCommand},
     ui::{self, Status},
 };
 
-const SEAT_W: f32 = 300.0;
-const SEAT_GAP: f32 = 140.0;
+const CARD: Vec2 = vec2(760.0, 500.0);
+const SEAT: Vec2 = vec2(270.0, 274.0);
+const SUBTLE: Color = Color::new(0.36, 0.32, 0.46, 1.0);
 
-fn seats() -> [Rect; 2] {
-    let x0 = (screen_width() - (SEAT_W * 2.0 + SEAT_GAP)) / 2.0;
-    [Rect::new(x0, 180.0 + ui::oy(), SEAT_W, 300.0), Rect::new(x0 + SEAT_W + SEAT_GAP, 180.0 + ui::oy(), SEAT_W, 300.0)]
+struct Layout {
+    card: Rect,
+    copy: Rect,
+    seats: [Rect; 2],
+    ready: Rect,
+    leave: Rect,
 }
 
-fn ready_rect() -> Rect {
-    ui::centered(320.0, 510.0, 56.0)
+fn layout() -> Layout {
+    let card = Rect::new((screen_width() - CARD.x) / 2.0, 100.0 + ui::oy(), CARD.x, CARD.y);
+    let sy = card.y + 112.0;
+    Layout {
+        card,
+        copy: Rect::new(card.x + card.w - 40.0 - 150.0, card.y + 30.0, 150.0, 46.0),
+        seats: [Rect::new(card.x + 40.0, sy, SEAT.x, SEAT.y), Rect::new(card.x + card.w - 40.0 - SEAT.x, sy, SEAT.x, SEAT.y)],
+        ready: Rect::new(card.x + card.w - 40.0 - 200.0, card.y + card.h - 78.0, 200.0, 54.0),
+        leave: Rect::new(card.x + card.w - 40.0 - 200.0 - 14.0 - 130.0, card.y + card.h - 74.0, 130.0, 46.0),
+    }
 }
 
-fn leave_rect() -> Rect {
-    ui::centered(320.0, 580.0, 52.0)
+fn dashes(x0: f32, x1: f32, y: f32) {
+    let mut x = x0;
+    while x < x1 {
+        draw_rectangle(x, y, 8.0, 2.0, ui::with_alpha(ui::INK, 0.25));
+        x += 14.0;
+    }
+}
+
+fn pill_label(t: &str, cx: f32, y: f32, bg: Color, fg: Color) {
+    let w = ui::chip_w(t, 18) + 12.0;
+    let r = Rect::new(cx - w / 2.0, y, w, 28.0);
+    ui::pill(r, bg);
+    ui::text_in(t, r, r.y + 19.0, 18, fg);
 }
 
 pub struct Lobby {
@@ -38,6 +61,7 @@ pub struct Lobby {
     lost: bool,
     retry: f32,
     probe: Option<Pending<RoomReply>>,
+    copied: f32,
 }
 
 const RETRY_DELAY: f32 = 1.0;
@@ -45,7 +69,7 @@ const RETRY_DELAY: f32 = 1.0;
 impl Lobby {
     pub fn new(ctx: &Context, room: Room) -> Self {
         let seat = room.seat_of(&ctx.user.username);
-        Lobby { watch: ctx.api.watch_room(&room.id), seat, room, ready: None, endpoint: None, joined_match: String::new(), status: Status::default(), lost: false, retry: 0.0, probe: None }
+        Lobby { watch: ctx.api.watch_room(&room.id), seat, room, ready: None, endpoint: None, joined_match: String::new(), status: Status::default(), lost: false, retry: 0.0, probe: None, copied: 0.0 }
     }
 
     fn me(&self) -> bool {
@@ -118,11 +142,17 @@ impl Screen for Lobby {
         }
         let idle = self.ready.is_none() && self.endpoint.is_none();
         self.status.busy = !idle;
-        if ui::clicked(ready_rect(), idle && self.room.waiting()) {
+        let l = layout();
+        if ui::clicked(l.ready, idle && self.room.waiting()) {
             self.status.error.clear();
             self.ready = Some(ctx.api.set_ready(&self.room.id, !self.me()));
         }
-        if ui::clicked(leave_rect(), idle) || (idle && is_key_pressed(KeyCode::Escape)) {
+        if ui::clicked(l.copy, true) {
+            macroquad::miniquad::window::clipboard_set(&self.room.id);
+            self.copied = 1.5;
+        }
+        self.copied = (self.copied - dt).max(0.0);
+        if ui::clicked(l.leave, idle) || (idle && is_key_pressed(KeyCode::Escape)) {
             drop(ctx.api.leave_room(&self.room.id));
             return StackCommand::Pop;
         }
@@ -130,26 +160,63 @@ impl Screen for Lobby {
     }
 
     fn draw(&self, _ctx: &Context) {
-        ui::frame(80.0, 650.0);
-        ui::text_centered(&format!("Room {}", self.room.id), 110.0, 56, ui::GOLD);
-        ui::text_centered("VS", 350.0, 64, ui::GOLD);
-        ui::text_centered("share this id with your opponent", 145.0, ui::SMALL, ui::DIM);
-        for (i, r) in seats().into_iter().enumerate() {
+        let l = layout();
+        let c = l.card;
+        ui::panel_scaled(c, 0.55);
+        draw_text("ROOM", c.x + 42.0, c.y + 62.0, 20.0, SUBTLE);
+        draw_text(&self.room.id, c.x + 108.0, c.y + 66.0, 44.0, ui::INK);
+        ui::button(l.copy, if self.copied > 0.0 { "Copied" } else { "Copy id" }, true);
+        dashes(c.x + 40.0, c.x + c.w - 40.0, c.y + 96.0);
+
+        let kit_ui = &crate::assets::get().ui;
+        for (i, r) in l.seats.iter().enumerate() {
             let seat = self.room.seat(i);
-            ui::panel(r, seat.ready);
-            ui::text_in(if i == 0 { "HOST" } else { "GUEST" }, r, r.y + 54.0, 20, ui::INK);
-            if seat.username.is_empty() {
-                ui::text_in("waiting...", r, r.y + 160.0, ui::BODY, ui::INK);
+            let empty = seat.username.is_empty();
+            let mine = i == self.seat;
+            draw_rectangle(r.x, r.y, r.w, r.h, ui::with_alpha(WHITE, if mine { 0.5 } else { 0.32 }));
+            if seat.ready && !empty {
+                draw_rectangle_lines(r.x - 2.0, r.y - 2.0, r.w + 4.0, r.h + 4.0, 5.0, ui::MINT_D);
+            } else {
+                draw_rectangle_lines(r.x, r.y, r.w, r.h, 2.0, ui::with_alpha(ui::INK, 0.2));
+            }
+            ui::text_in(if i == 0 { "HOST" } else { "GUEST" }, *r, r.y + 30.0, 16, SUBTLE);
+            let pr = Rect::new(r.x + (r.w - 110.0) / 2.0, r.y + 44.0, 110.0, 110.0);
+            if empty {
+                let a = 0.75 + 0.25 * (get_time() as f32 * 3.0).sin();
+                draw_rectangle(pr.x - 3.0, pr.y - 3.0, pr.w + 6.0, pr.h + 6.0, ui::INK);
+                draw_rectangle(pr.x, pr.y, pr.w, pr.h, Color::new(0.38, 0.33, 0.55, 1.0));
+                let t = &kit_ui.unknown;
+                draw_texture_ex(t, pr.x, pr.y, Color::new(1.0, 1.0, 1.0, a), DrawTextureParams { dest_size: Some(pr.size()), ..Default::default() });
+                ui::text_in("Empty seat", *r, r.y + 194.0, 26, SUBTLE);
+                pill_label("Waiting for opponent", r.x + r.w / 2.0, r.y + 222.0, ui::with_alpha(ui::INK, 0.1), SUBTLE);
                 continue;
             }
-            draw_idle(seat.kit, r.x, r.y + 60.0, r.w, 2.2);
-            ui::text_in(&format!("{}  ({})", seat.username, kit(seat.kit).name), r, r.y + 232.0, ui::SMALL, ui::INK);
-            let (label, color) = if seat.ready { ("READY", Color::new(0.2, 0.55, 0.45, 1.0)) } else { ("not ready", ui::INK) };
-            ui::text_in(label, r, r.y + 262.0, 24, color);
+            ui::portrait_box(seat.kit, pr, if i == 0 { ui::MINT } else { ui::ROSE }, i == 1);
+            ui::text_in(&seat.username, *r, r.y + 194.0, 30, ui::INK);
+            let k = kit(seat.kit);
+            ui::text_in(&format!("{}  -  {}", k.name, k.role.name()), *r, r.y + 216.0, 18, SUBTLE);
+            if seat.ready {
+                pill_label("Ready", r.x + r.w / 2.0, r.y + 230.0, ui::MINT_D, WHITE);
+            } else {
+                pill_label("Not ready", r.x + r.w / 2.0, r.y + 230.0, ui::with_alpha(ui::INK, 0.1), SUBTLE);
+            }
         }
+        let vs = &kit_ui.versus;
+        let vw = 120.0;
+        let vh = vw * vs.height() / vs.width();
+        let vc = vec2(c.x + c.w / 2.0, l.seats[0].y + SEAT.y / 2.0);
+        draw_texture_ex(vs, (vc.x - vw / 2.0).round(), (vc.y - vh / 2.0).round(), WHITE, DrawTextureParams { dest_size: Some(vec2(vw, vh)), ..Default::default() });
+
+        dashes(c.x + 40.0, c.x + c.w - 40.0, c.y + c.h - 92.0);
+        draw_text("Share the room id with your opponent", c.x + 42.0, c.y + c.h - 44.0, 18.0, SUBTLE);
         let idle = self.ready.is_none() && self.endpoint.is_none();
-        ui::button(ready_rect(), if self.me() { "Unready" } else { "Ready" }, idle && self.room.waiting());
-        ui::button(leave_rect(), "Leave", idle);
+        let can = idle && self.room.waiting();
+        ui::plain(l.leave, "Leave", idle);
+        if self.me() {
+            ui::button(l.ready, "Unready", can);
+        } else {
+            ui::mint_button(l.ready, "Ready", can);
+        }
         self.status.draw();
     }
 }

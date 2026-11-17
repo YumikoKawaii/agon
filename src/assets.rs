@@ -229,6 +229,9 @@ pub struct UiKit {
     pub bar: Nine,
     pub logo: Texture2D,
     pub reticle: Texture2D,
+    pub unknown: Texture2D,
+    pub versus: Texture2D,
+    pub modes: [Texture2D; 3],
     pub icons: Vec<Texture2D>,
 }
 
@@ -270,6 +273,13 @@ pub fn skill_icon(s: crate::core::Skill) -> Option<&'static Texture2D> {
         _ => s as usize,
     };
     (i < PASSIVE_ICON || (PARASOL_ICON..ICONS.len()).contains(&i)).then(|| &get().ui.icons[i])
+}
+
+const ZOOMED_ICONS: [usize; 6] = [SEREN_ICON, SEREN_ICON + 1, SEREN_ICON + 2, SEREN_ICON + 3, SEREN_ICON + 7, SEREN_ICON + 8];
+
+pub fn zoomed_icon(t: &Texture2D) -> bool {
+    let icons = &get().ui.icons;
+    ZOOMED_ICONS.iter().any(|i| std::ptr::eq(t, &icons[*i]))
 }
 
 pub fn passive_icon(p: crate::core::kit::Passive) -> &'static Texture2D {
@@ -387,6 +397,9 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
         bar: Nine::load("assets/ui/bars.png", None, 10.0).await?,
         logo: texture("assets/ui/logo.png").await?,
         reticle: texture("assets/ui/reticle.png").await?,
+        unknown: texture("assets/ui/unknown.png").await?,
+        versus: texture("assets/ui/versus.png").await?,
+        modes: [texture("assets/ui/mode_bot.png").await?, texture("assets/ui/mode_training.png").await?, texture("assets/ui/mode_watch.png").await?],
         icons: {
             let mut v = Vec::new();
             for n in ICONS {
