@@ -177,7 +177,13 @@ pub fn draw_player(cam: &Camera, p: &Player, debug: bool) {
         _ => None,
     };
     let lit = !p.armed && p.fists > 0.0;
-    let skin = |armed: bool| if lit && !armed { &assets::get().seren_lit } else { assets::skin_in(p.kit, armed) };
+    let glow = energy_glow(p);
+    let skin = |armed: bool| match (armed, glow) {
+        (false, _) if lit => &assets::get().seren_lit,
+        (true, Some(true)) => &assets::get().seren_charged,
+        (false, Some(false)) => &assets::get().seren_fading,
+        _ => assets::skin_in(p.kit, armed),
+    };
     let tex = special
         .filter(|_| p.state == State::Attack)
         .and_then(|(clip, armed)| skin(armed).special(clip, p.dir8(), p.age, p.anim_ticks()).or_else(|| assets::skin_in(p.kit, armed).special(clip, p.dir8(), p.age, p.anim_ticks())))
@@ -545,6 +551,22 @@ fn passive_state(p: &Player) -> (f32, Option<String>, bool) {
         Passive::Intent => (0.0, Some(format!("{}/4", p.intent)), p.intent >= 3),
         Passive::Bond => (0.0, None, p.bond),
         Passive::Fox => (0.0, None, !p.armed),
-        Passive::Overcharge => (0.0, Some(format!("{}/{}", p.over, crate::core::seren::OVER_MAX)), p.over >= crate::core::seren::OVER_MAX),
+        Passive::Overcharge => (1.0 - p.energy / crate::core::seren::ENERGY_MAX, Some(format!("{:.0}", p.energy)), p.energy >= crate::core::seren::ENERGY_MAX || !p.armed),
+    }
+}
+
+const LOW_ENERGY: f32 = 0.3;
+
+fn energy_glow(p: &Player) -> Option<bool> {
+    if p.kit().passive != crate::core::kit::Passive::Overcharge {
+        return None;
+    }
+    let k = p.energy / crate::core::seren::ENERGY_MAX;
+    if p.armed && k >= 1.0 {
+        Some(true)
+    } else if !p.armed && k < LOW_ENERGY {
+        Some(false)
+    } else {
+        None
     }
 }

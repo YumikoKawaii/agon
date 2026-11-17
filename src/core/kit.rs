@@ -88,7 +88,7 @@ impl Skill {
             Skill::RuneKnuckle => 0.5,
             Skill::OverFists => 7.0,
             Skill::RocketDash => 5.0,
-            Skill::Starbreaker => 7.0,
+            Skill::Starbreaker => 2.5,
         }
     }
 
@@ -196,7 +196,7 @@ impl Passive {
             Passive::Intent => "Sword Intent",
             Passive::Bond => "Spirit Bond",
             Passive::Fox => "Fox Form",
-            Passive::Overcharge => "Overcharge",
+            Passive::Overcharge => "Energy",
         }
     }
 }
@@ -253,7 +253,7 @@ pub const KITS: [Kit; 6] = [
         skin: "seren",
         skills: [Skill::ManaShot, Skill::AzureLance, Skill::GravityWell, Skill::Overdrive],
         hp: 145,
-        hint: "LMB mana shot / fighter: rune knuckle (x3, 3rd: blast)   Q azure lance (thin beam, through own well: wider +50%) / fighter: overcharged fists (4s: +60% punches, each punch fires a wave)   E gravity well (pulls, then pops) / fighter: rocket dash (next punch is the blast)   R overdrive burst into fighter / fighter: starbreaker beam back into mage   PASSIVE overcharge: hits build 3 charges, full charges empower R (+40%), fighter form +20% speed, -15% damage taken",
+        hint: "LMB mana shot (1 dmg) / fighter: rune knuckle (x3, 3rd: blast)   Q azure lance (thin beam, through own well: wider +50%) / fighter: overcharged fists (4s: +60% punches, each punch fires a wave)   E gravity well (pulls, then pops) / fighter: rocket dash (next punch is the blast)   R overdrive (needs full energy) into fighter / fighter: starbreaker beam (once per form, stays fighter)   PASSIVE energy: mage hits +5 energy, +1/s regen (max 100), fighter lasts 12s, back to mage at 0, fighter +20% speed, -15% damage taken",
     },
 ];
 

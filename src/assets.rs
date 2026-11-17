@@ -25,7 +25,7 @@ pub struct Skin {
 const BAR_W: f32 = 360.0;
 const BAR_H: f32 = 10.0;
 
-const TOTAL_STEPS: usize = (KITS.len() + 4) * CLIPS.len() * DIRS.len() + 1;
+const TOTAL_STEPS: usize = (KITS.len() + 6) * CLIPS.len() * DIRS.len() + 1;
 
 fn draw_progress(done: usize, logo: Option<&Texture2D>, bar: Option<&Nine>) {
     clear_background(ui::BG);
@@ -310,6 +310,8 @@ pub struct Assets {
     pub fox_form: Skin,
     pub seren_form: Skin,
     pub seren_lit: Skin,
+    pub seren_charged: Skin,
+    pub seren_fading: Skin,
     pub seren: SerenFx,
     pub spirit_sword: Texture2D,
     pub witch: WitchFx,
@@ -342,6 +344,8 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     let fox_form = Skin::load("fox_form", progress).await?;
     let seren_form = Skin::load("seren_form", progress).await?;
     let seren_lit = Skin::load("seren_lit", progress).await?;
+    let seren_charged = Skin::load("seren_charged", progress).await?;
+    let seren_fading = Skin::load("seren_fading", progress).await?;
     let seren = SerenFx {
         shot: Sheet::load("assets/seren/fx/seren-mana-shot.png", 48.0, 48.0, 8, 12.0).await?,
         beam: Sheet::load("assets/seren/fx/seren-starbreaker-beam.png", 297.0, 84.0, 19, 15.0).await?,
@@ -429,7 +433,7 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     for kit in &KITS {
         portraits.push(texture(&format!("assets/{}/portrait.png", kit.skin)).await?);
     }
-    Ok(Assets { ui, portraits, skins, unarmed, fox_form, seren_form, seren_lit, seren, spirit_sword, witch, sword, parasol, fox, status, bleed_pop })
+    Ok(Assets { ui, portraits, skins, unarmed, fox_form, seren_form, seren_lit, seren_charged, seren_fading, seren, spirit_sword, witch, sword, parasol, fox, status, bleed_pop })
 }
 
 pub async fn load() -> AResult {

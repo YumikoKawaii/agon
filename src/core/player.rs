@@ -49,7 +49,8 @@ pub struct Player {
     pub cd_alt: [f32; 4],
     pub hex: u8,
     pub intent: u8,
-    pub over: u8,
+    pub energy: f32,
+    pub broke: bool,
     pub fists: f32,
     pub primed: f32,
     pub last: Option<Skill>,
@@ -87,7 +88,8 @@ impl Player {
             cd_alt: [0.0; 4],
             hex: 0,
             intent: 0,
-            over: 0,
+            energy: 0.0,
+            broke: false,
             fists: 0.0,
             primed: 0.0,
             last: None,
@@ -133,7 +135,8 @@ impl Player {
         self.bond = false;
         self.hex = 0;
         self.intent = 0;
-        self.over = 0;
+        self.energy = 0.0;
+        self.broke = false;
         self.fists = 0.0;
         self.primed = 0.0;
         self.last = None;
@@ -197,6 +200,11 @@ impl Player {
     }
 
     pub fn ready(&self, slot: usize) -> bool {
+        match self.skill(slot) {
+            Skill::Overdrive if self.energy < crate::core::seren::ENERGY_MAX => return false,
+            Skill::Starbreaker if self.broke => return false,
+            _ => {}
+        }
         if self.skill(slot).charged() {
             self.charges > 0
         } else {

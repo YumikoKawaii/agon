@@ -10,7 +10,7 @@ use crate::core::{
     magic::Spells,
     parasol::Parasols,
     fox::Foxes,
-    seren::{Serens, OVER_MAX},
+    seren::{Serens, ENERGY_HIT, ENERGY_MAX},
     player::{Input, Player},
     sword::Blades,
     hex::Hexes,
@@ -252,9 +252,9 @@ fn passive(players: &mut [Player; 2], me: usize, target: usize, events: &mut Vec
         Passive::Fox => {}
         Passive::Overcharge => {
             let p = &mut players[me];
-            if p.over < OVER_MAX {
-                p.over += 1;
-                if p.over == OVER_MAX {
+            if p.armed && p.energy < ENERGY_MAX {
+                p.energy = (p.energy + ENERGY_HIT).min(ENERGY_MAX);
+                if p.energy >= ENERGY_MAX {
                     events.push(Event::SerenFull { pos: p.pos });
                 }
             }

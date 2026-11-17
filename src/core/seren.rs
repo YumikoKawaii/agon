@@ -3,18 +3,21 @@ use macroquad::math::Vec2;
 use crate::core::{
     battle::{strike, Hit},
     effect::{Apply, EffectKind},
+    kit::Passive,
     event::{Element, Event},
     magic::{ward_block, Ward},
     player::Player,
     seg_dist, Skill, ARENA, DT, RADIUS,
 };
 
-pub const OVER_MAX: u8 = 3;
-const OVER_MUL: f32 = 1.4;
+pub const ENERGY_MAX: f32 = 100.0;
+pub const ENERGY_HIT: f32 = 5.0;
+const ENERGY_REGEN: f32 = 1.0;
+const ENERGY_DRAIN: f32 = ENERGY_MAX / 12.0;
 
 pub const SHOT_SPEED: f32 = 300.0;
 pub const SHOT_R: f32 = 4.0;
-const SHOT_DMG: i32 = 2;
+const SHOT_DMG: i32 = 1;
 const SHOT_LIFE: f32 = 0.7;
 
 pub const LANCE_RANGE: f32 = 220.0;
@@ -141,7 +144,7 @@ impl Beam {
 
     pub fn width(&self) -> f32 {
         if self.over {
-            BEAM_W * OVER_MUL
+            BEAM_W * 1.4
         } else {
             BEAM_W
         }
@@ -161,25 +164,12 @@ pub struct Serens {
     pub beams: Vec<Beam>,
 }
 
-fn spend(p: &mut Player) -> bool {
-    if p.over >= OVER_MAX {
-        p.over = 0;
-        true
-    } else {
-        false
-    }
+fn spend(p: &mut Player, cost: f32) {
+    p.energy = (p.energy - cost).max(0.0);
 }
 
 fn boost(dmg: i32, mul: f32) -> i32 {
     (dmg as f32 * mul).round() as i32
-}
-
-fn over_mul(over: bool) -> f32 {
-    if over {
-        OVER_MUL
-    } else {
-        1.0
-    }
 }
 
 impl Serens {
@@ -221,11 +211,11 @@ impl Serens {
                 events.push(Event::SerenWell { pos: at });
             }
             Skill::Overdrive => {
-                let over = spend(&mut players[i]);
-                events.push(Event::SerenTransform { pos, over });
+                players[i].broke = false;
+                events.push(Event::SerenTransform { pos, over: true });
                 let d = players[t].pos - pos;
                 if d.length() < BURST_R + RADIUS {
-                    strike(players, t, Hit::new(boost(BURST_DMG, over_mul(over)), d.normalize_or(f), Element::Arcane, true, &[]).knock(), events);
+                    strike(players, t, Hit::new(BURST_DMG, d.normalize_or(f), Element::Arcane, true, &[]).knock(), events);
                 }
                 players[i].armed = false;
             }
@@ -267,9 +257,9 @@ impl Serens {
                 players[i].primed = PRIMED_T;
             }
             Skill::Starbreaker => {
-                let over = spend(&mut players[i]);
+                players[i].broke = true;
                 self.beams.retain(|b| b.owner != i);
-                self.beams.push(Beam { owner: i, origin: tip, dir: f, t: 0.0, fired: false, over });
+                self.beams.push(Beam { owner: i, origin: tip, dir: f, t: 0.0, fired: false, over: false });
                 events.push(Event::SerenCharge { pos: tip });
             }
             _ => {}
@@ -277,6 +267,18 @@ impl Serens {
     }
 
     pub fn update(&mut self, players: &mut [Player; 2], wards: &[Ward], events: &mut Vec<Event>) {
+        for p in players.iter_mut().filter(|p| p.kit().passive == Passive::Overcharge && p.armed) {
+            p.energy = (p.energy + ENERGY_REGEN * DT).min(ENERGY_MAX);
+        }
+        for p in players.iter_mut().filter(|p| p.kit().passive == Passive::Overcharge && !p.armed) {
+            spend(p, ENERGY_DRAIN * DT);
+            if p.energy <= 0.0 {
+                p.armed = true;
+                p.fists = 0.0;
+                p.primed = 0.0;
+                events.push(Event::SerenTransform { pos: p.pos, over: false });
+            }
+        }
         self.shots.retain_mut(|s| {
             s.pos += s.vel * DT;
             s.life -= DT;
@@ -332,9 +334,8 @@ impl Serens {
                 events.push(Event::SerenBeam { over: b.over });
                 let t = 1 - i;
                 if seg_dist(players[t].pos, b.origin, b.end()) < b.width() + RADIUS {
-                    strike(players, t, Hit::new(boost(BEAM_DMG, over_mul(b.over)), b.dir, Element::Arcane, true, BEAM_FX).knock(), events);
+                    strike(players, t, Hit::new(BEAM_DMG, b.dir, Element::Arcane, true, BEAM_FX).knock(), events);
                 }
-                players[i].armed = true;
             }
             b.t < BEAM_CHARGE + BEAM_SHOW
         });
