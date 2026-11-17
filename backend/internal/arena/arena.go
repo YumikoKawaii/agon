@@ -23,6 +23,9 @@ const (
 	deathsAt    = 36
 	DeathsToWin = 3
 	closeDelay  = 2 * time.Second
+	ticketTTL   = 30 * time.Second
+	joinTimeout = 60 * time.Second
+	NoWinner    = -1
 )
 
 type Result struct {
@@ -34,6 +37,7 @@ type Result struct {
 type ticket struct {
 	match string
 	seat  int
+	exp   time.Time
 }
 
 type match struct {
@@ -94,6 +98,33 @@ func (a *Arena) Open(matchID string) {
 	a.mu.Lock()
 	defer a.mu.Unlock()
 	a.matches[matchID] = &match{}
+	time.AfterFunc(joinTimeout, func() { a.expire(matchID) })
+}
+
+func (a *Arena) expire(matchID string) {
+	a.mu.Lock()
+	m := a.matches[matchID]
+	if m == nil || m.done || (m.sess[0] != nil && m.sess[1] != nil) {
+		a.mu.Unlock()
+		return
+	}
+	winner := NoWinner
+	switch {
+	case m.sess[0] != nil:
+		winner = 0
+	case m.sess[1] != nil:
+		winner = 1
+	}
+	a.mu.Unlock()
+	a.finish(matchID, winner)
+}
+
+func (a *Arena) purge(now time.Time, matchID string) {
+	for k, t := range a.tickets {
+		if t.match == matchID || now.After(t.exp) {
+			delete(a.tickets, k)
+		}
+	}
 }
 
 func (a *Arena) Ticket(matchID string, seat int) (string, bool) {
@@ -105,7 +136,9 @@ func (a *Arena) Ticket(matchID string, seat int) (string, bool) {
 	b := make([]byte, 16)
 	rand.Read(b)
 	t := hex.EncodeToString(b)
-	a.tickets[t] = ticket{matchID, seat}
+	now := time.Now()
+	a.purge(now, "")
+	a.tickets[t] = ticket{matchID, seat, now.Add(ticketTTL)}
 	return t, true
 }
 
@@ -120,7 +153,7 @@ func (a *Arena) handle(w http.ResponseWriter, r *http.Request) {
 	delete(a.tickets, key)
 	m := a.matches[t.match]
 	a.mu.Unlock()
-	if !ok || m == nil {
+	if !ok || m == nil || time.Now().After(t.exp) {
 		w.WriteHeader(http.StatusForbidden)
 		return
 	}
@@ -201,6 +234,7 @@ func (a *Arena) finish(id string, winnerSeat int) {
 		return
 	}
 	m.done = true
+	a.purge(time.Now(), id)
 	broadcast(m, "end "+strconv.Itoa(winnerSeat))
 	sess := m.sess
 	deaths := [2]int32{int32(m.deaths[0]), int32(m.deaths[1])}

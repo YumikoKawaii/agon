@@ -66,6 +66,15 @@ func (s *MatchService) Result(userID int64, id string) (*model.Match, error) {
 	return s.member(userID, id)
 }
 
+func (s *MatchService) AbortStale() error {
+	return s.uow.Do(context.Background(), func(tx *uow.Store) error {
+		if err := tx.Matches.AbortOpen(); err != nil {
+			return err
+		}
+		return tx.Rooms.ResetPlaying()
+	})
+}
+
 func (s *MatchService) Finish(id string, winnerSeat int, deaths [2]int32) error {
 	var roomID string
 	err := s.uow.Do(context.Background(), func(tx *uow.Store) error {
@@ -74,7 +83,12 @@ func (s *MatchService) Finish(id string, winnerSeat int, deaths [2]int32) error 
 			return err
 		}
 		roomID = m.RoomID
-		if err := tx.Matches.Finish(id, m.Player(winnerSeat), deaths); err != nil {
+		var winner *int64
+		if winnerSeat == 0 || winnerSeat == 1 {
+			p := m.Player(winnerSeat)
+			winner = &p
+		}
+		if err := tx.Matches.Finish(id, winner, deaths); err != nil {
 			return err
 		}
 		return tx.Rooms.EndMatch(m.RoomID, id)

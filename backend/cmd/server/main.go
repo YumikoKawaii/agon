@@ -60,6 +60,9 @@ func main() {
 	userSvc := service.NewUserService(userRepo)
 	roomSvc := service.NewRoomService(unitOfWork, hub, matchArena)
 	matchSvc := service.NewMatchService(unitOfWork, hub, matchArena)
+	if err := matchSvc.AbortStale(); err != nil {
+		log.Fatalf("abort stale matches: %v", err)
+	}
 
 	go func() {
 		for r := range matchArena.Results() {

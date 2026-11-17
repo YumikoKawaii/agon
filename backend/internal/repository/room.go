@@ -14,6 +14,7 @@ type RoomRepository interface {
 	RemoveGuest(id string) error
 	Close(id string) error
 	EndMatch(id, matchID string) error
+	ResetPlaying() error
 }
 
 type roomRepo struct{ db *gorm.DB }
@@ -59,6 +60,12 @@ func (r *roomRepo) RemoveGuest(id string) error {
 
 func (r *roomRepo) Close(id string) error {
 	return r.db.Model(&model.Room{}).Where("id = ?", id).Update("state", model.RoomClosed).Error
+}
+
+func (r *roomRepo) ResetPlaying() error {
+	return r.db.Model(&model.Room{}).Where("state = ?", model.RoomPlaying).Updates(map[string]any{
+		"host_ready": false, "guest_ready": false, "state": model.RoomWaiting, "match_id": "",
+	}).Error
 }
 
 func (r *roomRepo) EndMatch(id, matchID string) error {

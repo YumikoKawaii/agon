@@ -10,7 +10,8 @@ import (
 type MatchRepository interface {
 	Create(m *model.Match) error
 	FindByID(id string) (*model.Match, error)
-	Finish(id string, winnerID int64, deaths [2]int32) error
+	Finish(id string, winnerID *int64, deaths [2]int32) error
+	AbortOpen() error
 }
 
 type matchRepo struct{ db *gorm.DB }
@@ -27,7 +28,11 @@ func (r *matchRepo) FindByID(id string) (*model.Match, error) {
 	return &m, nil
 }
 
-func (r *matchRepo) Finish(id string, winnerID int64, deaths [2]int32) error {
+func (r *matchRepo) AbortOpen() error {
+	return r.db.Model(&model.Match{}).Where("ended_at IS NULL").Update("ended_at", time.Now()).Error
+}
+
+func (r *matchRepo) Finish(id string, winnerID *int64, deaths [2]int32) error {
 	return r.db.Model(&model.Match{}).Where("id = ? AND ended_at IS NULL", id).Updates(map[string]any{
 		"winner_id": winnerID, "host_deaths": deaths[0], "guest_deaths": deaths[1], "ended_at": time.Now(),
 	}).Error
