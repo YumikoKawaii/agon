@@ -199,7 +199,6 @@ pub struct FoxFx {
 pub struct SerenFx {
     pub shot: Sheet,
     pub beam: Sheet,
-    pub sigil: Sheet,
     pub blast: Sheet,
     pub lance: Sheet,
     pub well: Sheet,
@@ -349,7 +348,6 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     let seren = SerenFx {
         shot: Sheet::load("assets/seren/fx/seren-mana-shot.png", 48.0, 48.0, 8, 12.0).await?,
         beam: Sheet::load("assets/seren/fx/seren-starbreaker-beam.png", 297.0, 84.0, 26, 15.0).await?,
-        sigil: Sheet::load("assets/seren/fx/seren-transform-sigil.png", 128.0, 112.0, 12, 12.0).await?,
         blast: Sheet::load("assets/seren/fx/seren-arcane-blast.png", 96.0, 96.0, 10, 14.0).await?,
         lance: Sheet::load("assets/seren/fx/seren-azure-lance.png", 246.0, 116.0, 31, 30.0).await?,
         well: Sheet::load("assets/seren/fx/seren-gravity-well.png", 128.0, 112.0, 12, 12.0).await?,
