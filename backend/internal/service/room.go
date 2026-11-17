@@ -7,11 +7,14 @@ import (
 	"errors"
 	"fmt"
 	"math/big"
+	"time"
 
 	"github.com/yumikokawaii/agon/internal/model"
 	"github.com/yumikokawaii/agon/internal/repository"
 	"github.com/yumikokawaii/agon/internal/uow"
 )
+
+const closedRoomTTL = time.Hour
 
 type MatchHost interface {
 	Open(matchID string)
@@ -48,7 +51,30 @@ func (s *RoomService) member(userID int64, id string) (*model.Room, int, error) 
 	return r, seat, nil
 }
 
+func (s *RoomService) leaveOthers(userID int64, keep string) error {
+	ids, err := s.uow.Store().Rooms.ActiveFor(userID)
+	if err != nil {
+		return err
+	}
+	for _, id := range ids {
+		if id == keep {
+			continue
+		}
+		if err := s.Leave(userID, id); err != nil && !errors.Is(err, ErrForbidden) && !errors.Is(err, ErrNotFound) {
+			return err
+		}
+	}
+	return nil
+}
+
+func (s *RoomService) Sweep() error {
+	return s.uow.Store().Rooms.DeleteClosedBefore(time.Now().Add(-closedRoomTTL))
+}
+
 func (s *RoomService) Create(userID int64) (*model.Room, error) {
+	if err := s.leaveOthers(userID, ""); err != nil {
+		return nil, err
+	}
 	for {
 		n, err := rand.Int(rand.Reader, big.NewInt(1000000))
 		if err != nil {
@@ -67,6 +93,9 @@ func (s *RoomService) Create(userID int64) (*model.Room, error) {
 }
 
 func (s *RoomService) Join(userID int64, id string) (*model.Room, error) {
+	if err := s.leaveOthers(userID, id); err != nil {
+		return nil, err
+	}
 	if err := s.uow.Store().Rooms.Join(id, userID); err != nil {
 		return nil, err
 	}

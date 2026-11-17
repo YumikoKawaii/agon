@@ -1,6 +1,8 @@
 package repository
 
 import (
+	"time"
+
 	"github.com/yumikokawaii/agon/internal/model"
 	"gorm.io/gorm"
 )
@@ -15,6 +17,8 @@ type RoomRepository interface {
 	Close(id string) error
 	EndMatch(id, matchID string) error
 	ResetPlaying() error
+	ActiveFor(userID int64) ([]string, error)
+	DeleteClosedBefore(t time.Time) error
 }
 
 type roomRepo struct{ db *gorm.DB }
@@ -60,6 +64,16 @@ func (r *roomRepo) RemoveGuest(id string) error {
 
 func (r *roomRepo) Close(id string) error {
 	return r.db.Model(&model.Room{}).Where("id = ?", id).Update("state", model.RoomClosed).Error
+}
+
+func (r *roomRepo) ActiveFor(userID int64) ([]string, error) {
+	var ids []string
+	err := r.db.Model(&model.Room{}).Where("state <> ? AND (host_id = ? OR guest_id = ?)", model.RoomClosed, userID, userID).Pluck("id", &ids).Error
+	return ids, err
+}
+
+func (r *roomRepo) DeleteClosedBefore(t time.Time) error {
+	return r.db.Where("state = ? AND updated_at < ?", model.RoomClosed, t).Delete(&model.Room{}).Error
 }
 
 func (r *roomRepo) ResetPlaying() error {

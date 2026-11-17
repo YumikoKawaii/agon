@@ -72,6 +72,13 @@ func main() {
 		}
 	}()
 	go func() {
+		for range time.Tick(time.Hour) {
+			if err := roomSvc.Sweep(); err != nil {
+				log.Printf("sweep rooms: %v", err)
+			}
+		}
+	}()
+	go func() {
 		log.Printf("webtransport listening on udp :%s", cfg.WTPort)
 		log.Fatalf("arena failed: %v", matchArena.Serve())
 	}()
