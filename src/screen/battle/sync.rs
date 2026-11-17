@@ -91,6 +91,7 @@ impl Sync {
     pub fn correct(&self, foe: &mut Player) {
         if let Some(p) = self.remote {
             foe.pos = foe.pos.lerp(Vec2::from(p.pos), SNAP_BLEND);
+            foe.clamp();
             foe.ang = p.ang;
             foe.hp = p.hp;
             foe.effects.sync(p.fx_ticks, p.fx_power, p.fx_stacks);

@@ -45,6 +45,9 @@ impl Packet {
         }
         let u = |i: usize| u32::from_le_bytes([b[i], b[i + 1], b[i + 2], b[i + 3]]);
         let f = |i: usize| f32::from_bits(u(i));
+        if (0..7).any(|k| !f(4 + k * 4).is_finite()) {
+            return None;
+        }
         let mut fx_ticks = [0u16; N];
         let mut fx_power = [0u8; N];
         for i in 0..N {
