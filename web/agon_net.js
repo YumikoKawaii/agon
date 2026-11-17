@@ -175,11 +175,15 @@ miniquad_add_plugin({
         };
         o.env.agon_wt_recv = function (id, p, max) {
             const c = agon_wts[id];
-            if (!c || !c.dgrams.length) return 0;
-            const d = c.dgrams.shift();
-            if (d.length > max) return 0;
-            agon_put(p, d);
-            return d.length;
+            if (!c) return 0;
+            while (c.dgrams.length) {
+                const d = c.dgrams.shift();
+                if (d.length <= max) {
+                    agon_put(p, d);
+                    return d.length;
+                }
+            }
+            return 0;
         };
         o.env.agon_wt_line = function (id) {
             const c = agon_wts[id];
