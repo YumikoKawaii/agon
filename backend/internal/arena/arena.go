@@ -9,6 +9,7 @@ import (
 	"log"
 	"net"
 	"net/http"
+	"net/url"
 	"strconv"
 	"sync"
 	"sync/atomic"
@@ -86,8 +87,24 @@ func New(port, host string) (*Arena, error) {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/match", a.handle)
 	h3.Handler = mux
-	a.wt = &webtransport.Server{H3: h3, CheckOrigin: func(*http.Request) bool { return true }}
+	a.wt = &webtransport.Server{H3: h3, CheckOrigin: a.checkOrigin}
 	return a, nil
+}
+
+func (a *Arena) checkOrigin(r *http.Request) bool {
+	origin := r.Header.Get("Origin")
+	if origin == "" {
+		return true
+	}
+	u, err := url.Parse(origin)
+	if err != nil {
+		return false
+	}
+	switch u.Hostname() {
+	case a.host, "localhost", "127.0.0.1", "::1":
+		return true
+	}
+	return false
 }
 
 func (a *Arena) Serve() error {

@@ -11,13 +11,14 @@ import (
 )
 
 type Authenticator struct {
-	auth *svc.AuthService
+	auth  *svc.AuthService
+	limit *limiter
 }
 
 var _ connect.Interceptor = (*Authenticator)(nil)
 
 func NewAuthenticator(auth *svc.AuthService) *Authenticator {
-	return &Authenticator{auth: auth}
+	return &Authenticator{auth: auth, limit: newLimiter()}
 }
 
 func public(procedure string) bool {
@@ -45,6 +46,9 @@ func (a *Authenticator) authenticate(ctx context.Context, procedure string, h ht
 
 func (a *Authenticator) WrapUnary(next connect.UnaryFunc) connect.UnaryFunc {
 	return func(ctx context.Context, req connect.AnyRequest) (connect.AnyResponse, error) {
+		if public(req.Spec().Procedure) && !a.limit.allow(req.Peer().Addr) {
+			return nil, connect.NewError(connect.CodeResourceExhausted, errTooMany)
+		}
 		ctx, err := a.authenticate(ctx, req.Spec().Procedure, req.Header())
 		if err != nil {
 			return nil, err

@@ -90,7 +90,14 @@ func main() {
 	var protocols http.Protocols
 	protocols.SetHTTP1(true)
 	protocols.SetUnencryptedHTTP2(true)
-	srv := &http.Server{Addr: addr, Handler: mux, Protocols: &protocols}
+	srv := &http.Server{
+		Addr:              addr,
+		Handler:           mux,
+		Protocols:         &protocols,
+		ReadHeaderTimeout: 10 * time.Second,
+		IdleTimeout:       2 * time.Minute,
+		MaxHeaderBytes:    1 << 16,
+	}
 	if err := srv.ListenAndServe(); err != nil {
 		log.Fatalf("server failed: %v", err)
 	}
