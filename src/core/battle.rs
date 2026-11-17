@@ -10,6 +10,7 @@ use crate::core::{
     magic::Spells,
     parasol::Parasols,
     fox::Foxes,
+    seren::{Serens, OVER_MAX},
     player::{Input, Player},
     sword::Blades,
     hex::Hexes,
@@ -42,6 +43,7 @@ pub struct Battle {
     pub warden: Wardens,
     pub parasols: Parasols,
     pub foxes: Foxes,
+    pub serens: Serens,
     pub zones: Vec<Zone>,
     pub deaths: [u32; 2],
     pub stay: bool,
@@ -60,6 +62,7 @@ impl Battle {
             warden: Wardens::default(),
             parasols: Parasols::default(),
             foxes: Foxes::default(),
+            serens: Serens::default(),
             zones: Vec::new(),
             deaths: [0; 2],
             stay: false,
@@ -85,6 +88,7 @@ impl Battle {
         self.warden.update(&mut self.players, &mut self.events);
         self.parasols.update(&mut self.players, &self.spells.wards, &mut self.events);
         self.foxes.update(&mut self.players, &self.spells.wards, &mut self.events);
+        self.serens.update(&mut self.players, &self.spells.wards, &mut self.events);
         self.update_zones();
         for seat in 0..2 {
             let pos = self.players[seat].pos;
@@ -102,6 +106,7 @@ impl Battle {
                 }
                 self.parasols.reset(seat);
                 self.foxes.reset(seat);
+                self.serens.reset(seat);
                 self.deaths[seat] += 1;
             }
         }
@@ -143,6 +148,9 @@ impl Battle {
             }
             Skill::FoxOrb | Skill::BlindLight | Skill::ShiningLight | Skill::Unpredictable | Skill::FoxClaw | Skill::FoxWisp | Skill::FoxSwipe | Skill::Vanish => {
                 self.foxes.cast(&mut self.players, i, skill, &mut self.events)
+            }
+            Skill::ManaShot | Skill::AzureLance | Skill::GravityWell | Skill::Overdrive | Skill::RuneKnuckle | Skill::OverFists | Skill::RocketDash | Skill::Starbreaker => {
+                self.serens.cast(&mut self.players, i, skill, &mut self.events)
             }
         }
     }
@@ -186,7 +194,11 @@ pub(crate) fn strike(players: &mut [Player; 2], target: usize, hit: Hit, events:
     }
     let p = &mut players[target];
     let pos = p.pos;
-    let raw = if p.kit().passive == Passive::Fox && !p.armed { (hit.dmg * 4 + 4) / 5 } else { hit.dmg };
+    let raw = match p.kit().passive {
+        Passive::Fox if !p.armed => (hit.dmg * 4 + 4) / 5,
+        Passive::Overcharge if !p.armed => (hit.dmg * 17 + 19) / 20,
+        _ => hit.dmg,
+    };
     let (dmg, absorbed, marked) = p.effects.incoming(raw);
     p.take_hit(hit.dir, dmg, hit.knock || hit.apply.iter().any(|a| a.0 == EffectKind::Stun));
     if marked {
@@ -237,6 +249,15 @@ fn passive(players: &mut [Player; 2], me: usize, target: usize, events: &mut Vec
         }
         Passive::Bond => {}
         Passive::Fox => {}
+        Passive::Overcharge => {
+            let p = &mut players[me];
+            if p.over < OVER_MAX {
+                p.over += 1;
+                if p.over == OVER_MAX {
+                    events.push(Event::SerenFull { pos: p.pos });
+                }
+            }
+        }
     }
 }
 

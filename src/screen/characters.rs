@@ -9,8 +9,8 @@ use crate::{
     ui::{self, Status},
 };
 
-const CARD_W: f32 = 260.0;
-const CARD_GAP: f32 = 30.0;
+const CARD_W: f32 = 220.0;
+const CARD_GAP: f32 = 20.0;
 const SOUTH: usize = 2;
 
 fn cards() -> Vec<Rect> {

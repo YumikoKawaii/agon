@@ -30,6 +30,14 @@ pub enum Skill {
     FoxWisp,
     FoxSwipe,
     Vanish,
+    ManaShot,
+    AzureLance,
+    GravityWell,
+    Overdrive,
+    RuneKnuckle,
+    OverFists,
+    RocketDash,
+    Starbreaker,
 }
 
 impl Skill {
@@ -41,6 +49,10 @@ impl Skill {
             Skill::BlindLight => Skill::FoxWisp,
             Skill::ShiningLight => Skill::FoxSwipe,
             Skill::Unpredictable => Skill::Vanish,
+            Skill::ManaShot => Skill::RuneKnuckle,
+            Skill::AzureLance => Skill::OverFists,
+            Skill::GravityWell => Skill::RocketDash,
+            Skill::Overdrive => Skill::Starbreaker,
             s => s,
         }
     }
@@ -52,8 +64,8 @@ impl Skill {
             Skill::Ward => 4.0,
             Skill::Judgement => 9.0,
             Skill::Cut => 0.6,
-            Skill::Swallow => 2.5,
-            Skill::WindStep => 2.0,
+            Skill::Swallow => 4.0,
+            Skill::WindStep => 3.0,
             Skill::Formation => 8.0,
             Skill::Hex => 1.2,
             Skill::Potion => 3.0,
@@ -77,6 +89,14 @@ impl Skill {
             Skill::FoxWisp => 2.5,
             Skill::FoxSwipe => 2.5,
             Skill::Vanish => 6.0,
+            Skill::ManaShot => 0.7,
+            Skill::AzureLance => 1.2,
+            Skill::GravityWell => 6.0,
+            Skill::Overdrive => 7.0,
+            Skill::RuneKnuckle => 0.5,
+            Skill::OverFists => 7.0,
+            Skill::RocketDash => 5.0,
+            Skill::Starbreaker => 7.0,
         }
     }
 
@@ -112,6 +132,14 @@ impl Skill {
             Skill::FoxWisp => 14,
             Skill::FoxSwipe => 24,
             Skill::Vanish => 10,
+            Skill::ManaShot => 15,
+            Skill::AzureLance => 10,
+            Skill::GravityWell => 14,
+            Skill::Overdrive => 40,
+            Skill::RuneKnuckle => 12,
+            Skill::OverFists => 10,
+            Skill::RocketDash => 10,
+            Skill::Starbreaker => 64,
         }
     }
 
@@ -131,6 +159,9 @@ impl Skill {
             Skill::Unpredictable => 8,
             Skill::FoxSwipe => 18,
             Skill::Vanish => 8,
+            Skill::Overdrive => 30,
+            Skill::RocketDash => 8,
+            Skill::Starbreaker => 48,
             _ => 0,
         }
     }
@@ -168,6 +199,7 @@ pub enum Passive {
     Intent,
     Bond,
     Fox,
+    Overcharge,
 }
 
 impl Passive {
@@ -178,6 +210,7 @@ impl Passive {
             Passive::Intent => "Sword Intent",
             Passive::Bond => "Spirit Bond",
             Passive::Fox => "Fox Form",
+            Passive::Overcharge => "Overcharge",
         }
     }
 }
@@ -197,7 +230,7 @@ const MAGE_HINT: &str = "LMB needle   Q piercing ray   E ward shell   R judgemen
 const WITCH: [Skill; 4] = [Skill::Hex, Skill::Potion, Skill::Broom, Skill::Cauldron];
 const WITCH_HINT: &str = "LMB hex bolt   Q potion toss   E broom dash   R cauldron burst   PASSIVE hexed: 3rd hit detonates + root";
 
-pub const KITS: [Kit; 5] = [
+pub const KITS: [Kit; 6] = [
     Kit { name: "Aspen", role: Role::Mage, passive: Passive::Grace, skin: "elf", skills: MAGE, hp: 150, hint: MAGE_HINT },
     Kit { name: "Rowan", role: Role::Mage, passive: Passive::Hexed, skin: "witch", skills: WITCH, hp: 150, hint: WITCH_HINT },
     Kit {
@@ -226,6 +259,15 @@ pub const KITS: [Kit; 5] = [
         skills: [Skill::FoxOrb, Skill::ShiningLight, Skill::BlindLight, Skill::Unpredictable],
         hp: 140,
         hint: "LMB spirit orb / fox: claw   Q shining light / fox: triple swipe   E blinding light (stun blast) / fox: fox-fire wisps (3 hits: slow)   R charge into fox form / fox: charge back into human form (each R has its own cooldown)   PASSIVE fox form: +30% speed, -20% damage taken, each form keeps its own cooldowns",
+    },
+    Kit {
+        name: "Seren",
+        role: Role::Mage,
+        passive: Passive::Overcharge,
+        skin: "seren",
+        skills: [Skill::ManaShot, Skill::AzureLance, Skill::GravityWell, Skill::Overdrive],
+        hp: 145,
+        hint: "LMB mana shot / fighter: rune knuckle (x3, 3rd: blast)   Q azure lance (thin beam, through own well: wider +50%) / fighter: overcharged fists (4s: +60% punches, each punch fires a wave)   E gravity well (pulls, then pops) / fighter: rocket dash (next punch is the blast)   R overdrive burst into fighter / fighter: starbreaker beam back into mage   PASSIVE overcharge: hits build 3 charges, full charges empower R (+40%), fighter form +20% speed, -15% damage taken",
     },
 ];
 

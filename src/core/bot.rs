@@ -87,6 +87,9 @@ impl Bot {
                 if let Some(slot) = self.slot_of(b, Skill::Ward) {
                     return Input { aim: me.pos - threat * 20.0, slot: Some(slot), ..Input::default() };
                 }
+                if let Some(slot) = self.slot_of(b, Skill::RocketDash) {
+                    return Input { aim: me.pos + side * 80.0, slot: Some(slot), ..Input::default() };
+                }
                 if let Some(slot) = self.slot_of(b, Skill::Broom) {
                     return Input { aim: me.pos + side * 80.0, slot: Some(slot), ..Input::default() };
                 }
@@ -120,7 +123,7 @@ impl Bot {
 
     fn range(&self, b: &Battle) -> f32 {
         let me = &b.players[self.seat];
-        if matches!(me.kit().skills[0], Skill::Cut | Skill::Slash) {
+        if matches!(me.skill(0), Skill::Cut | Skill::Slash | Skill::RuneKnuckle) {
             14.0 + (1.0 - self.level.aggression) * 30.0
         } else {
             150.0 - self.level.aggression * 50.0
@@ -129,7 +132,7 @@ impl Bot {
 
     fn slot_of(&self, b: &Battle, skill: Skill) -> Option<usize> {
         let me = &b.players[self.seat];
-        me.kit().skills.iter().position(|s| *s == skill).filter(|i| me.ready(*i))
+        (0..4).find(|i| me.skill(*i) == skill).filter(|i| me.ready(*i))
     }
 
     fn aim_at(&self, b: &Battle, seen: Seen, speed: Option<f32>, delay: f32) -> Vec2 {
@@ -174,6 +177,14 @@ impl Bot {
                 Skill::FoxWisp => dist < crate::core::fox::WISP_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.06,
                 Skill::FoxSwipe => dist < crate::core::fox::SWIPE_R && gen_range(0.0, 1.0) < self.level.aggression * 0.1,
                 Skill::Vanish => dist < crate::core::fox::CHARGE_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.05,
+                Skill::ManaShot => dist < 200.0,
+                Skill::AzureLance => dist < crate::core::seren::LANCE_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.15,
+                Skill::GravityWell => dist < crate::core::seren::WELL_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.06,
+                Skill::Overdrive => dist < crate::core::seren::BURST_R + 20.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.1,
+                Skill::RuneKnuckle => dist < 26.0,
+                Skill::OverFists => dist < 40.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.2,
+                Skill::RocketDash => dist > 30.0 && dist < crate::core::seren::DASH_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.06,
+                Skill::Starbreaker => dist < crate::core::seren::BEAM_RANGE - 20.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
             }
         };
         let order = [3, 1, 2, 0];
@@ -189,6 +200,7 @@ impl Bot {
                 Skill::FoxOrb => Some(crate::core::fox::ORB_SPEED),
                 Skill::BlindLight => Some(crate::core::fox::BLIND_SPEED),
                 Skill::FoxWisp => Some(crate::core::fox::WISP_SPEED),
+                Skill::ManaShot => Some(crate::core::seren::SHOT_SPEED),
                 _ => None,
             };
             (i, self.aim_at(b, seen, speed, cast_t(s)))
@@ -207,6 +219,16 @@ impl Bot {
         }
         for r in b.spells.rays.iter().filter(|r| r.owner == foe && !r.fired) {
             if seg_dist(me.pos, r.origin, r.end()) < RAY_W + pad {
+                return Some(r.dir);
+            }
+        }
+        for s in b.serens.shots.iter().filter(|s| s.owner == foe) {
+            if seg_dist(me.pos, s.pos, s.pos + s.vel * 0.35) < pad {
+                return Some(s.vel.normalize_or_zero());
+            }
+        }
+        for r in b.serens.beams.iter().filter(|r| r.owner == foe && !r.fired) {
+            if seg_dist(me.pos, r.origin, r.end()) < r.width() + pad {
                 return Some(r.dir);
             }
         }

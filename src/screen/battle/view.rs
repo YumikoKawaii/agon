@@ -157,7 +157,22 @@ pub fn draw_player(cam: &Camera, p: &Player, debug: bool) {
         return;
     }
     draw_status(cam, p, false);
-    let tex = assets::skin_in(p.kit, p.armed).frame(p.state, p.dir8(), p.age, p.anim_ticks());
+    use crate::core::Skill;
+    let special = match p.last {
+        Some(Skill::Overdrive) => Some(("transform", true)),
+        Some(Skill::Starbreaker) => Some(("transform", false)),
+        Some(Skill::AzureLance) => Some(("lance", true)),
+        Some(Skill::GravityWell) => Some(("throw", true)),
+        Some(Skill::RuneKnuckle) => Some(("punch", false)),
+        Some(Skill::RocketDash) => Some(("dash", false)),
+        _ => None,
+    };
+    let lit = !p.armed && p.fists > 0.0;
+    let skin = |armed: bool| if lit && !armed { &assets::get().seren_lit } else { assets::skin_in(p.kit, armed) };
+    let tex = special
+        .filter(|_| p.state == State::Attack)
+        .and_then(|(clip, armed)| skin(armed).special(clip, p.dir8(), p.age, p.anim_ticks()).or_else(|| assets::skin_in(p.kit, armed).special(clip, p.dir8(), p.age, p.anim_ticks())))
+        .unwrap_or_else(|| skin(p.armed).frame(p.state, p.dir8(), p.age, p.anim_ticks()));
     let tint = if p.state == State::Hit && p.age < HIT_FLASH_TICKS { HIT_TINT } else { status_tint(p) };
     draw_sprite(tex, s, tint);
     draw_status(cam, p, true);
@@ -396,5 +411,6 @@ fn passive_state(p: &Player) -> (f32, Option<String>, bool) {
         Passive::Intent => (0.0, Some(format!("{}/4", p.intent)), p.intent >= 3),
         Passive::Bond => (0.0, None, p.bond),
         Passive::Fox => (0.0, None, !p.armed),
+        Passive::Overcharge => (0.0, Some(format!("{}/{}", p.over, crate::core::seren::OVER_MAX)), p.over >= crate::core::seren::OVER_MAX),
     }
 }

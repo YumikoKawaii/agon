@@ -24,6 +24,7 @@ fn draw_sword(tex: &Texture2D, at: Vec2, ang: f32, scale: f32, a: f32) {
 }
 
 pub fn draw_ground(b: &Battle, cam: &Camera) {
+    draw_wells(b, cam);
     let time = get_time() as f32;
     for (seat, at) in b.parasols.planted.iter().enumerate() {
         if let Some(at) = at {
@@ -178,6 +179,7 @@ pub fn draw_air(b: &Battle, cam: &Camera, sword: &Texture2D) {
             _ => sh.draw_rot(sh.frame_at(o.age, true).unwrap_or(0), c, vec2(44.0, 19.0), r / 8.0 * S, ang, 1.0),
         }
     }
+    draw_seren(b, cam, time);
     draw_wards(b, cam, time);
     for h in &b.warden.hooks {
         let p = &b.players[h.owner];
@@ -362,8 +364,59 @@ fn rune_circle(c: Vec2, r: f32, rot: f32, col: Color, a: f32) {
     star(c, r * 0.42, 0.3, 4, rot * 2.0, alpha(WHITE, a * 0.8), 1.0);
 }
 
+fn draw_seren(b: &Battle, cam: &Camera, time: f32) {
+    let fx = &assets::get().seren;
+    let r = crate::core::seren::SHOT_R;
+    for s in &b.serens.shots {
+        let c = cam.air(s.pos, CHEST);
+        let d = s.vel.normalize_or(Vec2::X);
+        let tail = cam.air(s.pos - d * r * 3.0, CHEST);
+        draw_line(tail.x, tail.y, c.x, c.y, r * S, alpha(ICE, 0.35));
+        glow(c, r * S * 1.6, ICE, 0.5);
+        fx.shot.draw(fx.shot.frame_at(s.age, true).unwrap_or(0), c, r / 9.0 * S, 1.0);
+    }
+    for l in &b.serens.lances {
+        let k = 1.0 - l.t / crate::core::seren::LANCE_SHOW;
+        let c = cam.air(l.origin, CHEST);
+        let e = cam.air(l.end(), CHEST);
+        let col = if l.big { GOLD } else { ICE };
+        draw_line(c.x, c.y, e.x, e.y, l.width() * S * 1.6 * k, alpha(col, 0.35 * k));
+        draw_line(c.x, c.y, e.x, e.y, l.width() * S * 0.6 * k, alpha(WHITE, 0.95 * k));
+        for n in 1..6 {
+            let p = c.lerp(e, n as f32 / 6.0);
+            let rr = (2.0 + 2.0 * (1.0 - k)) * S;
+            draw_circle_lines(p.x, p.y, rr, 1.0, alpha(GOLD, 0.8 * k));
+        }
+        glow(c, 6.0 * S, col, 0.7 * k);
+    }
+    for w in &b.serens.waves {
+        let c = cam.air(w.pos, CHEST);
+        let i = ((w.dist / w.range()) * 5.0) as usize + 1;
+        let scale = if w.big { 0.75 } else { 0.45 };
+        if w.big {
+            glow(c, 16.0 * S, GOLD, 0.35);
+        }
+        fx.wave.draw_rot(i.min(5), c, vec2(48.0, 48.0), scale * S, w.dir.y.atan2(w.dir.x), 1.0);
+        glow(c, 8.0 * S, ICE, 0.35);
+    }
+    for bm in b.serens.beams.iter().filter(|bm| !bm.fired) {
+        let k = bm.charge();
+        let c = cam.air(bm.origin, CHEST);
+        let e = cam.air(bm.end(), CHEST);
+        draw_line(c.x, c.y, e.x, e.y, 1.0 + k * 2.0, alpha(ICE, 0.15 + 0.35 * k));
+        glow(c, (4.0 + 8.0 * k) * S, if bm.over { GOLD } else { ICE }, 0.4 + 0.5 * k);
+        let i = ((k * 8.0) as usize).min(7);
+        fx.beam.draw_rot(i, c, vec2(40.0, 42.0), S * 0.9, 0.0, 1.0);
+        for n in 0..6 {
+            let a = time * 6.0 + n as f32 * std::f32::consts::TAU / 6.0;
+            let p = c + Vec2::from_angle(a) * (10.0 - 6.0 * k) * S;
+            draw_circle(p.x, p.y, 1.2 * S, alpha(GOLD, 0.4 + 0.6 * k));
+        }
+    }
+}
+
 fn draw_wards(b: &Battle, cam: &Camera, time: f32) {
-    for w in &b.spells.wards {
+    for w in b.spells.wards.iter() {
         let p = &b.players[w.owner];
         let blink = w.t > WARD_T - 0.4 && (w.t * 30.0) as i32 % 2 == 0;
         let open = (w.t / 0.12).min(1.0);
@@ -514,5 +567,17 @@ fn draw_falling_star(b: &Battle, cam: &Camera, time: f32) {
             star(target, JUDGE_R * S * (1.6 - 0.8 * k), 0.18, 4, 0.0, alpha(WHITE, k), 3.0);
             star(target, JUDGE_R * S * (1.2 - 0.5 * k), 0.22, 4, std::f32::consts::FRAC_PI_4, alpha(GOLD, k), 2.0);
         }
+    }
+}
+
+fn draw_wells(b: &Battle, cam: &Camera) {
+    let fx = &assets::get().seren;
+    for w in &b.serens.wells {
+        let k = (w.t / crate::core::seren::WELL_T).min(1.0);
+        let at = cam.air(w.pos, 2.0);
+        glow(at, crate::core::seren::WELL_R * S * (1.1 - 0.3 * k), MOON, 0.08 + 0.1 * k);
+        let grow = (w.t / 0.15).min(1.0);
+        let fade = if w.t > crate::core::seren::WELL_T - 0.2 { 0.3 } else { 0.5 };
+        fx.well.draw_at(fx.well.frame_at(w.t, true).unwrap_or(0), at, vec2(64.0, 80.0), crate::core::seren::WELL_R / 58.0 * S * grow, fade);
     }
 }

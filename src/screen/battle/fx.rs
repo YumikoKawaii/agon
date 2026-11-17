@@ -111,6 +111,7 @@ fn element_color(e: Element) -> Color {
         Element::Blade => AQUA,
         Element::Hex => LILAC,
         Element::Spirit => SAKURA,
+        Element::Arcane => ICE,
     }
 }
 
@@ -144,6 +145,14 @@ enum Kind {
     FoxSwipe,
     FoxPoof,
     FoxDash,
+    SerenBlast,
+    SerenBigBlast,
+    SerenSigil,
+    SerenThrust,
+    SerenLanceHit,
+    SerenPop,
+    SerenBeam,
+    SerenBigBeam,
 }
 
 struct Sprite {
@@ -172,6 +181,14 @@ fn sheet(kind: Kind) -> (&'static assets::Sheet, f32) {
         Kind::FoxSwipe => (&assets::get().fox.swipe, crate::core::fox::SWIPE_R / 35.0),
         Kind::FoxPoof => (&assets::get().fox.poof, 0.6),
         Kind::FoxDash => (&assets::get().fox.dash, 0.8),
+        Kind::SerenBlast => (&assets::get().seren.blast, 0.55),
+        Kind::SerenBigBlast => (&assets::get().seren.blast, 0.9),
+        Kind::SerenSigil => (&assets::get().seren.sigil, 0.5),
+        Kind::SerenThrust => (&assets::get().seren.thrust, 0.6),
+        Kind::SerenLanceHit => (&assets::get().seren.lance, 0.7),
+        Kind::SerenPop => (&assets::get().seren.pop, crate::core::seren::WELL_R / 48.0),
+        Kind::SerenBeam => (&assets::get().seren.beam, crate::core::seren::BEAM_RANGE / 228.0),
+        Kind::SerenBigBeam => (&assets::get().seren.beam, crate::core::seren::BEAM_RANGE / 228.0),
     }
 }
 
@@ -568,6 +585,107 @@ impl Fx {
                 self.sprites.push(Sprite { kind: Kind::FoxPoof, pos, t: 0.0, ang: 0.0 });
                 self.kick(4.0, 0.05);
             }
+            Event::SerenShot { tip, dir } => {
+                for _ in 0..8 {
+                    let v = Vec2::from_angle(dir.y.atan2(dir.x) + gen_range(-0.5, 0.5)) * gen_range(40.0, 110.0);
+                    self.part(tip, CHEST, v, gen_range(-10.0, 25.0), 0.3, gen_range(1.0, 1.6), pick(ICE, GOLD), 0.86);
+                }
+                self.ring(tip, CHEST, 2.0, 9.0, 0.2, ICE, 1.5);
+            }
+            Event::SerenBlast { pos, big } => {
+                let kind = if big { Kind::SerenBigBlast } else { Kind::SerenBlast };
+                self.sprites.push(Sprite { kind, pos, t: 0.0, ang: 0.0 });
+                self.burst(pos, CHEST, if big { 24 } else { 12 }, 110.0, 0.45, 1.6, ICE);
+                self.kick(if big { 12.0 } else { 6.0 }, if big { 0.15 } else { 0.05 });
+            }
+            Event::SerenTransform { pos, over } => {
+                self.sprites.push(Sprite { kind: Kind::SerenPop, pos, t: 0.0, ang: 0.0 });
+                self.sprites.push(Sprite { kind: if over { Kind::SerenBigBlast } else { Kind::SerenBlast }, pos, t: 0.0, ang: 0.0 });
+                self.ring(pos, CHEST, 4.0, 40.0, 0.35, ICE, 2.5);
+                self.ring(pos, CHEST, 2.0, 26.0, 0.3, GOLD, 2.0);
+                self.burst(pos, CHEST, 34, 160.0, 0.5, 1.8, pick(ICE, GOLD));
+                self.burst(pos, CHEST, 14, 90.0, 0.6, 1.4, MOON);
+                self.kick(if over { 14.0 } else { 8.0 }, 0.2);
+            }
+            Event::SerenPunch { pos, ang, big, lit } => {
+                let d = Vec2::from_angle(ang);
+                if lit {
+                    for _ in 0..10 {
+                        let v = Vec2::from_angle(ang + gen_range(-0.4, 0.4)) * gen_range(90.0, 180.0);
+                        self.part(pos, CHEST + gen_range(-3.0, 3.0), v, gen_range(10.0, 40.0), 0.35, gen_range(1.4, 2.2), pick(GOLD, WHITE), 0.85);
+                    }
+                    self.ring(pos + d * 6.0, CHEST, 4.0, if big { 26.0 } else { 15.0 }, 0.22, GOLD, 2.5);
+                    self.kick(if big { 9.0 } else { 3.0 }, if big { 0.1 } else { 0.03 });
+                }
+                for _ in 0..if big { 14 } else { 6 } {
+                    let v = Vec2::from_angle(ang + gen_range(-0.7, 0.7)) * gen_range(50.0, 130.0);
+                    self.part(pos, CHEST, v, gen_range(0.0, 20.0), 0.25, gen_range(1.0, 1.8), pick(ICE, GOLD), 0.84);
+                }
+                self.ring(pos + d * 4.0, CHEST, 2.0, if big { 16.0 } else { 9.0 }, 0.18, ICE, 2.0);
+                if big {
+                    self.sprites.push(Sprite { kind: Kind::SerenBlast, pos: pos + d * 8.0, t: 0.0, ang: 0.0 });
+                    self.kick(6.0, 0.05);
+                }
+            }
+            Event::SerenLance { origin, dir, big, hit } => {
+                let col = if big { GOLD } else { ICE };
+                self.ring(origin, CHEST, 2.0, if big { 16.0 } else { 10.0 }, 0.2, col, 2.0);
+                for _ in 0..if big { 30 } else { 16 } {
+                    let p = origin + dir * gen_range(0.0, crate::core::seren::LANCE_RANGE);
+                    self.part(p, CHEST, dir.perp() * gen_range(-25.0, 25.0) + dir * 30.0, gen_range(0.0, 15.0), 0.3, gen_range(0.8, 1.5), pick(col, WHITE), 0.85);
+                }
+                if let Some(p) = hit {
+                    self.sprites.push(Sprite { kind: Kind::SerenLanceHit, pos: p, t: 0.0, ang: 0.0 });
+                    self.burst(p, CHEST, 14, 120.0, 0.4, 1.4, ICE);
+                }
+                self.kick(if big { 8.0 } else { 3.0 }, if big { 0.08 } else { 0.0 });
+            }
+            Event::SerenWell { pos } => {
+                self.ring(pos, 0.0, 50.0, 4.0, 0.35, MOON, 2.5);
+                self.ring(pos, 0.0, 36.0, 2.0, 0.3, ICE, 1.5);
+            }
+            Event::SerenPop { pos } => {
+                self.sprites.push(Sprite { kind: Kind::SerenPop, pos, t: 0.0, ang: 0.0 });
+                self.ring(pos, 0.0, 4.0, crate::core::seren::WELL_R + 10.0, 0.4, MOON, 3.0);
+                self.burst(pos, CHEST, 26, 150.0, 0.5, 1.8, pick(ICE, MOON));
+                self.kick(10.0, 0.12);
+            }
+            Event::SerenFists { pos } => {
+                self.ring(pos, CHEST, 26.0, 4.0, 0.3, GOLD, 2.5);
+                self.ring(pos, CHEST, 4.0, 22.0, 0.35, ICE, 2.0);
+                self.burst(pos, CHEST, 20, 90.0, 0.45, 1.6, pick(GOLD, ICE));
+                self.kick(5.0, 0.08);
+            }
+            Event::SerenDash { from, to } => {
+                let d = (to - from).normalize_or(Vec2::X);
+                self.sprites.push(Sprite { kind: Kind::SerenThrust, pos: from, t: 0.0, ang: 0.0 });
+                self.ring(from, 2.0, 4.0, 22.0, 0.3, ICE, 2.5);
+                for n in 0..18 {
+                    let p = from.lerp(to, n as f32 / 18.0);
+                    self.part(p, CHEST + gen_range(-4.0, 4.0), -d * gen_range(20.0, 70.0) + d.perp() * gen_range(-20.0, 20.0), gen_range(0.0, 15.0), 0.4, gen_range(1.0, 1.8), pick(ICE, GOLD), 0.88);
+                }
+                for _ in 0..10 {
+                    self.part(to, 2.0, Vec2::from_angle(gen_range(0.0, std::f32::consts::TAU)) * gen_range(40.0, 90.0), gen_range(10.0, 30.0), 0.3, 1.2, GOLD, 0.85);
+                }
+                self.kick(6.0, 0.05);
+            }
+            Event::SerenCharge { pos } => {
+                self.ring(pos, CHEST, 18.0, 3.0, 0.8, ICE, 2.0);
+                self.ring(pos, CHEST, 26.0, 4.0, 0.8, GOLD, 1.5);
+            }
+            Event::SerenBeam { origin, dir, over } => {
+                let kind = if over { Kind::SerenBigBeam } else { Kind::SerenBeam };
+                self.sprites.push(Sprite { kind, pos: origin, t: 0.0, ang: dir.y.atan2(dir.x) });
+                for _ in 0..30 {
+                    let p = origin + dir * gen_range(0.0, crate::core::seren::BEAM_RANGE);
+                    self.part(p, CHEST, dir.perp() * gen_range(-40.0, 40.0) + dir * 40.0, gen_range(0.0, 30.0), 0.5, gen_range(1.0, 2.0), pick(ICE, GOLD), 0.9);
+                }
+                self.kick(if over { 22.0 } else { 14.0 }, if over { 0.35 } else { 0.2 });
+            }
+            Event::SerenFull { pos } => {
+                self.ring(pos, CHEST, 2.0, 14.0, 0.4, GOLD, 2.0);
+                self.burst(pos, CHEST, 10, 60.0, 0.4, 1.4, GOLD);
+            }
             Event::Heal { pos, amount } => {
                 self.burst(pos, CHEST, 10, 60.0, 0.4, 1.6, MINT);
                 self.nums.push(Num { pos: pos + vec2(0.0, -6.0), t: NUM_LIFE, dmg: -amount, tag: Some(MINT) });
@@ -743,6 +861,23 @@ impl Fx {
                 }
                 continue;
             }
+            if matches!(s.kind, Kind::SerenLanceHit) {
+                let (off, at) = (18, vec2(184.0, 47.0));
+                let i = (s.t * sh.fps) as usize + off;
+                if i < sh.frames {
+                    sh.draw_at(i, cam.air(s.pos, if off == 17 { 2.0 } else { CHEST }), at, k * S, 1.0);
+                }
+                continue;
+            }
+            if matches!(s.kind, Kind::SerenBeam | Kind::SerenBigBeam) {
+                let show = crate::core::seren::BEAM_SHOW;
+                let i = 8 + ((s.t / show) * 14.0) as usize;
+                if s.t < show {
+                    let w = if matches!(s.kind, Kind::SerenBigBeam) { 1.4 } else { 1.0 };
+                    sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(40.0, 42.0), k * S * w, s.ang, 1.0);
+                }
+                continue;
+            }
             if let Some(i) = sh.frame_at(s.t, false) {
                 match s.kind {
                     Kind::Step => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(20.0, 40.0), k * S, s.ang, 1.0),
@@ -756,6 +891,10 @@ impl Fx {
                     Kind::FoxPoof => sh.draw_at(i, cam.air(s.pos, CHEST), vec2(49.0, 44.0), k * S, 1.0),
                     Kind::FoxDash => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(58.0, 30.0), k * S, s.ang, 1.0),
                     Kind::Bloom => sh.draw(i, cam.air(s.pos, CHEST), k * S, 1.0),
+                    Kind::SerenBlast | Kind::SerenBigBlast => sh.draw_at(i, cam.air(s.pos, CHEST), vec2(48.0, 48.0), k * S, 1.0),
+                    Kind::SerenSigil => sh.draw_at(i, cam.proj(s.pos), vec2(64.0, 80.0), k * S, 1.0),
+                    Kind::SerenPop => sh.draw_at(i, cam.proj(s.pos), vec2(56.0, 40.0), k * S, 1.0),
+                    Kind::SerenThrust => sh.draw_at(i, cam.air(s.pos, CHEST), vec2(32.0, 32.0), k * S, 1.0),
                     _ => sh.draw(i, cam.air(s.pos, 8.0), k * S, 1.0),
                 }
             }

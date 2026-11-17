@@ -1,0 +1,235 @@
+{
+ "frames": [
+  {
+   "filename": "seren-well-pop 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.625
+   },
+   "duration": 71
+  },
+  {
+   "filename": "seren-well-pop 1.png",
+   "frame": {
+    "x": 112,
+    "y": 0,
+    "w": 112,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.625
+   },
+   "duration": 71
+  },
+  {
+   "filename": "seren-well-pop 2.png",
+   "frame": {
+    "x": 224,
+    "y": 0,
+    "w": 112,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.625
+   },
+   "duration": 71
+  },
+  {
+   "filename": "seren-well-pop 3.png",
+   "frame": {
+    "x": 0,
+    "y": 64,
+    "w": 112,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.625
+   },
+   "duration": 71
+  },
+  {
+   "filename": "seren-well-pop 4.png",
+   "frame": {
+    "x": 112,
+    "y": 64,
+    "w": 112,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.625
+   },
+   "duration": 71
+  },
+  {
+   "filename": "seren-well-pop 5.png",
+   "frame": {
+    "x": 224,
+    "y": 64,
+    "w": 112,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.625
+   },
+   "duration": 71
+  },
+  {
+   "filename": "seren-well-pop 6.png",
+   "frame": {
+    "x": 0,
+    "y": 128,
+    "w": 112,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.625
+   },
+   "duration": 71
+  },
+  {
+   "filename": "seren-well-pop 7.png",
+   "frame": {
+    "x": 112,
+    "y": 128,
+    "w": 112,
+    "h": 64
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 112,
+    "h": 64
+   },
+   "sourceSize": {
+    "w": 112,
+    "h": 64
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.625
+   },
+   "duration": 71
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "seren-well-pop.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 336,
+   "h": 192
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 56,
+   "y": 40
+  },
+  "frameTags": [
+   {
+    "name": "seren-well-pop",
+    "from": 0,
+    "to": 7,
+    "direction": "forward"
+   }
+  ]
+ }
+}

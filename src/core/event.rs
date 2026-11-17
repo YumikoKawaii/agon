@@ -9,6 +9,7 @@ pub enum Element {
     Blade,
     Hex,
     Spirit,
+    Arcane,
 }
 
 #[derive(Clone, Copy, Debug)]
@@ -63,4 +64,16 @@ pub enum Event {
     FoxPoof { pos: Vec2 },
     PetalDash { from: Vec2, to: Vec2, ang: f32 },
     Blossom { pos: Vec2 },
+    SerenShot { tip: Vec2, dir: Vec2 },
+    SerenBlast { pos: Vec2, big: bool },
+    SerenTransform { pos: Vec2, over: bool },
+    SerenPunch { pos: Vec2, ang: f32, big: bool, lit: bool },
+    SerenLance { origin: Vec2, dir: Vec2, big: bool, hit: Option<Vec2> },
+    SerenWell { pos: Vec2 },
+    SerenPop { pos: Vec2 },
+    SerenFists { pos: Vec2 },
+    SerenDash { from: Vec2, to: Vec2 },
+    SerenCharge { pos: Vec2 },
+    SerenBeam { origin: Vec2, dir: Vec2, over: bool },
+    SerenFull { pos: Vec2 },
 }

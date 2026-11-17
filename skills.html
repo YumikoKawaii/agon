@@ -102,5 +102,21 @@ td.n{font-family:var(--mono);font-variant-numeric:tabular-nums;white-space:nowra
 </table></div>
 </section>
 
+<section class="card">
+<div class="head"><h2>Seren</h2><span class="meta">Arcane Gunslinger · Mage · 145 HP</span></div>
+<div class="passive"><b>Overcharge</b>: every hit adds a charge (max 3); at 3, the next R spends them for +40% damage (and a wider beam). Fighter form: +20% speed, −15% damage taken. Each form keeps its own cooldowns. Indented rows are fighter form.</div>
+<div class="wrap"><table>
+<tr><th>Key</th><th>Skill</th><th>Damage</th><th>CD</th><th>Cast</th><th>Effect</th><th>Control</th></tr>
+<tr><td class="key">LMB</td><td>Mana Shot</td><td class="n">2</td><td class="n">0.7s</td><td class="n">0.25s</td><td>Projectile (300)</td><td><span class="pill none">none</span></td></tr>
+<tr class="alt"><td class="key">LMB</td><td>Rune Knuckle</td><td class="n">3 / 5 on 3rd</td><td class="n">0.5s</td><td class="n">0.20s</td><td>3-hit punch, cone r22, 3rd is r30 with a blast</td><td><span class="pill none">none</span></td></tr>
+<tr><td class="key">Q</td><td>Azure Lance</td><td class="n">5</td><td class="n">1.2s</td><td class="n">0.17s</td><td>Instant thin beam, range 220. Through your own Gravity Well: double width, +50% damage</td><td><span class="pill none">none</span></td></tr>
+<tr class="alt"><td class="key">Q</td><td>Overcharged Fists</td><td class="n">–</td><td class="n">7.0s</td><td class="n">0.17s</td><td>4s: Rune Knuckle +60% damage, +25% reach, each punch fires a wave (range 60, 3 / 6 on finisher); finisher knocks back</td><td><span class="pill none">none</span></td></tr>
+<tr><td class="key">E</td><td>Gravity Well</td><td class="n">4</td><td class="n">6.0s</td><td class="n">0.23s</td><td>Field r45 at cursor (up to 140), pulls for 1.2s, then pops</td><td><span class="pill slow">SLOW 30% · 0.3s</span></td></tr>
+<tr class="alt"><td class="key">E</td><td>Rocket Dash</td><td class="n">4</td><td class="n">5.0s</td><td class="n">0.17s</td><td>Dash up to 100 toward cursor; next punch within 1s is the finisher</td><td><span class="pill none">none</span></td></tr>
+<tr><td class="key">R</td><td>Overdrive</td><td class="n">10</td><td class="n">7.0s</td><td class="n">0.67s</td><td>Burst r50 in place, transform into fighter</td><td><span class="pill stun">KNOCKBACK · interrupts</span></td></tr>
+<tr class="alt"><td class="key">R</td><td>Starbreaker Beam</td><td class="n">22</td><td class="n">7.0s</td><td class="n">1.07s</td><td>Charge 0.8s (locked), beam range 200, transform back into mage</td><td><span class="pill slow">SLOW 50% · 1.0s</span></td></tr>
+</table></div>
+</section>
+
 <p class="foot">Cast is the wind-up before the skill fires. Burn and bleed list the effect power as the code stores it; the tick rate lives in <code>effect.rs</code>. Fox values come from the uncommitted fox work in the tree.</p>
 </main>

@@ -1,0 +1,859 @@
+{
+ "frames": [
+  {
+   "filename": "seren-starbreaker-v2 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 1.png",
+   "frame": {
+    "x": 297,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 2.png",
+   "frame": {
+    "x": 594,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 3.png",
+   "frame": {
+    "x": 891,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 4.png",
+   "frame": {
+    "x": 1188,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 5.png",
+   "frame": {
+    "x": 1485,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 6.png",
+   "frame": {
+    "x": 0,
+    "y": 84,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 7.png",
+   "frame": {
+    "x": 297,
+    "y": 84,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 8.png",
+   "frame": {
+    "x": 594,
+    "y": 84,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 9.png",
+   "frame": {
+    "x": 891,
+    "y": 84,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 10.png",
+   "frame": {
+    "x": 1188,
+    "y": 84,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 11.png",
+   "frame": {
+    "x": 1485,
+    "y": 84,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 12.png",
+   "frame": {
+    "x": 0,
+    "y": 168,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 13.png",
+   "frame": {
+    "x": 297,
+    "y": 168,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 14.png",
+   "frame": {
+    "x": 594,
+    "y": 168,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 15.png",
+   "frame": {
+    "x": 891,
+    "y": 168,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 16.png",
+   "frame": {
+    "x": 1188,
+    "y": 168,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 17.png",
+   "frame": {
+    "x": 1485,
+    "y": 168,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 18.png",
+   "frame": {
+    "x": 0,
+    "y": 252,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 19.png",
+   "frame": {
+    "x": 297,
+    "y": 252,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 20.png",
+   "frame": {
+    "x": 594,
+    "y": 252,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 21.png",
+   "frame": {
+    "x": 891,
+    "y": 252,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 22.png",
+   "frame": {
+    "x": 1188,
+    "y": 252,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 23.png",
+   "frame": {
+    "x": 1485,
+    "y": 252,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 24.png",
+   "frame": {
+    "x": 0,
+    "y": 336,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 25.png",
+   "frame": {
+    "x": 297,
+    "y": 336,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 26.png",
+   "frame": {
+    "x": 594,
+    "y": 336,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 27.png",
+   "frame": {
+    "x": 891,
+    "y": 336,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 28.png",
+   "frame": {
+    "x": 1188,
+    "y": 336,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 29.png",
+   "frame": {
+    "x": 1485,
+    "y": 336,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 30.png",
+   "frame": {
+    "x": 0,
+    "y": 420,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  },
+  {
+   "filename": "seren-starbreaker-v2 31.png",
+   "frame": {
+    "x": 297,
+    "y": 420,
+    "w": 297,
+    "h": 84
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 297,
+    "h": 84
+   },
+   "sourceSize": {
+    "w": 297,
+    "h": 84
+   },
+   "pivot": {
+    "x": 0.13468013468013468,
+    "y": 0.5
+   },
+   "duration": 67
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "seren-starbreaker-v2.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 1782,
+   "h": 504
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 40,
+   "y": 42
+  },
+  "frameTags": [
+   {
+    "name": "seren-starbreaker-v2",
+    "from": 0,
+    "to": 31,
+    "direction": "forward"
+   }
+  ]
+ }
+}

@@ -13,17 +13,19 @@ use crate::{
 
 const DIRS: [&str; 8] = ["east", "south-east", "south", "south-west", "west", "north-west", "north", "north-east"];
 const CLIPS: [&str; 4] = ["idle", "walk", "cast", "hurt"];
+const EXTRA: [&str; 5] = ["transform", "lance", "throw", "punch", "dash"];
 const IDLE_RATE: u32 = 12;
 const WALK_RATE: u32 = 7;
 
 pub struct Skin {
     clips: Vec<Vec<Vec<Texture2D>>>,
+    extra: Vec<Vec<Vec<Texture2D>>>,
 }
 
 const BAR_W: f32 = 360.0;
 const BAR_H: f32 = 10.0;
 
-const TOTAL_STEPS: usize = (KITS.len() + 2) * CLIPS.len() * DIRS.len() + 1;
+const TOTAL_STEPS: usize = (KITS.len() + 4) * CLIPS.len() * DIRS.len() + 1;
 
 fn draw_progress(done: usize, logo: Option<&Texture2D>, bar: Option<&Nine>) {
     clear_background(ui::BG);
@@ -70,7 +72,29 @@ impl Skin {
             }
             clips.push(dirs);
         }
-        Ok(Skin { clips })
+        let mut extra = Vec::new();
+        for clip in EXTRA {
+            let mut dirs = Vec::new();
+            for dir in DIRS {
+                let mut frames = Vec::new();
+                for i in 0.. {
+                    let path = format!("assets/{name}/animations/{clip}/{dir}/frame_{i:03}.png");
+                    let Ok(t) = load_texture(&path).await else { break };
+                    t.set_filter(FilterMode::Nearest);
+                    frames.push(t);
+                }
+                dirs.push(frames);
+            }
+            extra.push(dirs);
+        }
+        Ok(Skin { clips, extra })
+    }
+
+    pub fn special(&self, clip: &str, dir: usize, age: u32, total: u32) -> Option<&Texture2D> {
+        let k = EXTRA.iter().position(|c| *c == clip)?;
+        let frames = self.extra[k].get(dir).filter(|f| !f.is_empty())?;
+        let n = frames.len() as u32;
+        Some(&frames[(age * n / total.max(1)).min(n - 1) as usize])
     }
 
     pub fn frame(&self, state: State, dir: usize, age: u32, total: u32) -> &Texture2D {
@@ -172,6 +196,18 @@ pub struct FoxFx {
     pub dash: Sheet,
 }
 
+pub struct SerenFx {
+    pub shot: Sheet,
+    pub beam: Sheet,
+    pub sigil: Sheet,
+    pub blast: Sheet,
+    pub lance: Sheet,
+    pub well: Sheet,
+    pub pop: Sheet,
+    pub wave: Sheet,
+    pub thrust: Sheet,
+}
+
 pub struct SwordFx {
     pub wave: Sheet,
     pub aura_back: Sheet,
@@ -218,13 +254,15 @@ pub struct UiKit {
     pub icons: Vec<Texture2D>,
 }
 
-pub const ICONS: [&str; 32] = [
+pub const ICONS: [&str; 41] = [
     "needle", "ray", "ward", "judgement", "cut", "swallow", "windstep", "formation", "hex", "potion", "broom", "cauldron", "grace", "hexed", "intent", "paperbond", "talisman", "parasol", "petaldash", "blossom", "spiritreturn", "tempest",
     "foxorb", "unpredictable", "shininglight", "blindinglight", "foxclaw", "foxswipe", "foxleap", "foxball", "foxreturn", "foxform",
+    "manashot", "azurelance", "gravitywell", "overdrive", "runeknuckle", "overfists", "rocketdash", "starbreaker", "overcharge",
 ];
 pub const PASSIVE_ICON: usize = 12;
 const PARASOL_ICON: usize = 16;
 const FOX_ICON: usize = 22;
+const SEREN_ICON: usize = 32;
 
 pub fn skill_icon(s: crate::core::Skill) -> Option<&'static Texture2D> {
     use crate::core::Skill;
@@ -243,6 +281,14 @@ pub fn skill_icon(s: crate::core::Skill) -> Option<&'static Texture2D> {
         Skill::FoxSwipe => FOX_ICON + 5,
         Skill::FoxWisp => FOX_ICON + 6,
         Skill::Vanish => FOX_ICON + 8,
+        Skill::ManaShot => SEREN_ICON,
+        Skill::AzureLance => SEREN_ICON + 1,
+        Skill::GravityWell => SEREN_ICON + 2,
+        Skill::Overdrive => SEREN_ICON + 3,
+        Skill::RuneKnuckle => SEREN_ICON + 4,
+        Skill::OverFists => SEREN_ICON + 5,
+        Skill::RocketDash => SEREN_ICON + 6,
+        Skill::Starbreaker => SEREN_ICON + 7,
         _ => s as usize,
     };
     (i < PASSIVE_ICON || (PARASOL_ICON..ICONS.len()).contains(&i)).then(|| &get().ui.icons[i])
@@ -251,6 +297,7 @@ pub fn skill_icon(s: crate::core::Skill) -> Option<&'static Texture2D> {
 pub fn passive_icon(p: crate::core::kit::Passive) -> &'static Texture2D {
     match p {
         crate::core::kit::Passive::Fox => &get().ui.icons[FOX_ICON + 9],
+        crate::core::kit::Passive::Overcharge => &get().ui.icons[SEREN_ICON + 8],
         _ => &get().ui.icons[PASSIVE_ICON + p as usize],
     }
 }
@@ -265,6 +312,9 @@ pub struct Assets {
     pub skins: Vec<Skin>,
     pub unarmed: Skin,
     pub fox_form: Skin,
+    pub seren_form: Skin,
+    pub seren_lit: Skin,
+    pub seren: SerenFx,
     pub spirit_sword: Texture2D,
     pub witch: WitchFx,
     pub sword: SwordFx,
@@ -294,6 +344,19 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     }
     let unarmed = Skin::load("parasol_unarmed", progress).await?;
     let fox_form = Skin::load("fox_form", progress).await?;
+    let seren_form = Skin::load("seren_form", progress).await?;
+    let seren_lit = Skin::load("seren_lit", progress).await?;
+    let seren = SerenFx {
+        shot: Sheet::load("assets/seren/fx/seren-mana-shot.png", 48.0, 48.0, 8, 12.0).await?,
+        beam: Sheet::load("assets/seren/fx/seren-starbreaker-beam.png", 297.0, 84.0, 26, 15.0).await?,
+        sigil: Sheet::load("assets/seren/fx/seren-transform-sigil.png", 128.0, 112.0, 12, 12.0).await?,
+        blast: Sheet::load("assets/seren/fx/seren-arcane-blast.png", 96.0, 96.0, 10, 14.0).await?,
+        lance: Sheet::load("assets/seren/fx/seren-azure-lance.png", 246.0, 116.0, 31, 30.0).await?,
+        well: Sheet::load("assets/seren/fx/seren-gravity-well.png", 128.0, 112.0, 12, 12.0).await?,
+        pop: Sheet::load("assets/seren/fx/seren-well-pop.png", 112.0, 64.0, 7, 14.0).await?,
+        wave: Sheet::load("assets/seren/fx/seren-punch-wave.png", 96.0, 96.0, 7, 16.0).await?,
+        thrust: Sheet::load("assets/seren/fx/seren-thruster.png", 64.0, 64.0, 6, 12.0).await?,
+    };
     progress.fetch_add(1, Ordering::Relaxed);
     let spirit_sword = texture("assets/sword/spirit_sword.png").await?;
     let witch = WitchFx {
@@ -359,7 +422,7 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     for kit in &KITS {
         portraits.push(texture(&format!("assets/{}/portrait.png", kit.skin)).await?);
     }
-    Ok(Assets { ui, portraits, skins, unarmed, fox_form, spirit_sword, witch, sword, parasol, fox, status, bleed_pop })
+    Ok(Assets { ui, portraits, skins, unarmed, fox_form, seren_form, seren_lit, seren, spirit_sword, witch, sword, parasol, fox, status, bleed_pop })
 }
 
 pub async fn load() -> AResult {
@@ -396,6 +459,8 @@ pub fn skin_in(kit: usize, armed: bool) -> &'static Skin {
         &get().unarmed
     } else if !armed && KITS[kit.min(KITS.len() - 1)].skin == "fox" {
         &get().fox_form
+    } else if !armed && KITS[kit.min(KITS.len() - 1)].skin == "seren" {
+        &get().seren_form
     } else {
         skin(kit)
     }

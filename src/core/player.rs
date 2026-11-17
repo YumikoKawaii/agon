@@ -15,6 +15,9 @@ pub const GRACE_T: f32 = 1.0;
 const GRACE_MUL: f32 = 0.35;
 const BOND_MUL: f32 = 0.2;
 const FOX_MUL: f32 = 0.3;
+const FIGHTER_MUL: f32 = 0.2;
+const MELEE_MUL: f32 = 0.08;
+const CAST_WALK: f32 = 0.5;
 const KNOCK_DECAY: f32 = 0.85;
 const QUICK_CAST_AGE: u32 = 6;
 const COMBO_WINDOW: f32 = 1.6;
@@ -37,6 +40,7 @@ pub struct Player {
     pub age: u32,
     pub cd: [f32; 4],
     pub cast_ticks: u32,
+    pub cast_slot: usize,
     pub lock: u32,
     pub combo: u32,
     pub charges: u32,
@@ -46,6 +50,10 @@ pub struct Player {
     pub cd_alt: [f32; 4],
     pub hex: u8,
     pub intent: u8,
+    pub over: u8,
+    pub fists: f32,
+    pub primed: f32,
+    pub last: Option<Skill>,
     pub untargetable: bool,
     pub gas: f32,
     pub fury: f32,
@@ -75,6 +83,7 @@ impl Player {
             age: 0,
             cd: [0.0; 4],
             cast_ticks: 0,
+            cast_slot: 0,
             lock: 0,
             combo: 0,
             charges: WIND_CHARGES,
@@ -84,6 +93,10 @@ impl Player {
             cd_alt: [0.0; 4],
             hex: 0,
             intent: 0,
+            over: 0,
+            fists: 0.0,
+            primed: 0.0,
+            last: None,
             untargetable: false,
             gas: GAS_MAX,
             fury: 0.0,
@@ -131,6 +144,10 @@ impl Player {
         self.bond = false;
         self.hex = 0;
         self.intent = 0;
+        self.over = 0;
+        self.fists = 0.0;
+        self.primed = 0.0;
+        self.last = None;
         self.untargetable = false;
         self.gas = GAS_MAX;
         self.fury = 0.0;
@@ -213,8 +230,13 @@ impl Player {
     fn speed(&self) -> f32 {
         let haste = if self.haste > 0.0 { 1.0 + GRACE_MUL } else { 1.0 };
         let bond = if self.bond { 1.0 + BOND_MUL } else { 1.0 };
-        let fox = if !self.armed && self.kit().passive == crate::core::kit::Passive::Fox { 1.0 + FOX_MUL } else { 1.0 };
-        SPEED * self.effects.speed_mul() * haste * bond * fox
+        let fox = match self.kit().passive {
+            crate::core::kit::Passive::Fox if !self.armed => 1.0 + FOX_MUL,
+            crate::core::kit::Passive::Overcharge if !self.armed => 1.0 + FIGHTER_MUL,
+            _ => 1.0,
+        };
+        let melee = if self.kit().role == crate::core::kit::Role::Melee { 1.0 + MELEE_MUL } else { 1.0 };
+        SPEED * self.effects.speed_mul() * haste * bond * fox * melee
     }
 
     pub fn cooldown_frac(&self, slot: usize) -> f32 {
@@ -270,6 +292,11 @@ impl Player {
         let quick = self.state == State::Attack && ready.is_some() && self.age >= QUICK_CAST_AGE;
         match self.state {
             State::Hit | State::Attack if !quick => {
+                if self.state == State::Attack && self.kit().role == crate::core::kit::Role::Mage && !self.effects.rooted() {
+                    let dir = input.dir.normalize_or_zero();
+                    let walk = if self.kit().passive == crate::core::kit::Passive::Bond && self.cast_slot != 0 { 1.0 } else { CAST_WALK };
+                    self.pos += dir * self.speed() * walk * DT;
+                }
                 if self.finished {
                     self.set_state(State::Idle);
                 }
@@ -306,6 +333,7 @@ impl Player {
         self.face(aim);
         self.target = aim;
         self.cast_ticks = skill.cast_ticks();
+        self.cast_slot = slot;
         self.lock = skill.lock_ticks();
         match skill {
             Skill::WindStep => {
@@ -323,6 +351,12 @@ impl Player {
                 self.combo_timer = COMBO_WINDOW;
                 self.cd[slot] = if self.combo == 3 { COMBO_FINISHER_CD } else { skill.cooldown() };
             }
+            Skill::RuneKnuckle => {
+                self.combo = if self.primed > 0.0 { 3 } else { self.combo % 3 + 1 };
+                self.primed = 0.0;
+                self.combo_timer = COMBO_WINDOW;
+                self.cd_alt[slot] = skill.cooldown();
+            }
             Skill::Slash => {
                 self.combo = self.combo % 2 + 1;
                 self.combo_timer = COMBO_WINDOW;
@@ -331,6 +365,7 @@ impl Player {
             _ => *self.cd_mut(slot) = skill.cooldown(),
         }
         self.cast = Some(skill);
+        self.last = Some(skill);
         self.reset_to(State::Attack);
     }
 
@@ -352,6 +387,8 @@ impl Player {
         self.gas = (self.gas + GAS_REGEN * DT).min(GAS_MAX);
         self.combo_timer = (self.combo_timer - DT).max(0.0);
         self.haste = (self.haste - DT).max(0.0);
+        self.fists = (self.fists - DT).max(0.0);
+        self.primed = (self.primed - DT).max(0.0);
         if self.combo_timer <= 0.0 {
             self.combo = 0;
         }
