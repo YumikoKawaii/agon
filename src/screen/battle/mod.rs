@@ -344,5 +344,6 @@ impl Battle {
             let w = measure_text(&part, None, 16, 1.0).width;
             draw_text(&part, VIEW.x - 20.0 - w, y, 16.0, ui::DIM);
             y += 22.0;
-        }    }
+        }
+    }
 }
