@@ -14,8 +14,7 @@ use crate::{
         sword::{FORM_N, FORM_R, INTENT_R, LUNGE_REACH},
         Battle, Player,
     },
-    screen::battle::view::{alpha, draw_sprite, glow, status_color, Camera, AQUA, BLOOD, CHEST, CRIMSON, GOLD, ICE, LILAC, MINT, PALE, S, STEEL, VIEW},
-    core::warden::{WHIRL_R, SLASH_R, SLASH_HALF},
+    screen::battle::view::{alpha, draw_sprite, glow, status_color, Camera, AQUA, BLOOD, CHEST, GOLD, ICE, LILAC, PALE, S, VIEW},
     core::parasol::STORM_R,
     screen::battle::view::SAKURA,
 };
@@ -25,16 +24,6 @@ const MOON: Color = Color::new(0.8, 0.68, 1.0, 1.0);
 
 const FOX_MINT: Color = Color::new(0.498, 0.89, 0.784, 1.0);
 const FOX_LAV: Color = Color::new(0.718, 0.608, 0.878, 1.0);
-const SPIN_LIFE: f32 = 0.3;
-const ZIP_LIFE: f32 = 0.3;
-const FURY_GHOST: Color = Color::new(1.0, 0.35, 0.42, 1.0);
-
-struct Spin {
-    owner: usize,
-    t: f32,
-    big: bool,
-    rot: f32,
-}
 
 const SHAKE_DECAY: f32 = 0.86;
 const NUM_LIFE: f32 = 0.8;
@@ -198,7 +187,6 @@ pub struct Fx {
     ghosts: Vec<Ghost>,
     nums: Vec<Num>,
     pillars: Vec<Pillar>,
-    spins: Vec<Spin>,
     pub shake: f32,
     flash: f32,
 }
@@ -433,72 +421,6 @@ impl Fx {
                 self.ring(pos, CHEST, 2.0, 28.0, 0.3, BLOOD, 4.0);
                 self.kick(9.0, 0.12);
             }
-            Event::Twin { owner, ang, side, big } => {
-                let r = if big { SLASH_R * 1.15 } else { SLASH_R };
-                self.arcs.push(Arc { owner, ang, r, half: SLASH_HALF, side, t: ARC_LIFE, big, col: CRIMSON });
-                self.arcs.push(Arc { owner, ang, r: r * 0.8, half: SLASH_HALF * 0.9, side: -side, t: ARC_LIFE * 0.85, big: false, col: STEEL });
-                let pos = players[owner].pos;
-                for _ in 0..(if big { 22 } else { 10 }) {
-                    let a = ang + gen_range(-SLASH_HALF, SLASH_HALF);
-                    self.part(pos + Vec2::from_angle(a) * r * 0.85, CHEST, Vec2::from_angle(a) * gen_range(40.0, 120.0), gen_range(0.0, 30.0), 0.3, 1.6, pick(CRIMSON, WHITE), 0.88);
-                }
-                if big {
-                    self.ring(pos + Vec2::from_angle(ang) * r * 0.6, CHEST, 2.0, 18.0, 0.2, CRIMSON, 4.0);
-                    self.kick(4.0, 0.0);
-                }
-            }
-            Event::Whirl { owner, big } => {
-                self.spins.push(Spin { owner, t: SPIN_LIFE, big, rot: gen_range(0.0, TAU) });
-                let pos = players[owner].pos;
-                self.ring(pos, 0.0, 6.0, WHIRL_R * 1.4, 0.35, CRIMSON, 4.0);
-                self.ring(pos, CHEST, 4.0, WHIRL_R, 0.25, STEEL, 3.0);
-                if big {
-                    self.ring(pos, CHEST, 2.0, WHIRL_R * 1.6, 0.3, WHITE, 5.0);
-                    self.kick(7.0, 0.1);
-                }
-            }
-            Event::WhirlPulse { owner, big } => {
-                let pos = players[owner].pos;
-                for n in 0..(if big { 28 } else { 16 }) {
-                    let a = n as f32 / if big { 28.0 } else { 16.0 } * TAU + gen_range(-0.1, 0.1);
-                    let d = Vec2::from_angle(a);
-                    self.part(pos + d * WHIRL_R * 0.9, CHEST + gen_range(-3.0, 3.0), d.perp() * 140.0 + d * 40.0, gen_range(0.0, 30.0), 0.28, 1.7, pick(CRIMSON, STEEL), 0.86);
-                }
-                self.kick(if big { 4.0 } else { 2.0 }, 0.0);
-            }
-            Event::HookFire { from, to } => {
-                let d = (to - from).normalize_or(Vec2::X);
-                self.ring(from + d * 6.0, CHEST, 2.0, 12.0, 0.18, STEEL, 3.0);
-                for _ in 0..12 {
-                    let v = -d * gen_range(30.0, 90.0) + d.perp() * gen_range(-50.0, 50.0);
-                    self.part(from, CHEST - 3.0, v, gen_range(10.0, 50.0), gen_range(0.3, 0.6), gen_range(1.5, 3.0), alpha(PALE, 0.7), 0.9);
-                }
-            }
-            Event::HookBite { pos } => {
-                self.ring(pos, CHEST, 2.0, 16.0, 0.22, WHITE, 4.0);
-                self.burst(pos, CHEST, 14, 120.0, 0.3, 1.6, pick(STEEL, GOLD));
-                self.kick(2.5, 0.0);
-            }
-            Event::Zip { from, to } => {
-                self.slashes.push(Slash { a: from, b: to, t: ZIP_LIFE, col: CRIMSON, max: ZIP_LIFE });
-                let dir = (to - from).normalize_or(Vec2::X);
-                for _ in 0..22 {
-                    let p = from.lerp(to, gen_range(0.0, 1.0));
-                    self.part(p, CHEST + gen_range(-6.0, 6.0), dir.perp() * gen_range(-60.0, 60.0) - dir * 40.0, gen_range(0.0, 30.0), 0.4, 1.8, pick(CRIMSON, PALE), 0.88);
-                }
-                self.ring(to, 0.0, 4.0, 18.0, 0.25, CRIMSON, 3.0);
-            }
-            Event::Fury { pos } => {
-                self.pillars.push(Pillar { pos, t: PILLAR_LIFE * 0.7 });
-                self.ring(pos, 0.0, 4.0, 60.0, 0.6, CRIMSON, 7.0);
-                self.ring(pos, 0.0, 4.0, 40.0, 0.45, WHITE, 4.0);
-                self.ring(pos, CHEST, 30.0, 4.0, 0.35, CRIMSON, 4.0);
-                for _ in 0..90 {
-                    let v = Vec2::from_angle(gen_range(0.0, TAU)) * gen_range(40.0, 200.0);
-                    self.part(pos, gen_range(0.0, 10.0), v, gen_range(40.0, 220.0), gen_range(0.4, 0.9), gen_range(1.5, 3.2), pick(CRIMSON, BLOOD), 0.92);
-                }
-                self.kick(12.0, 0.3);
-            }
             Event::TalismanCast { tip, dir } => {
                 self.bloom(tip + dir * 4.0);
                 for _ in 0..8 {
@@ -675,10 +597,6 @@ impl Fx {
                 self.ring(pos, CHEST, 2.0, 14.0, 0.4, GOLD, 2.0);
                 self.burst(pos, CHEST, 10, 60.0, 0.4, 1.4, GOLD);
             }
-            Event::Heal { pos, amount } => {
-                self.burst(pos, CHEST, 10, 60.0, 0.4, 1.6, MINT);
-                self.nums.push(Num { pos: pos + vec2(0.0, -6.0), t: NUM_LIFE, dmg: -amount, tag: Some(MINT) });
-            }
         }
     }
 
@@ -743,20 +661,6 @@ impl Fx {
                 self.part(p.pos + off, gen_range(0.0, CHEST), -off * 1.5, gen_range(30.0, 70.0), 0.45, gen_range(1.0, 2.0), pick(AQUA, LILAC), 0.95);
             }
         }
-        for h in &b.warden.hooks {
-            if !h.pulling {
-                self.part(h.pos, CHEST, Vec2::ZERO, 0.0, 0.12, 1.2, STEEL, 1.0);
-            } else {
-                let p = b.players[h.owner].pos;
-                self.part(p, CHEST + gen_range(-4.0, 4.0), Vec2::from_angle(gen_range(0.0, TAU)) * 30.0, 10.0, 0.3, 1.8, pick(CRIMSON, PALE), 0.9);
-            }
-        }
-        for p in b.players.iter().filter(|p| p.fury > 0.0) {
-            for _ in 0..2 {
-                let off = Vec2::from_angle(gen_range(0.0, TAU)) * gen_range(4.0, 12.0);
-                self.part(p.pos + off, gen_range(0.0, 6.0), off * 0.5, gen_range(50.0, 110.0), gen_range(0.4, 0.7), gen_range(1.0, 2.2), pick(CRIMSON, GOLD), 0.95);
-            }
-        }
         for l in &b.blades.lunges {
             let tip = b.players[l.owner].pos + l.dir * LUNGE_REACH;
             self.part(tip, CHEST, -l.dir * 60.0 + l.dir.perp() * gen_range(-30.0, 30.0), 0.0, 0.25, 1.5, pick(AQUA, WHITE), 0.88);
@@ -812,11 +716,6 @@ impl Fx {
             p.t -= dt;
             p.t > 0.0
         });
-        self.spins.retain_mut(|s| {
-            s.t -= dt;
-            s.rot += dt * if s.big { 34.0 } else { 26.0 };
-            s.t > 0.0
-        });
         self.shake *= SHAKE_DECAY;
         self.flash = (self.flash - dt).max(0.0);
     }
@@ -842,8 +741,7 @@ impl Fx {
     pub fn draw_ghosts(&self, cam: &Camera, seat: usize, kit: usize) {
         for g in self.ghosts.iter().filter(|g| g.seat == seat) {
             let tex = assets::skin(kit).frame(State::Run, dir8(g.ang), 0, 1);
-            let tint = if crate::core::KITS[kit].skin == "warden" { FURY_GHOST } else { GHOST_TINT };
-            draw_sprite(tex, cam.proj(g.pos), alpha(tint, (g.t / 0.3).min(1.0) * 0.55));
+            draw_sprite(tex, cam.proj(g.pos), alpha(GHOST_TINT,(g.t / 0.3).min(1.0) * 0.55));
         }
     }
 
@@ -920,26 +818,6 @@ impl Fx {
                 draw_line(x.x, x.y, y.x, y.y, w * 0.4 * taper * k, alpha(WHITE, k));
             }
             glow(pts[segs], w * 0.6 * k, a.col, k);
-        }
-        for s in &self.spins {
-            let k = s.t / SPIN_LIFE;
-            let pos = players[s.owner].pos;
-            let r = WHIRL_R * if s.big { 1.15 } else { 1.0 };
-            let segs = 18;
-            for blade in 0..2 {
-                let base = s.rot + blade as f32 * std::f32::consts::PI;
-                let col = if blade == 0 { CRIMSON } else { STEEL };
-                let pts: Vec<Vec2> = (0..=segs).map(|n| cam.air(pos + Vec2::from_angle(base - 2.4 * n as f32 / segs as f32) * r, CHEST)).collect();
-                for n in 0..segs {
-                    let taper = 1.0 - n as f32 / segs as f32;
-                    let (x, y) = (pts[n], pts[n + 1]);
-                    let w = if s.big { 10.0 } else { 7.0 };
-                    draw_line(x.x, x.y, y.x, y.y, w * 2.4 * taper * k, alpha(col, 0.22 * k));
-                    draw_line(x.x, x.y, y.x, y.y, w * taper * k, alpha(col, 0.85 * k));
-                    draw_line(x.x, x.y, y.x, y.y, w * 0.35 * taper * k, alpha(WHITE, k));
-                }
-                glow(pts[0], 3.0 * S * k, col, k);
-            }
         }
         for s in &self.slashes {
             let k = s.t / s.max;

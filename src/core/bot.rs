@@ -123,7 +123,7 @@ impl Bot {
 
     fn range(&self, b: &Battle) -> f32 {
         let me = &b.players[self.seat];
-        if matches!(me.skill(0), Skill::Cut | Skill::Slash | Skill::RuneKnuckle) {
+        if matches!(me.skill(0), Skill::Cut | Skill::RuneKnuckle) {
             14.0 + (1.0 - self.level.aggression) * 30.0
         } else {
             150.0 - self.level.aggression * 50.0
@@ -159,10 +159,6 @@ impl Bot {
                 Skill::Potion => dist < POTION_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.06,
                 Skill::Cauldron => dist < CAULDRON_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
                 Skill::Broom => dist < BROOM_DIST - 10.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.06,
-                Skill::Slash => dist < 26.0,
-                Skill::Whirl => dist < 32.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.1,
-                Skill::Cable => dist > 50.0 && me.gas > 50.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.04,
-                Skill::Fury => dist < 120.0 && gen_range(0.0, 1.0) < self.level.aggression * 0.02,
                 Skill::Talisman => dist < 190.0,
                 Skill::Parasol => dist < crate::core::parasol::FLIGHT_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.05,
                 Skill::Storm => dist < crate::core::parasol::STORM_RANGE && gen_range(0.0, 1.0) < self.level.aggression * 0.04,

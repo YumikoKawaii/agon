@@ -28,8 +28,6 @@ pub const AQUA: Color = Color::new(0.45, 1.0, 0.92, 1.0);
 pub const LILAC: Color = Color::new(0.78, 0.55, 1.0, 1.0);
 pub const MINT: Color = Color::new(0.72, 0.96, 0.78, 1.0);
 pub const BLOOD: Color = Color::new(1.0, 0.56, 0.66, 1.0);
-pub const CRIMSON: Color = Color::new(1.0, 0.22, 0.3, 1.0);
-pub const STEEL: Color = Color::new(0.8, 0.85, 0.92, 1.0);
 pub const SAKURA: Color = Color::new(1.0, 0.68, 0.84, 1.0);
 const FLOOR: [Color; 2] = [Color::new(0.27, 0.33, 0.34, 1.0), Color::new(0.3, 0.37, 0.37, 1.0)];
 const CAGE: Color = Color::new(0.72, 0.62, 0.86, 1.0);
@@ -352,8 +350,6 @@ fn draw_skills(p: &Player) {
         let sr = Rect::new(x, r.y + r.h - 16.0 - s, s, s);
         let extra = if p.skill(k).charged() {
             Some(p.charges.to_string())
-        } else if p.skill(k) == crate::core::Skill::Cable {
-            Some(if p.fury > 0.0 { "100".to_string() } else { (p.gas as i32).to_string() })
         } else {
             None
         };

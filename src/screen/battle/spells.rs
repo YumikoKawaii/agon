@@ -9,8 +9,7 @@ use crate::{
         effect::EffectKind,
         Battle, Skill,
     },
-    screen::battle::view::{alpha, glow, magic_circle, Camera, SPRITE, AQUA, CHEST, CRIMSON, FOOT, GOLD, ICE, LILAC, MINT, PALE, S, STEEL},
-    core::warden::CABLE_RANGE,
+    screen::battle::view::{alpha, glow, magic_circle, Camera, SPRITE, AQUA, CHEST, FOOT, GOLD, ICE, LILAC, MINT, PALE, S},
     core::parasol::{FLIGHT_RANGE, LEASH, STORM_R, STORM_RANGE, TALISMAN_R},
     screen::battle::view::SAKURA,
 };
@@ -59,13 +58,6 @@ pub fn draw_ground(b: &Battle, cam: &Camera) {
     for p in b.players.iter().filter(|p| p.intent_ready()) {
         let sh = &assets::get().sword.aura_back;
         sh.draw_at(sh.frame_at(time, true).unwrap_or(0), cam.proj(p.pos), AURA_BACK_FEET, SPRITE * S, 1.0);
-    }
-    for p in b.players.iter().filter(|p| p.fury > 0.0) {
-        let c = cam.proj(p.pos);
-        let pulse = 0.6 + 0.4 * (time * 10.0).sin();
-        let fade = (p.fury / 0.4).min(1.0);
-        magic_circle(c, 16.0 * S, time * 2.5, CRIMSON, 0.5 * fade * pulse, 2.0);
-        glow(c, 14.0 * S, CRIMSON, 0.25 * fade);
     }
     for fm in &b.blades.forms {
         let c = cam.proj(fm.center);
@@ -181,24 +173,6 @@ pub fn draw_air(b: &Battle, cam: &Camera, sword: &Texture2D) {
     }
     draw_seren(b, cam, time);
     draw_wards(b, cam, time);
-    for h in &b.warden.hooks {
-        let p = &b.players[h.owner];
-        let a = cam.air(p.pos + vec2(-3.0, 0.0), CHEST - 2.0);
-        let e = cam.air(h.pos, CHEST);
-        let sag = if h.pulling { 0.0 } else { 6.0 * S };
-        let mid = (a + e) / 2.0 + vec2(0.0, sag);
-        for (x, y) in [(a, mid), (mid, e)] {
-            draw_line(x.x, x.y, y.x, y.y, 3.0 * S, alpha(CRIMSON, 0.18));
-            draw_line(x.x, x.y, y.x, y.y, 1.0 * S, alpha(STEEL, 0.95));
-            draw_line(x.x, x.y, y.x, y.y, 0.4 * S, alpha(WHITE, 1.0));
-        }
-        let d = (e - a).normalize_or(Vec2::X);
-        for side in [-1.0, 1.0] {
-            let prong = e - d * 3.0 * S + d.perp() * side * 2.5 * S;
-            draw_line(e.x, e.y, prong.x, prong.y, 1.2 * S, GOLD);
-        }
-        glow(e, 2.5 * S, if h.pulling { CRIMSON } else { STEEL }, 0.9);
-    }
     let fx = &assets::get().sword;
     for p in b.players.iter().filter(|p| p.intent_ready()) {
         let sh = &fx.aura_front;
@@ -274,7 +248,6 @@ pub fn draw_aim(b: &Battle, cam: &Camera) {
             Skill::Blossom => (crate::core::parasol::BLOSSOM_R, alpha(SAKURA, 0.35)),
             Skill::Judgement => (JUDGE_RANGE, alpha(GOLD, 0.35)),
             Skill::Cauldron => (CAULDRON_RANGE, alpha(LILAC, 0.35)),
-            Skill::Fury => (CABLE_RANGE, alpha(CRIMSON, 0.35)),
             Skill::Storm => (STORM_RANGE, alpha(SAKURA, 0.35)),
             _ => (FORM_RANGE, alpha(AQUA, 0.35)),
         };

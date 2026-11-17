@@ -14,7 +14,6 @@ use crate::core::{
     player::{Input, Player},
     sword::Blades,
     hex::Hexes,
-    warden::Wardens,
     Skill, DT, RADIUS,
 };
 
@@ -40,7 +39,6 @@ pub struct Battle {
     pub spells: Spells,
     pub blades: Blades,
     pub hexes: Hexes,
-    pub warden: Wardens,
     pub parasols: Parasols,
     pub foxes: Foxes,
     pub serens: Serens,
@@ -60,7 +58,6 @@ impl Battle {
             spells: Spells::default(),
             blades: Blades::default(),
             hexes: Hexes::default(),
-            warden: Wardens::default(),
             parasols: Parasols::default(),
             foxes: Foxes::default(),
             serens: Serens::default(),
@@ -89,7 +86,6 @@ impl Battle {
         self.spells.update(&mut self.players, &mut self.events);
         self.blades.update(&mut self.players, &mut self.events);
         self.hexes.update(&mut self.players, &self.spells.wards, &mut self.zones, &mut self.events);
-        self.warden.update(&mut self.players, &mut self.events);
         self.parasols.update(&mut self.players, &self.spells.wards, &mut self.events);
         self.foxes.update(&mut self.players, &self.spells.wards, &mut self.events);
         self.serens.update(&mut self.players, &self.spells.wards, &mut self.events);
@@ -147,9 +143,6 @@ impl Battle {
             }
             Skill::Hex | Skill::Potion | Skill::Broom | Skill::Cauldron => {
                 self.hexes.cast(&mut self.players, i, skill, &mut self.events)
-            }
-            Skill::Slash | Skill::Whirl | Skill::Cable | Skill::Fury => {
-                self.warden.cast(&mut self.players, i, skill, &mut self.events)
             }
             Skill::Talisman | Skill::Parasol | Skill::SpiritStep | Skill::Storm | Skill::PetalDash | Skill::Blossom => {
                 self.parasols.cast(&mut self.players, i, skill, &mut self.events)

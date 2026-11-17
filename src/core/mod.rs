@@ -11,7 +11,6 @@ pub mod parasol;
 pub mod player;
 pub mod seren;
 pub mod sword;
-pub mod warden;
 
 pub use battle::Battle;
 pub use kit::{Skill, KITS};
