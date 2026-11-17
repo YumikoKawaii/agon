@@ -2,6 +2,7 @@ use crate::core::effect::N;
 
 pub const PACKET_LEN: usize = 70;
 const FX: usize = 44;
+const PREV: usize = FX + N * 3 + 1;
 
 #[derive(Clone, Copy, Default, Debug)]
 pub struct Packet {
@@ -14,6 +15,7 @@ pub struct Packet {
     pub deaths: u32,
     pub cast_seq: u16,
     pub cast_slot: u8,
+    pub prev_slot: u8,
     pub fx_ticks: [u16; N],
     pub fx_power: [u8; N],
     pub fx_stacks: u8,
@@ -36,6 +38,7 @@ impl Packet {
             b[FX + N * 2 + i] = self.fx_power[i];
         }
         b[FX + N * 3] = self.fx_stacks;
+        b[PREV] = self.prev_slot;
         b
     }
 
@@ -64,6 +67,7 @@ impl Packet {
             deaths: u(36),
             cast_seq: u16::from_le_bytes([b[40], b[41]]),
             cast_slot: b[42],
+            prev_slot: b[PREV],
             fx_ticks,
             fx_power,
             fx_stacks: b[FX + N * 3],

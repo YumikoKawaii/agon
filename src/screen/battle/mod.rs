@@ -88,7 +88,8 @@ impl Battle {
 
     pub fn online(kit: usize, foe: Seat, endpoint: Endpoint) -> Self {
         let link = Link::open(&endpoint.url, &endpoint.ticket, &endpoint.cert_hash);
-        let core = core::Battle::new([kit, foe.kit], endpoint.seat);
+        let mut core = core::Battle::new([kit, foe.kit], endpoint.seat);
+        core.players[1].puppet = true;
         Self::new(core, Mode::Online(Sync::new(link, endpoint.seat, foe.username)))
     }
 
@@ -155,8 +156,9 @@ impl Battle {
                 self.core.players[1].ang = to.y.atan2(to.x);
             }
             Mode::Online(sync) => {
-                sync.correct(&mut self.core.players[1]);
-                sync.push(&self.pending, &self.core.players[0], self.core.deaths[0]);
+                sync.correct(&mut self.core);
+                let sent = Input { slot: self.core.casted[0], ..self.pending };
+                sync.push(&sent, &self.core);
             }
         }
         for e in self.core.drain_events() {

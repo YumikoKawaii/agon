@@ -1,7 +1,9 @@
+use std::collections::VecDeque;
+
 use macroquad::math::Vec2;
 
 use crate::{
-    core::{Input, Player},
+    core::{self, Input},
     net::{
         link::{Control, Link, LinkState},
         Packet,
@@ -11,6 +13,7 @@ use crate::{
 const RESULT_HOLD: f32 = 3.0;
 const SNAP_BLEND: f32 = 0.5;
 const SLOTS: usize = 4;
+const FOE: usize = 1;
 
 pub struct Sync {
     link: Link,
@@ -21,14 +24,32 @@ pub struct Sync {
     tick: u32,
     cast_seq: u16,
     cast_slot: u8,
+    prev_slot: u8,
     remote: Option<Packet>,
     seen_cast: u16,
+    casts: VecDeque<usize>,
     pub foe_deaths: u32,
+    applied_deaths: u32,
 }
 
 impl Sync {
     pub fn new(link: Link, seat: usize, foe: String) -> Self {
-        Sync { link, seat, foe, started: false, result: None, tick: 0, cast_seq: 0, cast_slot: 0, remote: None, seen_cast: 0, foe_deaths: 0 }
+        Sync {
+            link,
+            seat,
+            foe,
+            started: false,
+            result: None,
+            tick: 0,
+            cast_seq: 0,
+            cast_slot: 0,
+            prev_slot: 0,
+            remote: None,
+            seen_cast: 0,
+            casts: VecDeque::new(),
+            foe_deaths: 0,
+            applied_deaths: 0,
+        }
     }
 
     pub fn live(&self) -> bool {
@@ -71,8 +92,16 @@ impl Sync {
                 continue;
             }
             if self.remote.is_none() {
-                self.seen_cast = p.cast_seq;
+                self.seen_cast = p.cast_seq.saturating_sub(1);
             }
+            let missed = p.cast_seq.wrapping_sub(self.seen_cast);
+            if missed >= 2 {
+                self.casts.push_back(p.prev_slot as usize);
+            }
+            if missed >= 1 {
+                self.casts.push_back(p.cast_slot as usize);
+            }
+            self.seen_cast = p.cast_seq;
             self.foe_deaths = self.foe_deaths.max(p.deaths);
             self.remote = Some(p);
         }
@@ -80,16 +109,17 @@ impl Sync {
 
     pub fn remote_input(&mut self) -> Input {
         let Some(p) = self.remote else { return Input::default() };
-        let mut input = Input { dir: Vec2::from(p.dir), aim: Vec2::from(p.aim), slot: None };
-        if p.cast_seq != self.seen_cast {
-            self.seen_cast = p.cast_seq;
-            input.slot = Some(p.cast_slot as usize).filter(|s| *s < SLOTS);
-        }
-        input
+        let slot = self.casts.pop_front().filter(|s| *s < SLOTS);
+        Input { dir: Vec2::from(p.dir), aim: Vec2::from(p.aim), slot }
     }
 
-    pub fn correct(&self, foe: &mut Player) {
+    pub fn correct(&mut self, battle: &mut core::Battle) {
+        while self.applied_deaths < self.foe_deaths {
+            self.applied_deaths += 1;
+            battle.kill(FOE);
+        }
         if let Some(p) = self.remote {
+            let foe = &mut battle.players[FOE];
             foe.pos = foe.pos.lerp(Vec2::from(p.pos), SNAP_BLEND);
             foe.clamp();
             foe.ang = p.ang;
@@ -98,12 +128,14 @@ impl Sync {
         }
     }
 
-    pub fn push(&mut self, input: &Input, me: &Player, deaths: u32) {
+    pub fn push(&mut self, input: &Input, battle: &core::Battle) {
         self.tick += 1;
         if let Some(s) = input.slot {
             self.cast_seq = self.cast_seq.wrapping_add(1);
+            self.prev_slot = self.cast_slot;
             self.cast_slot = s as u8;
         }
+        let me = &battle.players[0];
         let (fx_ticks, fx_power, fx_stacks) = me.effects.wire();
         self.link.send(&Packet {
             tick: self.tick,
@@ -112,9 +144,10 @@ impl Sync {
             pos: me.pos.into(),
             ang: me.ang,
             hp: me.hp,
-            deaths,
+            deaths: battle.deaths[0],
             cast_seq: self.cast_seq,
             cast_slot: self.cast_slot,
+            prev_slot: self.prev_slot,
             fx_ticks,
             fx_power,
             fx_stacks,

@@ -47,6 +47,7 @@ pub struct Battle {
     pub zones: Vec<Zone>,
     pub deaths: [u32; 2],
     pub stay: bool,
+    pub casted: [Option<usize>; 2],
     events: Vec<Event>,
 }
 
@@ -66,6 +67,7 @@ impl Battle {
             zones: Vec::new(),
             deaths: [0; 2],
             stay: false,
+            casted: [None; 2],
             events: Vec::new(),
         }
     }
@@ -77,7 +79,9 @@ impl Battle {
     pub fn tick(&mut self, inputs: [Input; 2]) {
         for (i, input) in inputs.into_iter().enumerate() {
             self.players[i].step(input);
+            self.casted[i] = None;
             if let Some(skill) = self.players[i].cast.take() {
+                self.casted[i] = Some(self.players[i].cast_slot);
                 self.cast(i, skill);
             }
         }
@@ -98,18 +102,22 @@ impl Battle {
                     self.events.push(Event::Dot { pos, kind: d.kind, dmg: d.dmg });
                 }
             }
-            if self.players[seat].hp <= 0 {
-                let at = self.players[seat].pos;
-                self.players[seat].respawn();
-                if self.stay {
-                    self.players[seat].pos = at;
-                }
-                self.parasols.reset(seat);
-                self.foxes.reset(seat);
-                self.serens.reset(seat);
-                self.deaths[seat] += 1;
+            if self.players[seat].hp <= 0 && !self.players[seat].puppet {
+                self.kill(seat);
             }
         }
+    }
+
+    pub fn kill(&mut self, seat: usize) {
+        let at = self.players[seat].pos;
+        self.players[seat].respawn();
+        if self.stay {
+            self.players[seat].pos = at;
+        }
+        self.parasols.reset(seat);
+        self.foxes.reset(seat);
+        self.serens.reset(seat);
+        self.deaths[seat] += 1;
     }
 
     fn update_zones(&mut self) {

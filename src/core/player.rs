@@ -63,6 +63,7 @@ pub struct Player {
     pub chain_t: f32,
     pub target: Vec2,
     pub effects: Effects,
+    pub puppet: bool,
     pub(crate) cast: Option<Skill>,
     knock: Vec2,
     timer: u32,
@@ -106,6 +107,7 @@ impl Player {
             chain_t: 0.0,
             target: spawn.0,
             effects: Effects::default(),
+            puppet: false,
             cast: None,
             knock: Vec2::ZERO,
             timer: 0,
@@ -268,6 +270,12 @@ impl Player {
 
     pub fn step(&mut self, input: Input) {
         self.tick_timers();
+        if let Some(slot) = input.slot.filter(|_| self.puppet) {
+            self.begin_cast(slot, input.aim);
+            self.drift();
+            self.advance();
+            return;
+        }
         if self.effects.stunned() && !self.flying {
             if self.state != State::Hit {
                 self.set_state(State::Idle);
@@ -337,7 +345,7 @@ impl Player {
         self.lock = skill.lock_ticks();
         match skill {
             Skill::WindStep => {
-                self.charges -= 1;
+                self.charges = self.charges.saturating_sub(1);
                 if self.kit().skills[0] == Skill::Cut {
                     self.combo = 2;
                     self.combo_timer = COMBO_WINDOW;
