@@ -90,6 +90,9 @@ miniquad_add_plugin({
             agon_put(p, agon_reqs[id].body);
             delete agon_reqs[id];
         };
+        o.env.agon_drop = function (id) {
+            delete agon_reqs[id];
+        };
         o.env.agon_watch = function (up, ul, bp, bl, tp, tl) {
             const id = agon_next++;
             const w = (agon_watches[id] = { queue: [], closed: false, error: null, ctl: new AbortController() });

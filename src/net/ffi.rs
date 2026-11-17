@@ -5,6 +5,7 @@ extern "C" {
     fn agon_status(id: i32) -> i32;
     fn agon_len(id: i32) -> usize;
     fn agon_copy(id: i32, p: *mut u8);
+    fn agon_drop(id: i32);
     fn agon_watch(up: *const u8, ul: usize, bp: *const u8, bl: usize, tp: *const u8, tl: usize) -> i32;
     fn agon_watch_next(id: i32) -> i32;
     fn agon_watch_copy(id: i32, p: *mut u8);
@@ -58,6 +59,15 @@ impl Fetch {
         {
             self.done.take()
         }
+    }
+}
+
+impl Drop for Fetch {
+    fn drop(&mut self) {
+        #[cfg(target_arch = "wasm32")]
+        unsafe {
+            agon_drop(self.id)
+        };
     }
 }
 
