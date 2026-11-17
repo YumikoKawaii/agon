@@ -327,8 +327,6 @@ impl Serens {
         self.beams.retain_mut(|b| {
             b.t += DT;
             let i = b.owner;
-            b.origin = players[i].pos + players[i].facing() * 8.0;
-            b.dir = players[i].facing();
             if !b.fired && b.t >= BEAM_CHARGE {
                 b.fired = true;
                 events.push(Event::SerenBeam { origin: b.origin, dir: b.dir, over: b.over });

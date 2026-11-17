@@ -139,7 +139,7 @@ impl Skill {
             Skill::RuneKnuckle => 12,
             Skill::OverFists => 10,
             Skill::RocketDash => 10,
-            Skill::Starbreaker => 64,
+            Skill::Starbreaker => 75,
         }
     }
 
@@ -161,7 +161,7 @@ impl Skill {
             Skill::Vanish => 8,
             Skill::Overdrive => 30,
             Skill::RocketDash => 8,
-            Skill::Starbreaker => 48,
+            Skill::Starbreaker => 75,
             _ => 0,
         }
     }

@@ -1,0 +1,443 @@
+{
+ "frames": [
+  {
+   "filename": "seren-rune-transform 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 1.png",
+   "frame": {
+    "x": 140,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 2.png",
+   "frame": {
+    "x": 280,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 3.png",
+   "frame": {
+    "x": 420,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 4.png",
+   "frame": {
+    "x": 0,
+    "y": 112,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 5.png",
+   "frame": {
+    "x": 140,
+    "y": 112,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 6.png",
+   "frame": {
+    "x": 280,
+    "y": 112,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 7.png",
+   "frame": {
+    "x": 420,
+    "y": 112,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 8.png",
+   "frame": {
+    "x": 0,
+    "y": 224,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 9.png",
+   "frame": {
+    "x": 140,
+    "y": 224,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 10.png",
+   "frame": {
+    "x": 280,
+    "y": 224,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 11.png",
+   "frame": {
+    "x": 420,
+    "y": 224,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 12.png",
+   "frame": {
+    "x": 0,
+    "y": 336,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 13.png",
+   "frame": {
+    "x": 140,
+    "y": 336,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 14.png",
+   "frame": {
+    "x": 280,
+    "y": 336,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  },
+  {
+   "filename": "seren-rune-transform 15.png",
+   "frame": {
+    "x": 420,
+    "y": 336,
+    "w": 140,
+    "h": 112
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 140,
+    "h": 112
+   },
+   "sourceSize": {
+    "w": 140,
+    "h": 112
+   },
+   "pivot": {
+    "x": 0.5,
+    "y": 0.7410714285714286
+   },
+   "duration": 63
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "seren-rune-transform.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 560,
+   "h": 448
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 70,
+   "y": 83
+  },
+  "frameTags": [
+   {
+    "name": "seren-rune-transform",
+    "from": 0,
+    "to": 15,
+    "direction": "forward"
+   }
+  ]
+ }
+}

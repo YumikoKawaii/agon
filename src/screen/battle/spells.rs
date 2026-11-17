@@ -399,18 +399,11 @@ fn draw_seren(b: &Battle, cam: &Camera, time: f32) {
         fx.wave.draw_rot(i.min(5), c, vec2(48.0, 48.0), scale * S, w.dir.y.atan2(w.dir.x), 1.0);
         glow(c, 8.0 * S, ICE, 0.35);
     }
-    for bm in b.serens.beams.iter().filter(|bm| !bm.fired) {
-        let k = bm.charge();
-        let c = cam.air(bm.origin, CHEST);
-        let e = cam.air(bm.end(), CHEST);
-        draw_line(c.x, c.y, e.x, e.y, 1.0 + k * 2.0, alpha(ICE, 0.15 + 0.35 * k));
-        glow(c, (4.0 + 8.0 * k) * S, if bm.over { GOLD } else { ICE }, 0.4 + 0.5 * k);
-        let i = ((k * 8.0) as usize).min(7);
-        fx.beam.draw_rot(i, c, vec2(40.0, 42.0), S * 0.9, 0.0, 1.0);
-        for n in 0..6 {
-            let a = time * 6.0 + n as f32 * std::f32::consts::TAU / 6.0;
-            let p = c + Vec2::from_angle(a) * (10.0 - 6.0 * k) * S;
-            draw_circle(p.x, p.y, 1.2 * S, alpha(GOLD, 0.4 + 0.6 * k));
+    for bm in &b.serens.beams {
+        let i = ((bm.t * fx.beam.fps) as usize).min(fx.beam.frames - 1);
+        fx.beam.draw_rot(i, cam.air(bm.origin, CHEST), vec2(40.0, 42.0), crate::core::seren::BEAM_RANGE / 228.0 * S, bm.dir.y.atan2(bm.dir.x), 1.0);
+        if bm.over {
+            glow(cam.air(bm.origin, CHEST), (6.0 + 6.0 * bm.charge()) * S, GOLD, 0.35);
         }
     }
 }

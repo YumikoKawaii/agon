@@ -55,37 +55,16 @@ impl Skin {
     async fn load(name: &str, progress: &AtomicUsize) -> AResult<Skin> {
         let mut clips = Vec::new();
         for clip in CLIPS {
-            let mut dirs = Vec::new();
-            for dir in DIRS {
-                progress.fetch_add(1, Ordering::Relaxed);
-                let mut frames = Vec::new();
-                for i in 0.. {
-                    let path = format!("assets/{name}/animations/{clip}/{dir}/frame_{i:03}.png");
-                    let Ok(t) = load_texture(&path).await else { break };
-                    t.set_filter(FilterMode::Nearest);
-                    frames.push(t);
-                }
-                if frames.is_empty() {
-                    return Err(AgonError::Texture { path: format!("assets/{name}/animations/{clip}/{dir}"), source: macroquad::Error::UnknownError("no frames") });
-                }
-                dirs.push(frames);
+            progress.fetch_add(DIRS.len(), Ordering::Relaxed);
+            let dirs = sheet_frames(name, clip).await;
+            if dirs.iter().any(|d| d.is_empty()) {
+                return Err(AgonError::Texture { path: format!("assets/{name}/animations/{clip}"), source: macroquad::Error::UnknownError("no frames") });
             }
             clips.push(dirs);
         }
         let mut extra = Vec::new();
         for clip in EXTRA {
-            let mut dirs = Vec::new();
-            for dir in DIRS {
-                let mut frames = Vec::new();
-                for i in 0.. {
-                    let path = format!("assets/{name}/animations/{clip}/{dir}/frame_{i:03}.png");
-                    let Ok(t) = load_texture(&path).await else { break };
-                    t.set_filter(FilterMode::Nearest);
-                    frames.push(t);
-                }
-                dirs.push(frames);
-            }
-            extra.push(dirs);
+            extra.push(sheet_frames(name, clip).await);
         }
         Ok(Skin { clips, extra })
     }
@@ -199,6 +178,7 @@ pub struct FoxFx {
 pub struct SerenFx {
     pub shot: Sheet,
     pub beam: Sheet,
+    pub sigil: Sheet,
     pub blast: Sheet,
     pub lance: Sheet,
     pub well: Sheet,
@@ -347,7 +327,8 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     let seren_lit = Skin::load("seren_lit", progress).await?;
     let seren = SerenFx {
         shot: Sheet::load("assets/seren/fx/seren-mana-shot.png", 48.0, 48.0, 8, 12.0).await?,
-        beam: Sheet::load("assets/seren/fx/seren-starbreaker-beam.png", 297.0, 84.0, 26, 15.0).await?,
+        beam: Sheet::load("assets/seren/fx/seren-starbreaker-beam.png", 297.0, 84.0, 19, 15.0).await?,
+        sigil: Sheet::load("assets/seren/fx/seren-transform-sigil.png", 140.0, 112.0, 16, 16.0).await?,
         blast: Sheet::load("assets/seren/fx/seren-arcane-blast.png", 96.0, 96.0, 10, 14.0).await?,
         lance: Sheet::load("assets/seren/fx/seren-azure-lance.png", 246.0, 116.0, 31, 30.0).await?,
         well: Sheet::load("assets/seren/fx/seren-gravity-well.png", 128.0, 112.0, 12, 12.0).await?,
@@ -462,4 +443,29 @@ pub fn skin_in(kit: usize, armed: bool) -> &'static Skin {
     } else {
         skin(kit)
     }
+}
+
+async fn sheet_frames(name: &str, clip: &str) -> Vec<Vec<Texture2D>> {
+    let base = format!("assets/{name}/animations/{clip}");
+    let Ok(meta) = load_string(&format!("{base}/sheet.txt")).await else {
+        return vec![Vec::new(); DIRS.len()];
+    };
+    let Ok(img) = load_image(&format!("{base}/sheet.png")).await else {
+        return vec![Vec::new(); DIRS.len()];
+    };
+    let nums: Vec<usize> = meta.split_whitespace().filter_map(|n| n.parse().ok()).collect();
+    let (cw, ch) = (nums[0] as f32, nums[1] as f32);
+    nums[2..]
+        .iter()
+        .enumerate()
+        .map(|(r, &n)| {
+            (0..n)
+                .map(|c| {
+                    let t = Texture2D::from_image(&img.sub_image(Rect::new(c as f32 * cw, r as f32 * ch, cw, ch)));
+                    t.set_filter(FilterMode::Nearest);
+                    t
+                })
+                .collect()
+        })
+        .collect()
 }
