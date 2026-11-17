@@ -1,4 +1,4 @@
-FROM rust:1-alpine AS client
+FROM rust:1.100-alpine AS client
 RUN apk add --no-cache musl-dev && rustup target add wasm32-unknown-unknown
 WORKDIR /client
 COPY Cargo.toml Cargo.lock ./
