@@ -15,6 +15,7 @@ type User struct {
 	Name         string
 	PasswordHash string
 	Kit          int32
+	TokenVersion int32
 	CreatedAt    time.Time
 	UpdatedAt    time.Time
 }

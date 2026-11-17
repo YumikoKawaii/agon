@@ -16,7 +16,8 @@ const tokenTTL = 30 * 24 * time.Hour
 var nameRe = regexp.MustCompile(`^[A-Za-z0-9_-]{3,16}$`)
 
 type JWTClaims struct {
-	UserID int64 `json:"uid"`
+	UserID  int64 `json:"uid"`
+	Version int32 `json:"ver"`
 	jwt.RegisteredClaims
 }
 
@@ -68,7 +69,8 @@ func (s *AuthService) Login(name, password string) (*model.User, string, error) 
 func (s *AuthService) issue(u *model.User) (*model.User, string, error) {
 	now := time.Now()
 	claims := JWTClaims{
-		UserID: u.ID,
+		UserID:  u.ID,
+		Version: u.TokenVersion,
 		RegisteredClaims: jwt.RegisteredClaims{
 			ExpiresAt: jwt.NewNumericDate(now.Add(tokenTTL)),
 			IssuedAt:  jwt.NewNumericDate(now),
@@ -92,5 +94,19 @@ func (s *AuthService) ParseJWT(token string) (*JWTClaims, error) {
 	if !ok || !t.Valid {
 		return nil, ErrUnauthenticated
 	}
+	u, err := s.users.FindByID(claims.UserID)
+	if errors.Is(err, repository.ErrNotFound) {
+		return nil, ErrUnauthenticated
+	}
+	if err != nil {
+		return nil, err
+	}
+	if u.TokenVersion != claims.Version {
+		return nil, ErrUnauthenticated
+	}
 	return claims, nil
+}
+
+func (s *AuthService) Logout(userID int64) error {
+	return s.users.BumpTokenVersion(userID)
 }

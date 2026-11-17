@@ -10,6 +10,7 @@ type UserRepository interface {
 	FindByID(id int64) (*model.User, error)
 	FindByName(name string) (*model.User, error)
 	UpdateKit(id int64, kit int32) error
+	BumpTokenVersion(id int64) error
 }
 
 type userRepo struct{ db *gorm.DB }
@@ -36,4 +37,8 @@ func (r *userRepo) FindByName(name string) (*model.User, error) {
 
 func (r *userRepo) UpdateKit(id int64, kit int32) error {
 	return r.db.Model(&model.User{}).Where("id = ?", id).Update("kit", kit).Error
+}
+
+func (r *userRepo) BumpTokenVersion(id int64) error {
+	return r.db.Model(&model.User{}).Where("id = ?", id).Update("token_version", gorm.Expr("token_version + 1")).Error
 }

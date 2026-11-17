@@ -27,7 +27,7 @@ func Load() *Config {
 		DBName:     getEnv("DB_NAME", "agon"),
 		ServerPort: getEnv("SERVER_PORT", "7777"),
 		StaticDir:  getEnv("STATIC_DIR", "./static"),
-		JWTSecret:  getEnv("JWT_SECRET", "change-me-in-production"),
+		JWTSecret:  os.Getenv("JWT_SECRET"),
 		WTPort:     getEnv("WT_PORT", "4433"),
 		WTHost:     getEnv("WT_HOST", "localhost"),
 	}

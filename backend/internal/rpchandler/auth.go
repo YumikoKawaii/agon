@@ -36,5 +36,8 @@ func (h *AuthServiceHandler) Login(ctx context.Context, req *connect.Request[pb.
 }
 
 func (h *AuthServiceHandler) Logout(ctx context.Context, req *connect.Request[pb.LogoutRequest]) (*connect.Response[pb.LogoutResponse], error) {
+	if err := h.svc.Logout(userFrom(ctx)); err != nil {
+		return nil, toConnectError(err)
+	}
 	return connect.NewResponse(&pb.LogoutResponse{}), nil
 }

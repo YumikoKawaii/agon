@@ -24,10 +24,16 @@ import (
 	"github.com/yumikokawaii/agon/internal/uow"
 )
 
-const dbRetries = 30
+const (
+	dbRetries    = 30
+	minSecretLen = 32
+)
 
 func main() {
 	cfg := config.Load()
+	if len(cfg.JWTSecret) < minSecretLen {
+		log.Fatalf("JWT_SECRET must be set to at least %d characters", minSecretLen)
+	}
 
 	if err := runMigrations(cfg); err != nil {
 		log.Fatalf("migration failed: %v", err)
