@@ -20,6 +20,45 @@ pub fn clicked(r: Rect, enabled: bool) -> bool {
 
 thread_local! {
     static FRAME: std::cell::Cell<(f32, f32)> = const { std::cell::Cell::new((0.0, 0.0)) };
+    static FONTS: std::cell::OnceCell<(Font, Font)> = const { std::cell::OnceCell::new() };
+}
+
+pub async fn load_fonts() {
+    let (Ok(mut title), Ok(mut body)) = (load_ttf_font("assets/ui/font_title.ttf").await, load_ttf_font("assets/ui/font_body.ttf").await) else {
+        return;
+    };
+    title.set_filter(FilterMode::Nearest);
+    body.set_filter(FilterMode::Nearest);
+    FONTS.with(|f| {
+        let _ = f.set((title, body));
+    });
+}
+
+fn font_for(size: f32) -> Option<Font> {
+    FONTS.with(|f| f.get().map(|(t, b)| if size >= 40.0 { t.clone() } else { b.clone() }))
+}
+
+pub fn draw_text(t: &str, x: f32, y: f32, size: f32, c: Color) {
+    let c = if c == INK { PALE } else { c };
+    draw_text_raw(t, x, y, size, c);
+}
+
+pub mod raw {
+    pub use super::{draw_text_raw as draw_text, measure_text};
+}
+
+pub fn hud_panel(r: Rect, scale: f32) {
+    kit().hud.draw(r, scale, WHITE);
+}
+
+pub fn draw_text_raw(t: &str, x: f32, y: f32, size: f32, c: Color) {
+    let font = font_for(size);
+    draw_text_ex(t, x.round(), y.round(), TextParams { font: font.as_ref(), font_size: size as u16, color: c, ..Default::default() });
+}
+
+pub fn measure_text(t: &str, _font: Option<&Font>, size: u16, scale: f32) -> TextDimensions {
+    let font = font_for(size as f32);
+    macroquad::text::measure_text(t, font.as_ref(), size, scale)
 }
 
 pub fn frame(top: f32, bottom: f32) {
@@ -53,6 +92,28 @@ pub fn text_centered_abs(t: &str, y: f32, size: u16, c: Color) {
     draw_text(t, (screen_width() - w) / 2.0, y, size as f32, c);
 }
 
+pub fn label_in(t: &str, r: Rect, size: u16, c: Color) {
+    let max_h = ((r.h * 0.42) as u16).max(12);
+    let mut size = size.min(max_h);
+    while size > 12 && measure_text(t, None, size, 1.0).width > r.w - 24.0 {
+        size -= 1;
+    }
+    let d = measure_text("Ag", None, size, 1.0);
+    let w = measure_text(t, None, size, 1.0).width;
+    let base = r.y + (r.h - d.height) / 2.0 + d.offset_y;
+    draw_text_raw(t, r.x + (r.w - w) / 2.0, base + 1.0, size as f32, SHADOW);
+    draw_text(t, r.x + (r.w - w) / 2.0, base - 1.0, size as f32, c);
+}
+
+pub fn flat_panel(r: Rect) {
+    draw_rectangle(r.x, r.y, r.w, r.h, Color::new(0.1, 0.08, 0.19, 0.9));
+    draw_rectangle(r.x + 2.0, r.y + 2.0, r.w - 4.0, 2.0, with_alpha(WHITE, 0.08));
+    draw_rectangle_lines(r.x, r.y, r.w, r.h, 2.0, with_alpha(MINT, 0.55));
+    for (x, y) in [(r.x, r.y), (r.x + r.w - 6.0, r.y), (r.x, r.y + r.h - 6.0), (r.x + r.w - 6.0, r.y + r.h - 6.0)] {
+        draw_rectangle(x, y, 6.0, 6.0, GOLD);
+    }
+}
+
 pub fn text_in(t: &str, r: Rect, y: f32, size: u16, c: Color) {
     let w = measure_text(t, None, size, 1.0).width;
     draw_text(t, r.x + (r.w - w) / 2.0, y, size as f32, c);
@@ -74,7 +135,10 @@ pub fn with_alpha(c: Color, a: f32) -> Color {
 }
 
 pub fn backdrop() {
-    let (w, h) = (screen_width(), screen_height());
+    backdrop_in(screen_width(), screen_height());
+}
+
+pub fn backdrop_in(w: f32, h: f32) {
     let bands = 48;
     for i in 0..bands {
         let t = i as f32 / (bands - 1) as f32;
@@ -136,12 +200,13 @@ pub fn keycap(t: &str, cx: f32, y: f32, size: u16) {
 }
 
 pub fn text_out(t: &str, x: f32, y: f32, size: u16, c: Color, out: f32) {
-    for (dx, dy) in [(-1.0, 0.0), (1.0, 0.0), (0.0, -1.0), (0.0, 1.0), (-1.0, -1.0), (1.0, 1.0), (-1.0, 1.0), (1.0, -1.0)] {
-        draw_text(t, x + dx * out, y + dy * out, size as f32, INK);
-    }
-    draw_text(t, x, y + out * 1.5, size as f32, INK);
-    draw_text(t, x, y, size as f32, c);
+    draw_text_raw(t, x, y + (out * 2.0).max(2.0), size as f32, SHADOW);
+    draw_text_raw(t, x, y, size as f32, c);
 }
+
+pub const SHADOW: Color = Color::new(0.08, 0.05, 0.16, 0.9);
+pub const GLASS: Color = Color::new(0.62, 0.62, 0.84, 1.0);
+pub const GLASS_HI: Color = Color::new(0.76, 0.76, 0.96, 1.0);
 
 pub fn text_out_in(t: &str, r: Rect, y: f32, size: u16, c: Color, out: f32) {
     let w = measure_text(t, None, size, 1.0).width;
@@ -168,16 +233,15 @@ pub fn wrap(t: &str, width: f32, size: u16) -> Vec<String> {
 
 pub fn ghost(r: Rect, label: &str, enabled: bool) {
     let h = enabled && hovered(r);
-    draw_rectangle(r.x, r.y, r.w, r.h, Color::new(0.16, 0.14, 0.25, if h { 0.85 } else { 0.6 }));
-    draw_rectangle_lines(r.x, r.y, r.w, r.h, 2.0, with_alpha(WHITE, if h { 0.6 } else { 0.25 }));
-    text_in(label, r, r.y + r.h / 2.0 + 7.0, SMALL, if enabled { PALE } else { DIM });
+    kit().button.draw(r, r.h / 68.0 * 1.6, if h { GLASS_HI } else { GLASS });
+    label_in(label, r, SMALL, if enabled { PALE } else { DIM });
 }
 
 pub fn plain(r: Rect, label: &str, enabled: bool) {
     let h = enabled && hovered(r);
     draw_rectangle(r.x, r.y, r.w, r.h, with_alpha(INK, if h { 0.16 } else { 0.08 }));
     draw_rectangle_lines(r.x, r.y, r.w, r.h, 2.0, with_alpha(INK, if h { 0.5 } else { 0.3 }));
-    text_in(label, r, r.y + r.h / 2.0 + 7.0, SMALL, if enabled { INK } else { DIM });
+    label_in(label, r, SMALL, if enabled { INK } else { DIM });
 }
 
 pub fn mint_button(r: Rect, label: &str, enabled: bool) {
@@ -185,14 +249,14 @@ pub fn mint_button(r: Rect, label: &str, enabled: bool) {
     let tint = if !enabled { Color::new(0.5, 0.55, 0.55, 1.0) } else if h { Color::new(0.75, 1.1, 1.0, 1.0) } else { Color::new(0.62, 1.0, 0.9, 1.0) };
     let y = if h && is_mouse_button_down(MouseButton::Left) { 2.0 } else { 0.0 };
     kit().button.draw(Rect::new(r.x, r.y + y, r.w, r.h), r.h / 68.0 * 1.6, tint);
-    text_out_in(label, r, r.y + y + r.h / 2.0 + 8.0, BODY, if enabled { WHITE } else { DIM }, 1.0);
+    label_in(label, Rect::new(r.x, r.y + y, r.w, r.h), BODY, if enabled { WHITE } else { DIM });
 }
 
 pub fn card(r: Rect, on: bool) {
     let h = hovered(r);
     let lift = if h && !on { 3.0 } else { 0.0 };
     let r = Rect::new(r.x, r.y - lift, r.w, r.h);
-    kit().panel.draw(r, 0.5, if on || h { WHITE } else { Color::new(0.93, 0.93, 0.93, 1.0) });
+    kit().panel.draw(r, 0.5, if on || h { GLASS_HI } else { GLASS });
     if on {
         draw_rectangle_lines(r.x - 5.0, r.y - 5.0, r.w + 10.0, r.h + 10.0, 4.0, GOLD);
     }
@@ -270,7 +334,11 @@ pub fn bar(r: Rect, frac: f32, lag: f32, fill: Color, right: bool) {
 }
 
 pub fn panel_scaled(r: Rect, scale: f32) {
-    kit().panel.draw(r, scale, WHITE);
+    if scale <= 0.5 {
+        flat_panel(r);
+        return;
+    }
+    kit().panel.draw(r, scale, GLASS);
 }
 
 pub fn frame_border(r: Rect) {
@@ -289,7 +357,7 @@ pub fn button(r: Rect, label: &str, enabled: bool) {
     let tint = if !enabled { Color::new(0.55, 0.55, 0.6, 1.0) } else if h { Color::new(1.1, 1.1, 1.1, 1.0) } else { WHITE };
     let y = if h && is_mouse_button_down(MouseButton::Left) { 2.0 } else { 0.0 };
     kit().button.draw(Rect::new(r.x, r.y + y, r.w, r.h), r.h / 68.0 * 1.6, tint);
-    text_in(label, r, r.y + y + r.h / 2.0 + 7.0, BODY, if enabled { WHITE } else { DIM });
+    label_in(label, Rect::new(r.x, r.y + y, r.w, r.h), BODY, if enabled { WHITE } else { DIM });
 }
 
 pub struct TextField {
@@ -320,11 +388,13 @@ impl TextField {
     }
 
     pub fn draw(&self, r: Rect, label: &str, focused: bool) {
-        draw_text(label, r.x + 2.0, r.y - 8.0, 20.0, INK);
-        kit().field.draw(r, 1.5, if focused { WHITE } else { Color::new(0.88, 0.88, 0.9, 1.0) });
+        draw_text(label, r.x + 2.0, r.y - 8.0, 20.0, MINT);
+        draw_rectangle(r.x, r.y, r.w, r.h, Color::new(0.09, 0.07, 0.16, 1.0));
+        draw_rectangle(r.x, r.y, r.w, 3.0, Color::new(0.0, 0.0, 0.0, 0.35));
+        draw_rectangle_lines(r.x, r.y, r.w, r.h, 2.0, if focused { MINT } else { with_alpha(MINT, 0.35) });
         let shown = if self.secret { "*".repeat(self.value.len()) } else { self.value.clone() };
         let caret = if focused && (get_time() * 2.0) as i64 % 2 == 0 { "|" } else { "" };
-        draw_text(&format!("{shown}{caret}"), r.x + 16.0, r.y + r.h / 2.0 + 9.0, BODY as f32, INK);
+        draw_text_raw(&format!("{shown}{caret}"), r.x + 16.0, r.y + r.h / 2.0 + 9.0, BODY as f32, CREAM);
     }
 }
 

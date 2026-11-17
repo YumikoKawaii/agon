@@ -197,18 +197,23 @@ pub struct Nine {
     pub tex: Texture2D,
     pub src: Rect,
     pub inset: f32,
+    pub k: f32,
 }
 
 impl Nine {
     async fn load(path: &str, src: Option<Rect>, inset: f32) -> AResult<Nine> {
+        Self::load_k(path, src, inset, 1.0).await
+    }
+
+    async fn load_k(path: &str, src: Option<Rect>, inset: f32, k: f32) -> AResult<Nine> {
         let tex = texture(path).await?;
         let src = src.unwrap_or(Rect::new(0.0, 0.0, tex.width(), tex.height()));
-        Ok(Nine { tex, src, inset })
+        Ok(Nine { tex, src, inset, k })
     }
 
     pub fn draw(&self, r: Rect, scale: f32, tint: Color) {
         let (s, i) = (self.src, self.inset);
-        let d = i * scale;
+        let d = (i * scale * self.k).round();
         let xs = [(s.x, i, r.x, d), (s.x + i, s.w - 2.0 * i, r.x + d, r.w - 2.0 * d), (s.x + s.w - i, i, r.x + r.w - d, d)];
         let ys = [(s.y, i, r.y, d), (s.y + i, s.h - 2.0 * i, r.y + d, r.h - 2.0 * d), (s.y + s.h - i, i, r.y + r.h - d, d)];
         for (sx, sw, dx, dw) in xs {
@@ -224,6 +229,9 @@ impl Nine {
 
 pub struct UiKit {
     pub panel: Nine,
+    pub hud: Nine,
+    pub arena: Texture2D,
+    pub tiles: Vec<Texture2D>,
     pub button: Nine,
     pub field: Nine,
     pub bar: Nine,
@@ -391,8 +399,17 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
     ];
     let bleed_pop = load_status("bleed_pop", 66.0, 69.0, 8, 16.0, vec2(35.0, 30.0), false).await?;
     let ui = UiKit {
-        panel: Nine::load("assets/ui/panel.png", None, 28.0).await?,
-        button: Nine::load("assets/ui/btn_full.png", Some(Rect::new(44.0, 95.0, 168.0, 68.0)), 14.0).await?,
+        panel: Nine::load_k("assets/ui/kit.png", Some(Rect::new(182.0, 272.0, 147.0, 72.0)), 26.0, 2.8).await?,
+        arena: texture("assets/ui/arena.png").await?,
+        tiles: {
+            let mut v = Vec::new();
+            for i in 0..16 {
+                v.push(texture(&format!("assets/tiles/dark/tile_{i}.png")).await?);
+            }
+            v
+        },
+        hud: Nine::load("assets/ui/panel.png", None, 28.0).await?,
+        button: Nine::load_k("assets/ui/kit.png", Some(Rect::new(225.0, 243.0, 60.0, 23.0)), 7.0, 1.8).await?,
         field: Nine::load("assets/ui/field.png", Some(Rect::new(4.0, 4.0, 62.0, 22.0)), 6.0).await?,
         bar: Nine::load("assets/ui/bars.png", None, 10.0).await?,
         logo: texture("assets/ui/logo.png").await?,

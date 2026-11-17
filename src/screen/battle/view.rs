@@ -1,6 +1,7 @@
 use std::f32::consts::{PI, TAU};
 
 use macroquad::{prelude::*, rand::gen_range};
+use crate::ui::raw::{draw_text, measure_text};
 
 use crate::{
     assets,
@@ -29,7 +30,6 @@ pub const LILAC: Color = Color::new(0.78, 0.55, 1.0, 1.0);
 pub const MINT: Color = Color::new(0.72, 0.96, 0.78, 1.0);
 pub const BLOOD: Color = Color::new(1.0, 0.56, 0.66, 1.0);
 pub const SAKURA: Color = Color::new(1.0, 0.68, 0.84, 1.0);
-const FLOOR: [Color; 2] = [Color::new(0.27, 0.33, 0.34, 1.0), Color::new(0.3, 0.37, 0.37, 1.0)];
 const CAGE: Color = Color::new(0.72, 0.62, 0.86, 1.0);
 const HIT_TINT: Color = Color::new(1.0, 0.6, 0.6, 1.0);
 
@@ -111,35 +111,46 @@ pub fn draw_sprite(tex: &Texture2D, at: Vec2, tint: Color) {
 }
 
 pub fn draw_floor(cam: &Camera) {
+    let tiles = &assets::get().ui.tiles;
     let (nx, ny) = ((ARENA.x / TILE) as i32, (ARENA.y / TILE) as i32);
     for i in 0..nx {
         for j in 0..ny {
+            let h = (i as u32).wrapping_mul(73_856_093) ^ (j as u32).wrapping_mul(19_349_663);
+            let k = match h % 16 {
+                0 => 12,
+                1 | 2 => 1,
+                3 => 4,
+                _ => 0,
+            };
             let p = cam.proj(vec2(i as f32 * TILE, j as f32 * TILE));
-            draw_rectangle(p.x, p.y, TILE * S, TILE * S, FLOOR[((i + j) % 2) as usize]);
+            draw_texture_ex(&tiles[k], p.x.round(), p.y.round(), WHITE, DrawTextureParams { dest_size: Some(vec2(TILE * S, TILE * S)), ..Default::default() });
         }
     }
 }
 
 pub fn draw_cage(cam: &Camera, front: bool) {
+    if front {
+        return;
+    }
+    let wall = &assets::get().ui.tiles[10];
     let (nx, ny) = ((ARENA.x / TILE) as i32, (ARENA.y / TILE) as i32);
-    let along_x = (0..=nx).flat_map(|k| [vec2(k as f32 * TILE, 0.0), vec2(k as f32 * TILE, ARENA.y)]);
-    let along_y = (0..=ny).flat_map(|k| [vec2(0.0, k as f32 * TILE), vec2(ARENA.x, k as f32 * TILE)]);
-    for w in along_x.chain(along_y) {
-        if (w.y == ARENA.y) == front {
-            let p = cam.proj(w);
-            draw_line(p.x, p.y, p.x, p.y - POST_H * S, 2.0, CAGE);
-        }
+    let mut cells = Vec::new();
+    for i in -1..=nx {
+        cells.push((i, -2));
+        cells.push((i, -1));
+        cells.push((i, ny));
     }
-    let (w, h) = (ARENA.x, ARENA.y);
-    let back = [(vec2(0.0, 0.0), vec2(w, 0.0)), (vec2(0.0, 0.0), vec2(0.0, h)), (vec2(w, 0.0), vec2(w, h))];
-    let fore = [(vec2(0.0, h), vec2(w, h))];
-    let edges: &[(Vec2, Vec2)] = if front { &fore } else { &back };
-    for (a, b) in edges {
-        let (a, b) = (cam.proj(*a), cam.proj(*b));
-        for h in [POST_H, POST_H / 2.0] {
-            draw_line(a.x, a.y - h * S, b.x, b.y - h * S, 2.0, CAGE);
-        }
+    for j in 0..ny {
+        cells.push((-1, j));
+        cells.push((nx, j));
     }
+    for (i, j) in cells {
+        let p = cam.proj(vec2(i as f32 * TILE, j as f32 * TILE));
+        let tint = if j == -2 { Color::new(0.75, 0.75, 0.8, 1.0) } else { WHITE };
+        draw_texture_ex(wall, p.x.round(), p.y.round(), tint, DrawTextureParams { dest_size: Some(vec2(TILE * S, TILE * S)), ..Default::default() });
+    }
+    let (a, b) = (cam.proj(Vec2::ZERO), cam.proj(ARENA));
+    draw_rectangle_lines(a.x.round(), a.y.round(), (b.x - a.x).round(), (b.y - a.y).round(), 2.0, alpha(CAGE, 0.35));
 }
 
 pub fn draw_player(cam: &Camera, p: &Player, debug: bool) {
@@ -254,9 +265,9 @@ fn draw_status(cam: &Camera, p: &Player, front: bool) {
 
 const HP_FILL: [Color; 2] = [Color::new(0.5, 0.84, 0.76, 1.0), Color::new(0.91, 0.46, 0.54, 1.0)];
 const SUBTLE: Color = Color::new(0.36, 0.32, 0.46, 1.0);
-const DOCK: Rect = Rect { x: (VIEW.x - 660.0) / 2.0, y: VIEW.y - 126.0, w: 660.0, h: 118.0 };
+const DOCK: Rect = Rect { x: (VIEW.x - 440.0) / 2.0, y: VIEW.y - 126.0, w: 440.0, h: 118.0 };
 const FOE: Rect = Rect { x: VIEW.x - 340.0, y: 8.0, w: 320.0, h: 84.0 };
-const HALF: Vec2 = vec2(470.0, 118.0);
+const HALF: Vec2 = vec2(392.0, 118.0);
 const TOP: Rect = Rect { x: VIEW.x / 2.0 - 260.0, y: 0.0, w: 520.0, h: 170.0 };
 
 pub enum Hud {
@@ -399,7 +410,7 @@ fn skill_row(p: &Player, x: f32, y: f32, size: f32, gap: f32, right: bool, label
 
 fn draw_dock(p: &Player, name: &str, lag: f32) {
     let d = DOCK;
-    crate::ui::panel_scaled(d, 0.5);
+    crate::ui::hud_panel(d, 0.5);
     let pr = Rect::new(d.x + 18.0, d.y + 17.0, 84.0, 84.0);
     crate::ui::portrait_box(p.kit, pr, crate::ui::MINT, false);
     let cx = pr.x + pr.w + 18.0;
@@ -417,7 +428,7 @@ fn draw_dock(p: &Player, name: &str, lag: f32) {
 
 fn draw_foe(p: &Player, name: &str, lag: f32) {
     let r = FOE;
-    crate::ui::panel_scaled(r, 0.45);
+    crate::ui::hud_panel(r, 0.45);
     let pr = Rect::new(r.x + r.w - 16.0 - 54.0, r.y + 14.0, 54.0, 54.0);
     crate::ui::portrait_box(p.kit, pr, crate::ui::ROSE, true);
     let right = pr.x - 12.0;
@@ -434,7 +445,7 @@ fn draw_foe(p: &Player, name: &str, lag: f32) {
 fn draw_half(i: usize, p: &Player, tag: &str, lag: f32) {
     let r = half(i);
     let right = i == 1;
-    crate::ui::panel_scaled(r, 0.5);
+    crate::ui::hud_panel(r, 0.5);
     let ps = 76.0;
     let pr = Rect::new(if right { r.x + r.w - 18.0 - ps } else { r.x + 18.0 }, r.y + 22.0, ps, ps);
     crate::ui::portrait_box(p.kit, pr, if right { crate::ui::ROSE } else { crate::ui::MINT }, right);
@@ -464,7 +475,7 @@ fn draw_half(i: usize, p: &Player, tag: &str, lag: f32) {
 
 fn draw_score(score: [u32; 2]) {
     let r = Rect::new(VIEW.x / 2.0 - 130.0, 8.0, 260.0, 92.0);
-    crate::ui::panel_scaled(r, 0.45);
+    crate::ui::hud_panel(r, 0.45);
     let t = format!("{}  -  {}", score[0], score[1]);
     let w = measure_text(&t, None, 44, 1.0).width;
     crate::ui::text_out(&t, (VIEW.x - w) / 2.0, r.y + 50.0, 44, WHITE, 2.0);

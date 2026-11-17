@@ -1,4 +1,5 @@
 use macroquad::prelude::*;
+use crate::ui::raw::{draw_text, measure_text};
 
 use crate::{
     assets,
@@ -259,9 +260,11 @@ impl Screen for Battle {
             ..Default::default()
         });
         clear_background(ui::BG);
+        ui::backdrop_in(VIEW.x, VIEW.y);
         self.draw_view(ctx);
         set_default_camera();
         clear_background(BARS);
+        ui::backdrop();
         let l = letterbox();
         draw_texture_ex(&self.canvas.texture, l.offset.x, l.offset.y, WHITE, DrawTextureParams { dest_size: Some(VIEW * l.scale), ..Default::default() });
     }
@@ -310,7 +313,7 @@ impl Battle {
         }
         if let Mode::Watch(..) = &self.mode {
             let r = view::score_rect();
-            ui::panel_scaled(r, 0.45);
+            ui::hud_panel(r, 0.45);
             let t = format!("{}  {} - {}  {}", core::KITS[b.players[0].kit].name, b.deaths[1], b.deaths[0], core::KITS[b.players[1].kit].name);
             let w = measure_text(&t, None, 26, 1.0).width;
             draw_text(&t, (VIEW.x - w) / 2.0, r.y + 37.0, 26.0, ui::INK);
@@ -336,7 +339,7 @@ impl Battle {
             if let Some(won) = sync.outcome() {
                 draw_rectangle(0.0, 0.0, VIEW.x, VIEW.y, Color::new(0.08, 0.06, 0.14, 0.6));
                 let r = Rect::new(VIEW.x / 2.0 - 280.0, VIEW.y / 2.0 - 140.0, 560.0, 240.0);
-                ui::panel_scaled(r, 1.0);
+                ui::hud_panel(r, 1.0);
                 let (title, col) = if won { ("VICTORY", ui::GOLD) } else { ("DEFEAT", Color::new(0.75, 0.3, 0.4, 1.0)) };
                 centered(title, r.y + 110.0, 80, ui::INK);
                 centered(title, r.y + 106.0, 80, col);
@@ -344,7 +347,7 @@ impl Battle {
                 centered("returning to lobby...", r.y + 196.0, 18, ui::INK);
             } else if !banner.is_empty() {
                 let w = measure_text(&banner, None, 40, 1.0).width + 80.0;
-                ui::panel_scaled(Rect::new((VIEW.x - w) / 2.0, VIEW.y / 2.0 - 160.0, w, 80.0), 0.5);
+                ui::hud_panel(Rect::new((VIEW.x - w) / 2.0, VIEW.y / 2.0 - 160.0, w, 80.0), 0.5);
                 centered(&banner, VIEW.y / 2.0 - 108.0, 40, ui::INK);
             }
         }

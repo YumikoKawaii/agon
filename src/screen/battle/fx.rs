@@ -1,6 +1,7 @@
 use std::f32::consts::TAU;
 
 use macroquad::{prelude::*, rand::gen_range};
+use crate::ui::draw_text;
 
 use crate::{
     assets,

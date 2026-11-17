@@ -18,7 +18,7 @@ struct Layout {
 }
 
 fn layout() -> Layout {
-    let actions = ui::row(ui::centered(360.0, 430.0, 52.0), 2, 12.0);
+    let actions = ui::row(ui::centered(360.0, 440.0, 52.0), 2, 16.0);
     Layout { user: ui::centered(360.0, 260.0, 48.0), pass: ui::centered(360.0, 350.0, 48.0), sign_in: actions[0], register: actions[1] }
 }
 
@@ -81,7 +81,7 @@ impl Screen for Login {
         let idle = self.pending.is_none();
         ui::logo(110.0, 1.6);
         ui::text_centered("sign in or create an account", 190.0, ui::SMALL + 2, ui::DIM);
-        ui::form(205.0, 310.0);
+        ui::form(205.0, 350.0);
         self.user.draw(l.user, "username", self.focus == 0);
         self.pass.draw(l.pass, "password", self.focus == 1);
         ui::button(l.sign_in, "Sign in", idle);

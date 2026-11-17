@@ -32,6 +32,7 @@ fn window_conf() -> Conf {
 
 #[macroquad::main(window_conf)]
 async fn main() {
+    ui::load_fonts().await;
     assets::load().await.expect("can't load assets");
     let mut state = MainState::new();
     while !state.screens.quit {

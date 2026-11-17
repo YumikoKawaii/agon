@@ -1,4 +1,5 @@
 use macroquad::prelude::*;
+use crate::ui::raw::{draw_text, measure_text};
 
 use crate::{
     assets,
@@ -124,8 +125,8 @@ fn text_mid(t: &str, cx: f32, y: f32, size: f32, c: Color) {
 fn button(r: Rect, label: &str, on: bool, hover: bool) {
     let tint = if on { Color::new(1.0, 0.92, 0.6, 1.0) } else if hover { Color::new(1.1, 1.1, 1.1, 1.0) } else { WHITE };
     ui::slot(r, tint);
-    let size = if r.h < 40.0 { 17.0 } else { 20.0 };
-    text_mid(label, r.x + r.w / 2.0, r.y + r.h / 2.0 + size * 0.3, size, ui::INK);
+    let size = if r.h < 40.0 { 17 } else { 20 };
+    ui::label_in(label, r, size, WHITE);
 }
 
 fn chip(r: Rect, kit: Option<usize>, on: bool, hover: bool) {
@@ -292,7 +293,7 @@ impl Picker {
 
     pub fn draw_bar(&self, m: Vec2, bar: &Bar) {
         let b = bar_rect();
-        ui::panel_scaled(b, 0.45);
+        ui::hud_panel(b, 0.45);
         let foe = if bar.level.is_some() { "BOT" } else { "DUMMY" };
         let me = if bar.watch.is_some() { "BOT A" } else { "YOU" };
         let foe = if bar.watch.is_some() { "BOT B" } else { foe };
@@ -339,7 +340,7 @@ impl Picker {
     pub fn draw_panel(&self, m: Vec2) {
         let Some(side) = self.open else { return };
         let p = panel_rect();
-        ui::panel_scaled(p, 0.7);
+        ui::hud_panel(p, 0.7);
         draw_text(if side == 0 { "Choose your character" } else { "Choose opponent" }, p.x + 30.0, p.y + 50.0, 28.0, ui::INK);
         draw_text("Tab: switch side   Esc: close", p.x + 400.0, p.y + p.h - 36.0, 16.0, ui::INK);
         let s = search_rect();

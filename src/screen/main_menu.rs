@@ -108,7 +108,7 @@ impl Screen for MainMenu {
         let h = ui::hovered(p);
         let y = if h && is_mouse_button_down(MouseButton::Left) { 3.0 } else { 0.0 };
         assets::get().ui.button.draw(Rect::new(p.x, p.y + y, p.w, p.h), 3.2, if h { Color::new(1.1, 1.1, 1.1, 1.0) } else { WHITE });
-        ui::text_out_in("PLAY ONLINE", p, p.y + y + 70.0, 64, WHITE, 2.5);
+        ui::text_out_in("PLAY ONLINE", p, p.y + y + 70.0, 64, ui::GOLD, 2.5);
         ui::text_in("create a room or join by id", p, p.y + y + 100.0, ui::SMALL, ui::PALE);
 
         for (((_, label, sub), r), t) in MODES.iter().zip(l.modes).zip(&assets::get().ui.modes) {
@@ -117,7 +117,7 @@ impl Screen for MainMenu {
             let s = 80.0;
             draw_texture_ex(t, r.x + (r.w - s) / 2.0, r.y + 16.0 - lift, WHITE, DrawTextureParams { dest_size: Some(vec2(s, s)), ..Default::default() });
             ui::text_in(label, r, r.y + 124.0 - lift, 28, ui::INK);
-            ui::text_in(sub, r, r.y + 148.0 - lift, 18, Color::new(0.36, 0.32, 0.46, 1.0));
+            ui::text_in(sub, r, r.y + 148.0 - lift, 18, ui::MINT);
         }
         ui::ghost(l.sign_out, "Sign out", true);
         ui::ghost(l.quit, "Quit", true);
