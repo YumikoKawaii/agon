@@ -17,6 +17,32 @@ extern "C" {
     fn agon_wt_line(id: i32) -> i32;
     fn agon_wt_line_copy(id: i32, p: *mut u8);
     fn agon_wt_close(id: i32);
+    fn agon_store_set(kp: *const u8, kl: usize, vp: *const u8, vl: usize);
+    fn agon_store_len(kp: *const u8, kl: usize) -> usize;
+    fn agon_store_copy(p: *mut u8);
+}
+
+pub fn store_get(key: &str) -> String {
+    #[cfg(target_arch = "wasm32")]
+    {
+        let mut buf = vec![0u8; unsafe { agon_store_len(key.as_ptr(), key.len()) }];
+        unsafe { agon_store_copy(buf.as_mut_ptr()) };
+        String::from_utf8_lossy(&buf).into_owned()
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    {
+        let _ = key;
+        String::new()
+    }
+}
+
+pub fn store_set(key: &str, value: &str) {
+    #[cfg(target_arch = "wasm32")]
+    unsafe {
+        agon_store_set(key.as_ptr(), key.len(), value.as_ptr(), value.len())
+    }
+    #[cfg(not(target_arch = "wasm32"))]
+    let _ = (key, value);
 }
 
 #[cfg(not(target_arch = "wasm32"))]

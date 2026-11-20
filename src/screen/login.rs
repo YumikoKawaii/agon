@@ -2,7 +2,7 @@ use macroquad::prelude::*;
 
 use crate::{
     context::Context,
-    net::{api::Auth, Pending},
+    net::{api::{Auth, UserReply}, Api, Pending},
     screen::{MainMenu, Screen, StackCommand},
     ui::{self, Status, TextField},
 };
@@ -27,12 +27,15 @@ pub struct Login {
     pass: TextField,
     focus: usize,
     pending: Option<Pending<Auth>>,
+    resume: Option<(String, Pending<UserReply>)>,
     status: Status,
 }
 
 impl Login {
     pub fn new() -> Self {
-        Login { user: TextField::name(USER_MAX), pass: TextField::secret(PASS_MAX), focus: 0, pending: None, status: Status::default() }
+        let token = Context::saved_token();
+        let resume = (!token.is_empty()).then(|| (token.clone(), Api::with_token(token).get_me()));
+        Login { user: TextField::name(USER_MAX), pass: TextField::secret(PASS_MAX), focus: 0, pending: None, resume, status: Status::default() }
     }
 }
 
@@ -40,6 +43,24 @@ impl Screen for Login {
     fn update(&mut self, ctx: &mut Context, _dt: f32) -> StackCommand {
         ui::frame(60.0, 500.0);
         let l = layout();
+        if let Some((token, p)) = self.resume.as_mut() {
+            match p.poll() {
+                None => {
+                    self.status.busy = true;
+                    return StackCommand::None;
+                }
+                Some(Ok(me)) => {
+                    let token = std::mem::take(token);
+                    self.resume = None;
+                    ctx.sign_in(Auth { token, user: me.user });
+                    return StackCommand::Push(Box::new(MainMenu::new()));
+                }
+                Some(Err(_)) => {
+                    self.resume = None;
+                    ctx.sign_out();
+                }
+            }
+        }
         if let Some(p) = self.pending.as_mut() {
             if let Some(result) = p.poll() {
                 self.pending = None;

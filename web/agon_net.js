@@ -3,6 +3,7 @@ const agon_reqs = {};
 const agon_watches = {};
 const agon_wts = {};
 let agon_next = 1;
+let agon_store_buf = new Uint8Array();
 function agon_str(p, l) {
     return new TextDecoder().decode(new Uint8Array(wasm_memory.buffer, p, l));
 }
@@ -62,6 +63,24 @@ miniquad_add_plugin({
     name: "agon_net",
     version: 2,
     register_plugin: function (o) {
+        o.env.agon_store_set = function (kp, kl, vp, vl) {
+            try {
+                if (vl > 0) localStorage.setItem(agon_str(kp, kl), agon_str(vp, vl));
+                else localStorage.removeItem(agon_str(kp, kl));
+            } catch (e) {}
+        };
+        o.env.agon_store_len = function (kp, kl) {
+            let v = null;
+            try {
+                v = localStorage.getItem(agon_str(kp, kl));
+            } catch (e) {}
+            agon_store_buf = new TextEncoder().encode(v || "");
+            return agon_store_buf.length;
+        };
+        o.env.agon_store_copy = function (p) {
+            agon_put(p, agon_store_buf);
+            agon_store_buf = new Uint8Array();
+        };
         o.env.agon_fetch = function (mp, ml, up, ul, bp, bl, tp, tl) {
             const id = agon_next++;
             const r = (agon_reqs[id] = { done: false, status: 0, body: new Uint8Array() });

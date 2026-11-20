@@ -203,6 +203,10 @@ impl Api {
         self.call("AuthService/Logout", "{}".into())
     }
 
+    pub fn get_me(&self) -> Pending<UserReply> {
+        self.call("UserService/GetMe", "{}".into())
+    }
+
     pub fn set_kit(&self, kit: usize) -> Pending<UserReply> {
         self.call("UserService/SetKit", KitReq { kit }.serialize_json())
     }
