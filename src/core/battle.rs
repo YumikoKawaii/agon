@@ -17,7 +17,7 @@ use crate::core::{
     Skill, DT, RADIUS,
 };
 
-pub const SPAWNS: [(Vec2, f32); 2] = [(vec2(1050.0, 700.0), 0.0), (vec2(1350.0, 700.0), PI)];
+pub const SPAWNS: [(Vec2, f32); 2] = [(vec2(570.0, 360.0), 0.0), (vec2(870.0, 360.0), PI)];
 
 pub struct Zone {
     pub pos: Vec2,

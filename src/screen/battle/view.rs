@@ -19,7 +19,14 @@ pub const CHEST: f32 = 9.0;
 const POST_H: f32 = 14.0;
 const TILE: f32 = 20.0;
 const HIT_FLASH_TICKS: u32 = 4;
-pub const VIEW: Vec2 = vec2(1500.0, 900.0);
+const VIEW_H: f32 = 900.0;
+const ASPECT_MIN: f32 = 4.0 / 3.0;
+const ASPECT_MAX: f32 = 21.0 / 9.0;
+
+pub fn view() -> Vec2 {
+    let a = (screen_width() / screen_height().max(1.0)).clamp(ASPECT_MIN, ASPECT_MAX);
+    vec2((VIEW_H * a).round(), VIEW_H)
+}
 
 pub const ICE: Color = Color::new(0.55, 0.85, 1.0, 1.0);
 pub const PALE: Color = Color::new(0.88, 0.97, 1.0, 1.0);
@@ -39,15 +46,13 @@ pub struct Letterbox {
 
 pub fn letterbox() -> Letterbox {
     let screen = vec2(screen_width(), screen_height());
-    let fit = (screen.x / VIEW.x).min(screen.y / VIEW.y);
-    let scale = if fit >= 1.0 { fit.floor() } else { fit };
-    Letterbox { scale, offset: ((screen - VIEW * scale) / 2.0).round() }
+    let fit = (screen.x / view().x).min(screen.y / view().y);
+    Letterbox { scale: fit, offset: ((screen - view() * fit) / 2.0).round() }
 }
 
 const ZOOM: f32 = 1.0;
 const LOOK: f32 = 0.25;
 const LOOK_MAX: f32 = 60.0;
-const WALL_PAD: f32 = 2.0 * TILE;
 const FOLLOW: f32 = 6.0;
 
 #[derive(Default)]
@@ -75,9 +80,9 @@ impl Camera {
             self.zoom += (zoom - self.zoom) * k;
             self.center += (mid - self.center) * k;
         }
-        let half = VIEW / (2.0 * S * self.zoom);
-        let lo = vec2(-WALL_PAD, -WALL_PAD * 1.5);
-        let hi = ARENA + vec2(WALL_PAD, WALL_PAD);
+        let half = view() / (2.0 * S * self.zoom);
+        let lo = Vec2::ZERO;
+        let hi = ARENA;
         for i in 0..2 {
             let (l, h, c) = (lo[i] + half[i], hi[i] - half[i], &mut self.center[i]);
             *c = if l > h { (lo[i] + hi[i]) / 2.0 } else { c.clamp(l, h) };
@@ -86,7 +91,7 @@ impl Camera {
 
     pub fn world(&self, rt: &RenderTarget) -> Camera2D {
         let z = if self.zoom == 0.0 { 1.0 } else { self.zoom };
-        Camera2D { zoom: vec2(2.0 / VIEW.x, 2.0 / VIEW.y) * z, target: self.center * S, render_target: Some(rt.clone()), ..Default::default() }
+        Camera2D { zoom: vec2(2.0 / view().x, 2.0 / view().y) * z, target: self.center * S, render_target: Some(rt.clone()), ..Default::default() }
     }
 
     pub fn proj(&self, v: Vec2) -> Vec2 {
@@ -95,7 +100,7 @@ impl Camera {
 
     pub fn cells(&self, n: (i32, i32), pad: i32) -> (std::ops::Range<i32>, std::ops::Range<i32>) {
         let z = if self.zoom == 0.0 { 1.0 } else { self.zoom };
-        let half = VIEW / (2.0 * S * z);
+        let half = view() / (2.0 * S * z);
         let lo = ((self.center - half) / TILE).floor();
         let hi = ((self.center + half) / TILE).ceil();
         let x = (lo.x as i32 - pad).max(-pad)..(hi.x as i32 + pad).min(n.0 + pad);
@@ -105,7 +110,7 @@ impl Camera {
 
     pub fn to_view(&self, v: Vec2) -> Vec2 {
         let z = if self.zoom == 0.0 { 1.0 } else { self.zoom };
-        (self.proj(v) - self.center * S) * z + VIEW / 2.0
+        (self.proj(v) - self.center * S) * z + view() / 2.0
     }
 
     pub fn air(&self, v: Vec2, z: f32) -> Vec2 {
@@ -119,7 +124,7 @@ impl Camera {
 
     pub fn mouse_world(&self) -> Vec2 {
         let z = if self.zoom == 0.0 { 1.0 } else { self.zoom };
-        let stage = (self.mouse_view() - VIEW / 2.0) / z + self.center * S;
+        let stage = (self.mouse_view() - view() / 2.0) / z + self.center * S;
         (stage + vec2(0.0, FOOT * S)) / S
     }
 }
@@ -183,24 +188,6 @@ pub fn draw_floor(cam: &Camera) {
 pub fn draw_cage(cam: &Camera, front: bool) {
     if front {
         return;
-    }
-    let wall = &assets::get().ui.tiles[10];
-    let (nx, ny) = ((ARENA.x / TILE) as i32, (ARENA.y / TILE) as i32);
-    let mut cells = Vec::new();
-    for i in -1..=nx {
-        cells.push((i, -2));
-        cells.push((i, -1));
-        cells.push((i, ny));
-    }
-    for j in 0..ny {
-        cells.push((-1, j));
-        cells.push((nx, j));
-    }
-    let (xs, ys) = cam.cells((nx, ny), 2);
-    for (i, j) in cells.into_iter().filter(|(i, j)| xs.contains(i) && ys.contains(j)) {
-        let p = cam.proj(vec2(i as f32 * TILE, j as f32 * TILE));
-        let tint = if j == -2 { Color::new(0.75, 0.75, 0.8, 1.0) } else { WHITE };
-        draw_texture_ex(wall, p.x.round(), p.y.round(), tint, DrawTextureParams { dest_size: Some(vec2(TILE * S, TILE * S)), ..Default::default() });
     }
     let (a, b) = (cam.proj(Vec2::ZERO), cam.proj(ARENA));
     draw_rectangle_lines(a.x.round(), a.y.round(), (b.x - a.x).round(), (b.y - a.y).round(), 2.0, alpha(CAGE, 0.35));
@@ -324,10 +311,23 @@ fn draw_status(cam: &Camera, p: &Player, front: bool) {
 
 const HP_FILL: [Color; 2] = [Color::new(0.5, 0.84, 0.76, 1.0), Color::new(0.91, 0.46, 0.54, 1.0)];
 const SUBTLE: Color = Color::new(0.36, 0.32, 0.46, 1.0);
-const DOCK: Rect = Rect { x: (VIEW.x - 440.0) / 2.0, y: VIEW.y - 126.0, w: 440.0, h: 118.0 };
-const FOE: Rect = Rect { x: VIEW.x - 340.0, y: 8.0, w: 320.0, h: 84.0 };
 const HALF: Vec2 = vec2(392.0, 118.0);
-const TOP: Rect = Rect { x: VIEW.x / 2.0 - 260.0, y: 0.0, w: 520.0, h: 170.0 };
+const EDGE: f32 = 14.0;
+const MARK_PAD: f32 = 70.0;
+const OVER_W: f32 = 64.0;
+const OVER_Y: f32 = 112.0;
+
+fn dock_rect() -> Rect {
+    Rect::new(EDGE, view().y - 118.0 - EDGE, 440.0, 118.0)
+}
+
+fn foe_rect() -> Rect {
+    Rect::new(view().x - 320.0 - EDGE, EDGE, 320.0, 84.0)
+}
+
+fn top_rect() -> Rect {
+    Rect::new(view().x / 2.0 - 260.0, 0.0, 520.0, 170.0)
+}
 
 pub enum Hud {
     Focus { names: [String; 2], score: Option<[u32; 2]> },
@@ -335,16 +335,19 @@ pub enum Hud {
 }
 
 fn half(i: usize) -> Rect {
-    let x = if i == 0 { 14.0 } else { VIEW.x - 14.0 - HALF.x };
+    let x = if i == 0 { 14.0 } else { view().x - 14.0 - HALF.x };
     Rect::new(x, 6.0, HALF.x, HALF.y)
 }
 
 pub fn hud_zones(hud: &Hud) -> [Rect; 3] {
     match hud {
-        Hud::Focus { .. } => [Rect::new(DOCK.x, DOCK.y - 34.0, DOCK.w, DOCK.h + 34.0), FOE, TOP],
+        Hud::Focus { .. } => {
+            let d = dock_rect();
+            [Rect::new(d.x, d.y - 34.0, d.w, d.h + 34.0), foe_rect(), top_rect()]
+        }
         Hud::Equal { .. } => {
             let grow = |r: Rect| Rect::new(r.x, r.y, r.w, r.h + 34.0);
-            [grow(half(0)), grow(half(1)), TOP]
+            [grow(half(0)), grow(half(1)), top_rect()]
         }
     }
 }
@@ -468,7 +471,7 @@ fn skill_row(p: &Player, x: f32, y: f32, size: f32, gap: f32, right: bool, label
 }
 
 fn draw_dock(p: &Player, name: &str, lag: f32) {
-    let d = DOCK;
+    let d = dock_rect();
     crate::ui::hud_panel(d, 0.5);
     let pr = Rect::new(d.x + 18.0, d.y + 17.0, 84.0, 84.0);
     crate::ui::portrait_box(p.kit, pr, crate::ui::MINT, false);
@@ -486,7 +489,7 @@ fn draw_dock(p: &Player, name: &str, lag: f32) {
 }
 
 fn draw_foe(p: &Player, name: &str, lag: f32) {
-    let r = FOE;
+    let r = foe_rect();
     crate::ui::hud_panel(r, 0.45);
     let pr = Rect::new(r.x + r.w - 16.0 - 54.0, r.y + 14.0, 54.0, 54.0);
     crate::ui::portrait_box(p.kit, pr, crate::ui::ROSE, true);
@@ -533,16 +536,16 @@ fn draw_half(i: usize, p: &Player, tag: &str, lag: f32) {
 }
 
 fn draw_score(score: [u32; 2]) {
-    let r = Rect::new(VIEW.x / 2.0 - 130.0, 8.0, 260.0, 92.0);
+    let r = Rect::new(view().x / 2.0 - 130.0, 8.0, 260.0, 92.0);
     crate::ui::hud_panel(r, 0.45);
     let t = format!("{}  -  {}", score[0], score[1]);
     let w = measure_text(&t, None, 44, 1.0).width;
-    crate::ui::text_out(&t, (VIEW.x - w) / 2.0, r.y + 50.0, 44, WHITE, 2.0);
+    crate::ui::text_out(&t, (view().x - w) / 2.0, r.y + 50.0, 44, WHITE, 2.0);
     let n = crate::core::DEATHS_TO_WIN;
     for side in 0..2 {
         for k in 0..n {
             let off = 18.0 + k as f32 * 20.0;
-            let x = if side == 0 { VIEW.x / 2.0 - off } else { VIEW.x / 2.0 + off };
+            let x = if side == 0 { view().x / 2.0 - off } else { view().x / 2.0 + off };
             let on = k < score[side];
             let c = if !on { alpha(crate::ui::INK, 0.2) } else if side == 0 { crate::ui::MINT_D } else { crate::ui::ROSE_D };
             draw_poly(x, r.y + 72.0, 4, 8.0, 0.0, crate::ui::INK);
@@ -566,7 +569,7 @@ fn text_mid(t: &str, cx: f32, y: f32, size: f32, c: Color) {
 }
 
 pub fn score_rect() -> Rect {
-    Rect::new(VIEW.x / 2.0 - 260.0, 108.0, 520.0, 56.0)
+    Rect::new(view().x / 2.0 - 260.0, 108.0, 520.0, 56.0)
 }
 
 pub fn body_rect(cam: &Camera, p: &Player) -> Rect {
@@ -589,6 +592,45 @@ pub fn draw_hud(players: &[Player; 2], hud: &Hud, lag: [f32; 2]) {
             }
         }
     }
+}
+
+pub fn draw_overhead(cam: &Camera, players: &[Player; 2], lag: [f32; 2]) {
+    for (i, p) in players.iter().enumerate() {
+        if p.untargetable {
+            continue;
+        }
+        let s = cam.to_view(p.pos);
+        let r = Rect::new(s.x - OVER_W / 2.0, s.y - OVER_Y, OVER_W, 7.0);
+        draw_rectangle(r.x - 2.0, r.y - 2.0, r.w + 4.0, r.h + 4.0, crate::ui::INK);
+        draw_rectangle(r.x, r.y, r.w * lag[i], r.h, WHITE);
+        draw_rectangle(r.x, r.y, r.w * hp_frac(p), r.h, HP_FILL[i]);
+    }
+}
+
+pub fn draw_offscreen(cam: &Camera, me: &Player, foe: &Player) {
+    if foe.untargetable {
+        return;
+    }
+    let v = view();
+    let s = cam.to_view(foe.pos) - vec2(0.0, FOOT * S);
+    let lo = Vec2::splat(MARK_PAD);
+    let hi = v - MARK_PAD;
+    if s.cmpge(lo).all() && s.cmple(hi).all() {
+        return;
+    }
+    let c = v / 2.0;
+    let d = (s - c).normalize_or_zero();
+    let k = ((hi - c) / d.abs().max(Vec2::splat(0.0001))).min_element();
+    let at = c + d * k;
+    let tip = at + d * 34.0;
+    let side = d.perp() * 12.0;
+    draw_triangle(tip, at + d * 18.0 + side, at + d * 18.0 - side, crate::ui::INK);
+    draw_triangle(tip - d * 3.0, at + d * 20.0 + side * 0.7, at + d * 20.0 - side * 0.7, HP_FILL[1]);
+    let pr = Rect::new(at.x - 22.0, at.y - 22.0, 44.0, 44.0);
+    crate::ui::portrait_box(foe.kit, pr, crate::ui::ROSE, true);
+    let m = format!("{}m", (me.pos.distance(foe.pos) / 10.0).round() as i32);
+    let w = measure_text(&m, None, 16, 1.0).width;
+    crate::ui::text_out(&m, at.x - w / 2.0, pr.y + pr.h + 18.0, 16, WHITE, 1.5);
 }
 
 pub fn draw_cursor(cam: &Camera) {

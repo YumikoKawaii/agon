@@ -23,7 +23,7 @@ use self::{
     fx::Fx,
     picker::{Action, Bar, Picker},
     sync::Sync,
-    view::{letterbox, Camera, VIEW},
+    view::{letterbox, view, Camera},
 };
 
 const BARS: Color = ui::BG;
@@ -66,9 +66,9 @@ fn read_input(aim: Vec2) -> Input {
 
 impl Battle {
     fn new(core: core::Battle, mode: Mode) -> Self {
-        let canvas = render_target(VIEW.x as u32, VIEW.y as u32);
+        let canvas = render_target(view().x as u32, view().y as u32);
         canvas.texture.set_filter(FilterMode::Nearest);
-        let hud = render_target(VIEW.x as u32, VIEW.y as u32);
+        let hud = render_target(view().x as u32, view().y as u32);
         hud.texture.set_filter(FilterMode::Nearest);
         Battle { core, fx: Fx::default(), cam: Camera::default(), mode, pending: Input::default(), acc: 0.0, debug: false, canvas, hud, fade: std::cell::Cell::new([1.0; 3]), lag: std::cell::Cell::new([1.0; 2]), picker: Picker::default() }
     }
@@ -228,6 +228,13 @@ impl Screen for Battle {
                 sync.live()
             }
         };
+        let size = view();
+        if self.canvas.texture.width() != size.x {
+            self.canvas = render_target(size.x as u32, size.y as u32);
+            self.canvas.texture.set_filter(FilterMode::Nearest);
+            self.hud = render_target(size.x as u32, size.y as u32);
+            self.hud.texture.set_filter(FilterMode::Nearest);
+        }
         self.cam.shake(self.fx.shake);
         self.cam.follow(&self.core.players, dt);
         let mut r = read_input(self.cam.mouse_world());
@@ -255,19 +262,19 @@ impl Screen for Battle {
 
     fn draw(&self, ctx: &Context) {
         set_camera(&Camera2D {
-            zoom: vec2(2.0 / VIEW.x, 2.0 / VIEW.y),
-            target: VIEW / 2.0,
+            zoom: vec2(2.0 / view().x, 2.0 / view().y),
+            target: view() / 2.0,
             render_target: Some(self.canvas.clone()),
             ..Default::default()
         });
         clear_background(ui::BG);
-        ui::backdrop_in(VIEW.x, VIEW.y);
+        ui::backdrop_in(view().x, view().y);
         self.draw_view(ctx);
         set_default_camera();
         clear_background(BARS);
         ui::backdrop();
         let l = letterbox();
-        draw_texture_ex(&self.canvas.texture, l.offset.x, l.offset.y, WHITE, DrawTextureParams { dest_size: Some(VIEW * l.scale), ..Default::default() });
+        draw_texture_ex(&self.canvas.texture, l.offset.x, l.offset.y, WHITE, DrawTextureParams { dest_size: Some(view() * l.scale), ..Default::default() });
     }
 
     fn shows_cursor(&self) -> bool {
@@ -303,7 +310,7 @@ impl Battle {
         spells::draw_aim(b, cam);
         let line = self.scoreline(ctx);
         let (_, rest) = line.split_once("   ").unwrap_or((line.as_str(), ""));
-        let cam_for =|rt: &RenderTarget| Camera2D { zoom: vec2(2.0 / VIEW.x, 2.0 / VIEW.y), target: VIEW / 2.0, render_target: Some(rt.clone()), ..Default::default() };
+        let cam_for =|rt: &RenderTarget| Camera2D { zoom: vec2(2.0 / view().x, 2.0 / view().y), target: view() / 2.0, render_target: Some(rt.clone()), ..Default::default() };
         set_camera(&cam_for(&self.hud));
         clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
         let m = cam.mouse_view();
@@ -317,9 +324,13 @@ impl Battle {
             ui::hud_panel(r, 0.45);
             let t = format!("{}  {} - {}  {}", core::KITS[b.players[0].kit].name, b.deaths[1], b.deaths[0], core::KITS[b.players[1].kit].name);
             let w = measure_text(&t, None, 26, 1.0).width;
-            draw_text(&t, (VIEW.x - w) / 2.0, r.y + 37.0, 26.0, ui::INK);
+            draw_text(&t, (view().x - w) / 2.0, r.y + 37.0, 26.0, ui::INK);
         }
         set_camera(&cam_for(&self.canvas));
+        view::draw_overhead(cam, &b.players, lag);
+        if let view::Hud::Focus { .. } = hud {
+            view::draw_offscreen(cam, &b.players[0], &b.players[1]);
+        }
         self.fx.draw_flash();
         let zones = view::hud_zones(&hud);
         let mut fade = self.fade.get();
@@ -334,13 +345,13 @@ impl Battle {
         }
         let centered = |t: &str, y: f32, size: u16, c: Color| {
             let w = measure_text(t, None, size, 1.0).width;
-            draw_text(t, (VIEW.x - w) / 2.0, y, size as f32, c);
+            draw_text(t, (view().x - w) / 2.0, y, size as f32, c);
         };
         if let Mode::Online(sync) = &self.mode {
             let banner = sync.banner();
             if let Some(won) = sync.outcome() {
-                draw_rectangle(0.0, 0.0, VIEW.x, VIEW.y, Color::new(0.08, 0.06, 0.14, 0.6));
-                let r = Rect::new(VIEW.x / 2.0 - 280.0, VIEW.y / 2.0 - 140.0, 560.0, 240.0);
+                draw_rectangle(0.0, 0.0, view().x, view().y, Color::new(0.08, 0.06, 0.14, 0.6));
+                let r = Rect::new(view().x / 2.0 - 280.0, view().y / 2.0 - 140.0, 560.0, 240.0);
                 ui::hud_panel(r, 1.0);
                 let (title, col) = if won { ("VICTORY", ui::GOLD) } else { ("DEFEAT", Color::new(0.75, 0.3, 0.4, 1.0)) };
                 centered(title, r.y + 110.0, 80, ui::INK);
@@ -349,16 +360,18 @@ impl Battle {
                 centered("returning to lobby...", r.y + 196.0, 18, ui::INK);
             } else if !banner.is_empty() {
                 let w = measure_text(&banner, None, 40, 1.0).width + 80.0;
-                ui::hud_panel(Rect::new((VIEW.x - w) / 2.0, VIEW.y / 2.0 - 160.0, w, 80.0), 0.5);
-                centered(&banner, VIEW.y / 2.0 - 108.0, 40, ui::INK);
+                ui::hud_panel(Rect::new((view().x - w) / 2.0, view().y / 2.0 - 160.0, w, 80.0), 0.5);
+                centered(&banner, view().y / 2.0 - 108.0, 40, ui::INK);
             }
         }
         self.picker.draw_panel(m);
         view::draw_cursor(cam);
-        let mut y = if let view::Hud::Equal { .. } = hud { VIEW.y - 40.0 } else { 28.0 };
+        let mut y = view().y - 40.0;
         let keys = if self.bar().is_some() { "WASD move   C characters   Tab boxes" } else { "WASD move   Tab boxes" };
+        let equal = matches!(hud, view::Hud::Equal { .. });
         for part in [keys, rest.trim()] {
-            draw_text(part, 20.0, y, 16.0, ui::DIM);
+            let x = if equal { 20.0 } else { view().x - 20.0 - measure_text(part, None, 16, 1.0).width };
+            draw_text(part, x, y, 16.0, ui::DIM);
             y += 22.0;
         }
     }

@@ -15,7 +15,7 @@ use crate::{
         sword::{FORM_N, FORM_R, INTENT_R, LUNGE_REACH},
         Battle, Player,
     },
-    screen::battle::view::{alpha, draw_sprite, glow, status_color, Camera, AQUA, BLOOD, CHEST, GOLD, ICE, LILAC, PALE, S, VIEW},
+    screen::battle::view::{alpha, draw_sprite, glow, status_color, Camera, AQUA, BLOOD, CHEST, GOLD, ICE, LILAC, PALE, S, view},
     core::parasol::STORM_R,
     screen::battle::view::SAKURA,
 };
@@ -842,7 +842,7 @@ impl Fx {
 
     pub fn draw_flash(&self) {
         if self.flash > 0.0 {
-            draw_rectangle(0.0, 0.0, VIEW.x, VIEW.y, alpha(Color::new(1.0, 0.97, 0.9, 1.0), self.flash * 1.5));
+            draw_rectangle(0.0, 0.0, view().x, view().y, alpha(Color::new(1.0, 0.97, 0.9, 1.0), self.flash * 1.5));
         }
     }
 }

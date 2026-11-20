@@ -10,7 +10,7 @@ use crate::{
     ui,
 };
 
-use super::view::VIEW;
+use super::view::view;
 
 const COLS: usize = 5;
 const ROWS: usize = 2;
@@ -45,7 +45,7 @@ pub struct Bar {
 }
 
 fn bar_rect() -> Rect {
-    Rect::new(VIEW.x / 2.0 - 250.0, 4.0, 500.0, 98.0)
+    Rect::new(view().x / 2.0 - 250.0, 4.0, 500.0, 98.0)
 }
 
 fn chip_rect(side: usize) -> Rect {
@@ -74,7 +74,7 @@ fn reset_rect() -> Rect {
 }
 
 fn panel_rect() -> Rect {
-    Rect::new(VIEW.x / 2.0 - 380.0, 108.0, 760.0, 430.0)
+    Rect::new(view().x / 2.0 - 380.0, 108.0, 760.0, 430.0)
 }
 
 fn search_rect() -> Rect {
