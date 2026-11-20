@@ -229,6 +229,7 @@ impl Screen for Battle {
             }
         };
         self.cam.shake(self.fx.shake);
+        self.cam.follow(&self.core.players, dt);
         let mut r = read_input(self.cam.mouse_world());
         if blocked && r.slot == Some(0) {
             r.slot = None;
@@ -278,6 +279,7 @@ impl Battle {
     fn draw_view(&self, ctx: &Context) {
         let cam = &self.cam;
         let b = &self.core;
+        set_camera(&cam.world(&self.canvas));
         view::draw_floor(cam);
         view::draw_cage(cam, false);
         spells::draw_ground(b, cam);
@@ -299,10 +301,9 @@ impl Battle {
         }
         self.lag.set(lag);
         spells::draw_aim(b, cam);
-        self.fx.draw_flash();
         let line = self.scoreline(ctx);
         let (_, rest) = line.split_once("   ").unwrap_or((line.as_str(), ""));
-        let cam_for = |rt: &RenderTarget| Camera2D { zoom: vec2(2.0 / VIEW.x, 2.0 / VIEW.y), target: VIEW / 2.0, render_target: Some(rt.clone()), ..Default::default() };
+        let cam_for =|rt: &RenderTarget| Camera2D { zoom: vec2(2.0 / VIEW.x, 2.0 / VIEW.y), target: VIEW / 2.0, render_target: Some(rt.clone()), ..Default::default() };
         set_camera(&cam_for(&self.hud));
         clear_background(Color::new(0.0, 0.0, 0.0, 0.0));
         let m = cam.mouse_view();
@@ -319,6 +320,7 @@ impl Battle {
             draw_text(&t, (VIEW.x - w) / 2.0, r.y + 37.0, 26.0, ui::INK);
         }
         set_camera(&cam_for(&self.canvas));
+        self.fx.draw_flash();
         let zones = view::hud_zones(&hud);
         let mut fade = self.fade.get();
         for (z, f) in zones.iter().zip(fade.iter_mut()) {

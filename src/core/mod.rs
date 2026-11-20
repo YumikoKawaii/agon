@@ -18,7 +18,7 @@ pub use player::{Input, Player};
 
 use macroquad::math::{vec2, Vec2};
 
-pub const ARENA: Vec2 = vec2(480.0, 240.0);
+pub const ARENA: Vec2 = vec2(2400.0, 1400.0);
 pub const RADIUS: f32 = 6.0;
 pub const DT: f32 = 1.0 / 60.0;
 pub const DEATHS_TO_WIN: u32 = 3;

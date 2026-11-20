@@ -20,7 +20,6 @@ const POST_H: f32 = 14.0;
 const TILE: f32 = 20.0;
 const HIT_FLASH_TICKS: u32 = 4;
 pub const VIEW: Vec2 = vec2(1500.0, 900.0);
-const ORIGIN: Vec2 = vec2(30.0, 120.0);
 
 pub const ICE: Color = Color::new(0.55, 0.85, 1.0, 1.0);
 pub const PALE: Color = Color::new(0.88, 0.97, 1.0, 1.0);
@@ -45,9 +44,17 @@ pub fn letterbox() -> Letterbox {
     Letterbox { scale, offset: ((screen - VIEW * scale) / 2.0).round() }
 }
 
+const ZOOM: f32 = 1.0;
+const LOOK: f32 = 0.25;
+const LOOK_MAX: f32 = 60.0;
+const WALL_PAD: f32 = 2.0 * TILE;
+const FOLLOW: f32 = 6.0;
+
 #[derive(Default)]
 pub struct Camera {
     jitter: Vec2,
+    center: Vec2,
+    zoom: f32,
 }
 
 impl Camera {
@@ -55,8 +62,50 @@ impl Camera {
         self.jitter = vec2(gen_range(-1.0, 1.0), gen_range(-1.0, 1.0)) * amount;
     }
 
+    pub fn follow(&mut self, players: &[Player; 2], dt: f32) {
+        let me = players[0].pos;
+        let look = if self.zoom == 0.0 { Vec2::ZERO } else { ((self.mouse_world() - me) * LOOK).clamp_length_max(LOOK_MAX) };
+        let zoom = ZOOM;
+        let mid = me + look - vec2(0.0, FOOT * 0.5);
+        if self.zoom == 0.0 {
+            self.zoom = zoom;
+            self.center = mid;
+        } else {
+            let k = (dt * FOLLOW).min(1.0);
+            self.zoom += (zoom - self.zoom) * k;
+            self.center += (mid - self.center) * k;
+        }
+        let half = VIEW / (2.0 * S * self.zoom);
+        let lo = vec2(-WALL_PAD, -WALL_PAD * 1.5);
+        let hi = ARENA + vec2(WALL_PAD, WALL_PAD);
+        for i in 0..2 {
+            let (l, h, c) = (lo[i] + half[i], hi[i] - half[i], &mut self.center[i]);
+            *c = if l > h { (lo[i] + hi[i]) / 2.0 } else { c.clamp(l, h) };
+        }
+    }
+
+    pub fn world(&self, rt: &RenderTarget) -> Camera2D {
+        let z = if self.zoom == 0.0 { 1.0 } else { self.zoom };
+        Camera2D { zoom: vec2(2.0 / VIEW.x, 2.0 / VIEW.y) * z, target: self.center * S, render_target: Some(rt.clone()), ..Default::default() }
+    }
+
     pub fn proj(&self, v: Vec2) -> Vec2 {
-        ORIGIN + v * S + self.jitter
+        v * S + self.jitter
+    }
+
+    pub fn cells(&self, n: (i32, i32), pad: i32) -> (std::ops::Range<i32>, std::ops::Range<i32>) {
+        let z = if self.zoom == 0.0 { 1.0 } else { self.zoom };
+        let half = VIEW / (2.0 * S * z);
+        let lo = ((self.center - half) / TILE).floor();
+        let hi = ((self.center + half) / TILE).ceil();
+        let x = (lo.x as i32 - pad).max(-pad)..(hi.x as i32 + pad).min(n.0 + pad);
+        let y = (lo.y as i32 - pad).max(-pad)..(hi.y as i32 + pad).min(n.1 + pad);
+        (x, y)
+    }
+
+    pub fn to_view(&self, v: Vec2) -> Vec2 {
+        let z = if self.zoom == 0.0 { 1.0 } else { self.zoom };
+        (self.proj(v) - self.center * S) * z + VIEW / 2.0
     }
 
     pub fn air(&self, v: Vec2, z: f32) -> Vec2 {
@@ -69,7 +118,9 @@ impl Camera {
     }
 
     pub fn mouse_world(&self) -> Vec2 {
-        (self.mouse_view() - ORIGIN + vec2(0.0, FOOT * S)) / S
+        let z = if self.zoom == 0.0 { 1.0 } else { self.zoom };
+        let stage = (self.mouse_view() - VIEW / 2.0) / z + self.center * S;
+        (stage + vec2(0.0, FOOT * S)) / S
     }
 }
 
@@ -112,9 +163,10 @@ pub fn draw_sprite(tex: &Texture2D, at: Vec2, tint: Color) {
 
 pub fn draw_floor(cam: &Camera) {
     let tiles = &assets::get().ui.tiles;
-    let (nx, ny) = ((ARENA.x / TILE) as i32, (ARENA.y / TILE) as i32);
-    for i in 0..nx {
-        for j in 0..ny {
+    let n = ((ARENA.x / TILE) as i32, (ARENA.y / TILE) as i32);
+    let (xs, ys) = cam.cells(n, 1);
+    for i in xs.start.max(0)..xs.end.min(n.0) {
+        for j in ys.start.max(0)..ys.end.min(n.1) {
             let h = (i as u32).wrapping_mul(73_856_093) ^ (j as u32).wrapping_mul(19_349_663);
             let k = match h % 16 {
                 0 => 12,
@@ -144,7 +196,8 @@ pub fn draw_cage(cam: &Camera, front: bool) {
         cells.push((-1, j));
         cells.push((nx, j));
     }
-    for (i, j) in cells {
+    let (xs, ys) = cam.cells((nx, ny), 2);
+    for (i, j) in cells.into_iter().filter(|(i, j)| xs.contains(i) && ys.contains(j)) {
         let p = cam.proj(vec2(i as f32 * TILE, j as f32 * TILE));
         let tint = if j == -2 { Color::new(0.75, 0.75, 0.8, 1.0) } else { WHITE };
         draw_texture_ex(wall, p.x.round(), p.y.round(), tint, DrawTextureParams { dest_size: Some(vec2(TILE * S, TILE * S)), ..Default::default() });
@@ -517,7 +570,7 @@ pub fn score_rect() -> Rect {
 }
 
 pub fn body_rect(cam: &Camera, p: &Player) -> Rect {
-    let s = cam.proj(p.pos);
+    let s = cam.to_view(p.pos);
     Rect::new(s.x - 40.0, s.y - 120.0, 80.0, 132.0)
 }
 
