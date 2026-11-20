@@ -1,283 +1,283 @@
 {
  "frames": [
   {
-   "filename": "onmyoji-petal-dash 0.png",
+   "filename": "hikaru-petal-dash 0.png",
    "frame": {
     "x": 0,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "sourceSize": {
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "pivot": {
-    "x": 0.10714285714285714,
-    "y": 0.5
+    "x": 0.5495495495495496,
+    "y": 0.8333333333333334
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-petal-dash 1.png",
+   "filename": "hikaru-petal-dash 1.png",
    "frame": {
-    "x": 112,
+    "x": 111,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "sourceSize": {
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "pivot": {
-    "x": 0.10714285714285714,
-    "y": 0.5
+    "x": 0.5495495495495496,
+    "y": 0.8333333333333334
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-petal-dash 2.png",
+   "filename": "hikaru-petal-dash 2.png",
    "frame": {
-    "x": 224,
+    "x": 222,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "sourceSize": {
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "pivot": {
-    "x": 0.10714285714285714,
-    "y": 0.5
+    "x": 0.5495495495495496,
+    "y": 0.8333333333333334
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-petal-dash 3.png",
+   "filename": "hikaru-petal-dash 3.png",
    "frame": {
-    "x": 336,
+    "x": 333,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "sourceSize": {
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "pivot": {
-    "x": 0.10714285714285714,
-    "y": 0.5
+    "x": 0.5495495495495496,
+    "y": 0.8333333333333334
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-petal-dash 4.png",
+   "filename": "hikaru-petal-dash 4.png",
    "frame": {
     "x": 0,
-    "y": 48,
-    "w": 112,
-    "h": 48
+    "y": 42,
+    "w": 111,
+    "h": 42
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "sourceSize": {
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "pivot": {
-    "x": 0.10714285714285714,
-    "y": 0.5
+    "x": 0.5495495495495496,
+    "y": 0.8333333333333334
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-petal-dash 5.png",
+   "filename": "hikaru-petal-dash 5.png",
    "frame": {
-    "x": 112,
-    "y": 48,
-    "w": 112,
-    "h": 48
+    "x": 111,
+    "y": 42,
+    "w": 111,
+    "h": 42
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "sourceSize": {
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "pivot": {
-    "x": 0.10714285714285714,
-    "y": 0.5
+    "x": 0.5495495495495496,
+    "y": 0.8333333333333334
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-petal-dash 6.png",
+   "filename": "hikaru-petal-dash 6.png",
    "frame": {
-    "x": 224,
-    "y": 48,
-    "w": 112,
-    "h": 48
+    "x": 222,
+    "y": 42,
+    "w": 111,
+    "h": 42
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "sourceSize": {
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "pivot": {
-    "x": 0.10714285714285714,
-    "y": 0.5
+    "x": 0.5495495495495496,
+    "y": 0.8333333333333334
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-petal-dash 7.png",
+   "filename": "hikaru-petal-dash 7.png",
    "frame": {
-    "x": 336,
-    "y": 48,
-    "w": 112,
-    "h": 48
+    "x": 333,
+    "y": 42,
+    "w": 111,
+    "h": 42
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "sourceSize": {
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "pivot": {
-    "x": 0.10714285714285714,
-    "y": 0.5
+    "x": 0.5495495495495496,
+    "y": 0.8333333333333334
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-petal-dash 8.png",
+   "filename": "hikaru-petal-dash 8.png",
    "frame": {
     "x": 0,
-    "y": 96,
-    "w": 112,
-    "h": 48
+    "y": 84,
+    "w": 111,
+    "h": 42
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "sourceSize": {
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "pivot": {
-    "x": 0.10714285714285714,
-    "y": 0.5
+    "x": 0.5495495495495496,
+    "y": 0.8333333333333334
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-petal-dash 9.png",
+   "filename": "hikaru-petal-dash 9.png",
    "frame": {
-    "x": 112,
-    "y": 96,
-    "w": 112,
-    "h": 48
+    "x": 111,
+    "y": 84,
+    "w": 111,
+    "h": 42
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "sourceSize": {
-    "w": 112,
-    "h": 48
+    "w": 111,
+    "h": 42
    },
    "pivot": {
-    "x": 0.10714285714285714,
-    "y": 0.5
+    "x": 0.5495495495495496,
+    "y": 0.8333333333333334
    },
    "duration": 63
   }
  ],
  "meta": {
   "app": "PixelLab VFX Creator",
-  "image": "onmyoji-petal-dash.png",
+  "image": "hikaru-petal-dash.png",
   "format": "RGBA8888",
   "size": {
-   "w": 448,
-   "h": 144
+   "w": 444,
+   "h": 126
   },
   "scale": "1",
   "anchor": {
    "kind": "origin",
-   "x": 12,
-   "y": 24
+   "x": 61,
+   "y": 35
   },
   "frameTags": [
    {
-    "name": "onmyoji-petal-dash",
+    "name": "hikaru-petal-dash",
     "from": 0,
     "to": 9,
     "direction": "forward"

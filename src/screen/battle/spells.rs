@@ -43,9 +43,17 @@ pub fn draw_ground(b: &Battle, cam: &Camera) {
         let k = s.k();
         let g = cam.proj(s.pos);
         let r = STORM_R * S;
-        let sheet = &assets::get().parasol.tempest;
-        sheet.draw_at(((k * 16.0) as usize).min(15), g, vec2(76.0, 65.0), S * STORM_R / 52.0, 1.0);
-        glow(g, r * 0.6, SAKURA, 0.1 + 0.2 * k);
+        let open = (k * 4.0).min(1.0);
+        let rr = r * (0.3 + 0.7 * open);
+        draw_circle(g.x, g.y, rr, alpha(SAKURA, 0.08 + 0.1 * k));
+        magic_circle(g, rr, time * (1.0 + 3.0 * k), SAKURA, 0.55 + 0.4 * k, 2.0);
+        magic_circle(g, rr * 0.62, -time * (1.6 + 4.0 * k), GOLD, 0.45 + 0.45 * k, 1.5);
+        for n in 0..12 {
+            let a = -time * 2.0 + n as f32 * std::f32::consts::TAU / 12.0;
+            let p = g + Vec2::from_angle(a) * rr * 1.08;
+            draw_poly(p.x, p.y, 4, 2.2 * S * (0.6 + 0.4 * k), a.to_degrees() + 45.0, alpha(if n % 2 == 0 { PALE } else { SAKURA }, 0.5 + 0.5 * k));
+        }
+        glow(g, rr * 0.35, SAKURA, 0.15 + 0.35 * k);
     }
     for fl in &b.parasols.flights {
         let g = cam.proj(fl.pos);
@@ -122,17 +130,7 @@ pub fn draw_air(b: &Battle, cam: &Camera, sword: &Texture2D) {
     for (seat, at) in b.parasols.planted.iter().enumerate() {
         let Some(at) = at else { continue };
         match b.parasols.storms.iter().find(|s| s.owner == seat) {
-            Some(s) => {
-                let k = s.k();
-                let c = cam.air(*at, 16.0 + 30.0 * (k * 3.0).min(1.0));
-                for n in 0..6 {
-                    let a = time * 3.0 + n as f32 * std::f32::consts::TAU / 6.0;
-                    let e = cam.air(*at + Vec2::from_angle(a) * STORM_R * 0.9, 0.0);
-                    draw_line(c.x, c.y, e.x, e.y, 1.5 * S, alpha(SAKURA, 0.25 + 0.3 * k));
-                }
-                glow(c, 14.0 * S, SAKURA, 0.5 + 0.4 * k);
-                draw_parasol_scaled(c, time * (4.0 + 20.0 * k), 1.0, 1.6 + 0.6 * k);
-            }
+            Some(s) => draw_vortex(cam, s.pos, s.k(), time),
             None => {
                 let bob = (time * 2.5).sin() * 1.0;
                 draw_parasol(cam.air(*at, 16.0 + bob), time * 0.6, 1.0);
@@ -145,11 +143,9 @@ pub fn draw_air(b: &Battle, cam: &Camera, sword: &Texture2D) {
     for t in &b.parasols.talismans {
         let c = cam.air(t.pos, CHEST);
         let d = t.vel.normalize_or(Vec2::X);
-        let tail = cam.air(t.pos - d * TALISMAN_R * 3.0, CHEST);
-        draw_line(tail.x, tail.y, c.x, c.y, TALISMAN_R * S, alpha(SAKURA, 0.35));
-        glow(c, TALISMAN_R * S, SAKURA, 0.6);
+        glow(c, TALISMAN_R * S * 0.8, SAKURA, 0.35);
         let bolt = &assets::get().parasol.bolt;
-        bolt.draw_rot(bolt.frame_at(t.age, true).unwrap_or(0), c, vec2(34.0, 12.0), 0.7 * S, d.y.atan2(d.x), 1.0);
+        bolt.draw_rot(bolt.frame_at(t.age, true).unwrap_or(0), c, vec2(41.0, 12.0), 0.7 * S, d.y.atan2(d.x), 1.0);
     }
     for o in &b.foxes.orbs {
         let c = cam.air(o.pos, CHEST);
@@ -268,6 +264,39 @@ pub fn draw_aim(b: &Battle, cam: &Camera) {
     draw_line(at.x, at.y - FOOT * S, aim.x, aim.y - FOOT * S, 1.0, alpha(WHITE, 0.15));
 }
 
+const VORTEX_H: f32 = 70.0;
+const VORTEX_ARMS: usize = 3;
+const VORTEX_STEPS: usize = 28;
+const VORTEX_PETALS: usize = 18;
+
+fn draw_vortex(cam: &Camera, at: Vec2, k: f32, time: f32) {
+    let rise = (k * 3.0).min(1.0);
+    let h = VORTEX_H * rise;
+    for arm in 0..VORTEX_ARMS {
+        let off = arm as f32 * std::f32::consts::TAU / VORTEX_ARMS as f32;
+        let mut prev: Option<Vec2> = None;
+        for i in 0..=VORTEX_STEPS {
+            let u = i as f32 / VORTEX_STEPS as f32;
+            let rad = STORM_R * (1.0 - 0.75 * u) * (0.4 + 0.6 * rise);
+            let a = off + time * (3.0 + 6.0 * k) + u * 7.0;
+            let p = cam.air(at + Vec2::from_angle(a) * rad, h * u);
+            if let Some(q) = prev {
+                let col = if arm == 0 { GOLD } else { SAKURA };
+                draw_line(q.x, q.y, p.x, p.y, (2.6 - 1.6 * u) * S * 0.6, alpha(col, (0.3 + 0.6 * k) * (1.0 - 0.5 * u)));
+            }
+            prev = Some(p);
+        }
+    }
+    for n in 0..VORTEX_PETALS {
+        let u = ((n as f32 * 0.137 + time * (0.4 + 0.6 * k)) % 1.0 + 1.0) % 1.0;
+        let a = n as f32 * 2.39996 + time * (4.0 + 6.0 * k);
+        let rad = STORM_R * (1.0 - 0.7 * u) * (0.4 + 0.6 * rise);
+        let p = cam.air(at + Vec2::from_angle(a) * rad, h * u);
+        let col = if n % 3 == 0 { PALE } else { SAKURA };
+        draw_poly(p.x, p.y, 5, (1.4 + 0.8 * (1.0 - u)) * S * 0.6, a.to_degrees(), alpha(col, 0.5 + 0.5 * k));
+    }
+}
+
 fn draw_parasol(c: Vec2, spin: f32, a: f32) {
     draw_parasol_scaled(c, spin, a, 1.0);
 }
@@ -276,7 +305,7 @@ fn draw_parasol_scaled(c: Vec2, spin: f32, a: f32, scale: f32) {
     let r = 8.0 * S * scale;
     glow(c, r * 1.1, SAKURA, 0.2 * a);
     let top = &assets::get().parasol.top;
-    top.draw_rot(0, c, vec2(24.0, 24.0), r / 23.0, spin, a);
+    top.draw_rot(0, c, vec2(32.0, 32.0), r / 30.0, spin, a);
 }
 
 const LEAF: Color = Color::new(0.55, 1.0, 0.82, 1.0);

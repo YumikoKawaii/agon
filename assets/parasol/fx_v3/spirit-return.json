@@ -1,283 +1,283 @@
 {
  "frames": [
   {
-   "filename": "onmyoji-spirit-return 0.png",
+   "filename": "hikaru-spirit-return 0.png",
    "frame": {
     "x": 0,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "sourceSize": {
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "pivot": {
-    "x": 0.47058823529411764,
-    "y": 0.5882352941176471
+    "x": 0.5,
+    "y": 0.8076923076923077
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-spirit-return 1.png",
+   "filename": "hikaru-spirit-return 1.png",
    "frame": {
-    "x": 85,
+    "x": 96,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "sourceSize": {
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "pivot": {
-    "x": 0.47058823529411764,
-    "y": 0.5882352941176471
+    "x": 0.5,
+    "y": 0.8076923076923077
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-spirit-return 2.png",
+   "filename": "hikaru-spirit-return 2.png",
    "frame": {
-    "x": 170,
+    "x": 192,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "sourceSize": {
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "pivot": {
-    "x": 0.47058823529411764,
-    "y": 0.5882352941176471
+    "x": 0.5,
+    "y": 0.8076923076923077
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-spirit-return 3.png",
+   "filename": "hikaru-spirit-return 3.png",
    "frame": {
-    "x": 255,
+    "x": 288,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "sourceSize": {
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "pivot": {
-    "x": 0.47058823529411764,
-    "y": 0.5882352941176471
+    "x": 0.5,
+    "y": 0.8076923076923077
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-spirit-return 4.png",
+   "filename": "hikaru-spirit-return 4.png",
    "frame": {
     "x": 0,
-    "y": 102,
-    "w": 85,
-    "h": 102
+    "y": 104,
+    "w": 96,
+    "h": 104
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "sourceSize": {
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "pivot": {
-    "x": 0.47058823529411764,
-    "y": 0.5882352941176471
+    "x": 0.5,
+    "y": 0.8076923076923077
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-spirit-return 5.png",
+   "filename": "hikaru-spirit-return 5.png",
    "frame": {
-    "x": 85,
-    "y": 102,
-    "w": 85,
-    "h": 102
+    "x": 96,
+    "y": 104,
+    "w": 96,
+    "h": 104
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "sourceSize": {
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "pivot": {
-    "x": 0.47058823529411764,
-    "y": 0.5882352941176471
+    "x": 0.5,
+    "y": 0.8076923076923077
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-spirit-return 6.png",
+   "filename": "hikaru-spirit-return 6.png",
    "frame": {
-    "x": 170,
-    "y": 102,
-    "w": 85,
-    "h": 102
+    "x": 192,
+    "y": 104,
+    "w": 96,
+    "h": 104
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "sourceSize": {
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "pivot": {
-    "x": 0.47058823529411764,
-    "y": 0.5882352941176471
+    "x": 0.5,
+    "y": 0.8076923076923077
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-spirit-return 7.png",
+   "filename": "hikaru-spirit-return 7.png",
    "frame": {
-    "x": 255,
-    "y": 102,
-    "w": 85,
-    "h": 102
+    "x": 288,
+    "y": 104,
+    "w": 96,
+    "h": 104
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "sourceSize": {
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "pivot": {
-    "x": 0.47058823529411764,
-    "y": 0.5882352941176471
+    "x": 0.5,
+    "y": 0.8076923076923077
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-spirit-return 8.png",
+   "filename": "hikaru-spirit-return 8.png",
    "frame": {
     "x": 0,
-    "y": 204,
-    "w": 85,
-    "h": 102
+    "y": 208,
+    "w": 96,
+    "h": 104
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "sourceSize": {
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "pivot": {
-    "x": 0.47058823529411764,
-    "y": 0.5882352941176471
+    "x": 0.5,
+    "y": 0.8076923076923077
    },
    "duration": 63
   },
   {
-   "filename": "onmyoji-spirit-return 9.png",
+   "filename": "hikaru-spirit-return 9.png",
    "frame": {
-    "x": 85,
-    "y": 204,
-    "w": 85,
-    "h": 102
+    "x": 96,
+    "y": 208,
+    "w": 96,
+    "h": 104
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "sourceSize": {
-    "w": 85,
-    "h": 102
+    "w": 96,
+    "h": 104
    },
    "pivot": {
-    "x": 0.47058823529411764,
-    "y": 0.5882352941176471
+    "x": 0.5,
+    "y": 0.8076923076923077
    },
    "duration": 63
   }
  ],
  "meta": {
   "app": "PixelLab VFX Creator",
-  "image": "onmyoji-spirit-return.png",
+  "image": "hikaru-spirit-return.png",
   "format": "RGBA8888",
   "size": {
-   "w": 340,
-   "h": 306
+   "w": 384,
+   "h": 312
   },
   "scale": "1",
   "anchor": {
    "kind": "origin",
-   "x": 40,
-   "y": 60
+   "x": 48,
+   "y": 84
   },
   "frameTags": [
    {
-    "name": "onmyoji-spirit-return",
+    "name": "hikaru-spirit-return",
     "from": 0,
     "to": 9,
     "direction": "forward"

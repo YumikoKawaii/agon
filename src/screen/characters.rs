@@ -14,7 +14,8 @@ const SOUTH: usize = 2;
 
 pub fn draw_standing(kit: usize, feet: Vec2, scale: f32, flip: bool, tint: Color) {
     let tex = assets::skin(kit).frame(State::Idle, SOUTH, (get_time() * 60.0) as u32, 1);
-    let size = vec2(tex.width(), tex.height()) * scale;
+    let hd = if tex.width() >= assets::HD_CELL { 0.5 } else { 1.0 };
+    let size = vec2(tex.width(), tex.height()) * scale * hd;
     let bob = ((get_time() * 2.6).sin() as f32 * 0.5 + 0.5) * scale * 1.5;
     draw_texture_ex(tex, (feet.x - size.x / 2.0).round(), (feet.y - size.y * 0.86 - bob).round(), tint, DrawTextureParams { dest_size: Some(size), flip_x: flip, ..Default::default() });
 }

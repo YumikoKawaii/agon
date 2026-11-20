@@ -157,11 +157,11 @@ fn sheet(kind: Kind) -> (&'static assets::Sheet, f32) {
         Kind::Poof => (&w.poof, 0.6),
         Kind::BleedPop => (&assets::get().bleed_pop.sheet, 0.6),
         Kind::Release => (&assets::get().sword.release, 0.6),
-        Kind::Bloom => (&assets::get().parasol.bloom, 0.5),
-        Kind::Tempest => (&assets::get().parasol.tempest, STORM_R / 52.0),
+        Kind::Bloom => (&assets::get().parasol.bloom, 0.6),
+        Kind::Tempest => (&assets::get().parasol.tempest, STORM_R / 77.0),
         Kind::Dash => (&assets::get().parasol.dash, 1.0),
-        Kind::Blossom => (&assets::get().parasol.blossom, crate::core::parasol::BLOSSOM_R / 60.0),
-        Kind::Return => (&assets::get().parasol.ret, 0.8),
+        Kind::Blossom => (&assets::get().parasol.blossom, crate::core::parasol::BLOSSOM_R / 58.0),
+        Kind::Return => (&assets::get().parasol.ret, 0.7),
         Kind::FoxBlast => (&assets::get().fox.blast, crate::core::fox::BLIND_BLAST / 60.0),
         Kind::FoxStrike => (&assets::get().fox.strike, crate::core::fox::SHINE_R / 60.0),
         Kind::FoxSwipe => (&assets::get().fox.swipe, crate::core::fox::SWIPE_R / 35.0),
@@ -750,13 +750,6 @@ impl Fx {
                 continue;
             }
             let (sh, k) = sheet(s.kind);
-            if matches!(s.kind, Kind::Tempest) {
-                let i = (s.t * sh.fps) as usize + 16;
-                if i < sh.frames {
-                    sh.draw_at(i, cam.proj(s.pos), vec2(76.0, 65.0), k * S, 1.0);
-                }
-                continue;
-            }
             if matches!(s.kind, Kind::SerenLanceHit) {
                 let (off, at) = (18, vec2(184.0, 47.0));
                 let i = (s.t * sh.fps) as usize + off;
@@ -767,10 +760,10 @@ impl Fx {
             }
             if let Some(i) = sh.frame_at(s.t, false) {
                 match s.kind {
-                    Kind::Tempest => sh.draw_at(i, cam.proj(s.pos), vec2(74.0, 80.0), k * S, 1.0),
-                    Kind::Dash => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(12.0, 24.0), k * S, s.ang, 1.0),
-                    Kind::Blossom => sh.draw_at(i, cam.proj(s.pos), vec2(70.0, 71.0), k * S, 1.0),
-                    Kind::Return => sh.draw_at(i, cam.proj(s.pos), vec2(40.0, 60.0), k * S, 1.0),
+                    Kind::Tempest => sh.draw_at(i, cam.proj(s.pos), vec2(85.0, 35.0), k * S, 1.0),
+                    Kind::Dash => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(10.0, 13.0), k * S, s.ang, 1.0),
+                    Kind::Blossom => sh.draw_at(i, cam.proj(s.pos), vec2(76.0, 36.0), k * S, 1.0),
+                    Kind::Return => sh.draw_at(i, cam.proj(s.pos), vec2(48.0, 84.0), k * S, 1.0),
                     Kind::FoxBlast => sh.draw_at(i, cam.proj(s.pos), vec2(80.0, 47.0), k * S, 1.0),
                     Kind::FoxStrike => sh.draw_at(i, cam.proj(s.pos), vec2(74.0, 44.0), k * S, 1.0),
                     Kind::FoxSwipe => sh.draw_rot(i, cam.air(s.pos, CHEST), vec2(39.0, 31.0), k * S, s.ang, 1.0),

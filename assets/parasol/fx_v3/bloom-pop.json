@@ -1,231 +1,231 @@
 {
  "frames": [
   {
-   "filename": "sakura-bloom-pop 0.png",
+   "filename": "hikaru-bloom-pop 0.png",
    "frame": {
     "x": 0,
     "y": 0,
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "sourceSize": {
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "pivot": {
-    "x": 0.5,
-    "y": 0.5
+    "x": 0.4791666666666667,
+    "y": 0.46938775510204084
    },
    "duration": 63
   },
   {
-   "filename": "sakura-bloom-pop 1.png",
+   "filename": "hikaru-bloom-pop 1.png",
    "frame": {
-    "x": 64,
+    "x": 48,
     "y": 0,
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "sourceSize": {
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "pivot": {
-    "x": 0.5,
-    "y": 0.5
+    "x": 0.4791666666666667,
+    "y": 0.46938775510204084
    },
    "duration": 63
   },
   {
-   "filename": "sakura-bloom-pop 2.png",
+   "filename": "hikaru-bloom-pop 2.png",
    "frame": {
-    "x": 128,
+    "x": 96,
     "y": 0,
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "sourceSize": {
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "pivot": {
-    "x": 0.5,
-    "y": 0.5
+    "x": 0.4791666666666667,
+    "y": 0.46938775510204084
    },
    "duration": 63
   },
   {
-   "filename": "sakura-bloom-pop 3.png",
+   "filename": "hikaru-bloom-pop 3.png",
    "frame": {
     "x": 0,
-    "y": 64,
-    "w": 64,
-    "h": 64
+    "y": 49,
+    "w": 48,
+    "h": 49
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "sourceSize": {
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "pivot": {
-    "x": 0.5,
-    "y": 0.5
+    "x": 0.4791666666666667,
+    "y": 0.46938775510204084
    },
    "duration": 63
   },
   {
-   "filename": "sakura-bloom-pop 4.png",
+   "filename": "hikaru-bloom-pop 4.png",
    "frame": {
-    "x": 64,
-    "y": 64,
-    "w": 64,
-    "h": 64
+    "x": 48,
+    "y": 49,
+    "w": 48,
+    "h": 49
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "sourceSize": {
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "pivot": {
-    "x": 0.5,
-    "y": 0.5
+    "x": 0.4791666666666667,
+    "y": 0.46938775510204084
    },
    "duration": 63
   },
   {
-   "filename": "sakura-bloom-pop 5.png",
+   "filename": "hikaru-bloom-pop 5.png",
    "frame": {
-    "x": 128,
-    "y": 64,
-    "w": 64,
-    "h": 64
+    "x": 96,
+    "y": 49,
+    "w": 48,
+    "h": 49
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "sourceSize": {
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "pivot": {
-    "x": 0.5,
-    "y": 0.5
+    "x": 0.4791666666666667,
+    "y": 0.46938775510204084
    },
    "duration": 63
   },
   {
-   "filename": "sakura-bloom-pop 6.png",
+   "filename": "hikaru-bloom-pop 6.png",
    "frame": {
     "x": 0,
-    "y": 128,
-    "w": 64,
-    "h": 64
+    "y": 98,
+    "w": 48,
+    "h": 49
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "sourceSize": {
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "pivot": {
-    "x": 0.5,
-    "y": 0.5
+    "x": 0.4791666666666667,
+    "y": 0.46938775510204084
    },
    "duration": 63
   },
   {
-   "filename": "sakura-bloom-pop 7.png",
+   "filename": "hikaru-bloom-pop 7.png",
    "frame": {
-    "x": 64,
-    "y": 128,
-    "w": 64,
-    "h": 64
+    "x": 48,
+    "y": 98,
+    "w": 48,
+    "h": 49
    },
    "rotated": false,
    "trimmed": false,
    "spriteSourceSize": {
     "x": 0,
     "y": 0,
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "sourceSize": {
-    "w": 64,
-    "h": 64
+    "w": 48,
+    "h": 49
    },
    "pivot": {
-    "x": 0.5,
-    "y": 0.5
+    "x": 0.4791666666666667,
+    "y": 0.46938775510204084
    },
    "duration": 63
   }
  ],
  "meta": {
   "app": "PixelLab VFX Creator",
-  "image": "sakura-bloom-pop.png",
+  "image": "hikaru-bloom-pop.png",
   "format": "RGBA8888",
   "size": {
-   "w": 192,
-   "h": 192
+   "w": 144,
+   "h": 147
   },
   "scale": "1",
   "anchor": {
    "kind": "origin",
-   "x": 32,
-   "y": 32
+   "x": 23,
+   "y": 23
   },
   "frameTags": [
    {
-    "name": "sakura-bloom-pop",
+    "name": "hikaru-bloom-pop",
     "from": 0,
     "to": 7,
     "direction": "forward"

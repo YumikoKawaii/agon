@@ -16,6 +16,9 @@ const CLIPS: [&str; 4] = ["idle", "walk", "cast", "hurt"];
 const EXTRA: [&str; 5] = ["transform", "lance", "throw", "punch", "dash"];
 const IDLE_RATE: u32 = 12;
 const WALK_RATE: u32 = 7;
+pub const HD_CELL: f32 = 150.0;
+const IDLE_BASE: u32 = 4;
+const WALK_BASE: u32 = 6;
 
 pub struct Skin {
     clips: Vec<Vec<Vec<Texture2D>>>,
@@ -78,8 +81,8 @@ impl Skin {
 
     pub fn frame(&self, state: State, dir: usize, age: u32, total: u32) -> &Texture2D {
         let (clip, rate) = match state {
-            State::Idle => (0, Some(IDLE_RATE)),
-            State::Run => (1, Some(WALK_RATE)),
+            State::Idle => (0, Some(IDLE_RATE * IDLE_BASE / (self.clips[0][dir].len() as u32).max(1))),
+            State::Run => (1, Some(WALK_RATE * WALK_BASE / (self.clips[1][dir].len() as u32).max(1))),
             State::Attack => (2, None),
             State::Hit => (3, None),
         };
@@ -373,13 +376,13 @@ async fn load_all(progress: &AtomicUsize) -> AResult<Assets> {
         release: Sheet::load("assets/sword/fx/release/sword-intent-release.png", 64.0, 51.0, 8, 16.0).await?,
     };
     let parasol = ParasolFx {
-        bolt: Sheet::load("assets/parasol/fx_v2/onmyoji-talisman-bolt.png", 48.0, 24.0, 6, 12.0).await?,
-        dash: Sheet::load("assets/parasol/fx_v2/onmyoji-petal-dash.png", 112.0, 48.0, 10, 16.0).await?,
-        blossom: Sheet::load("assets/parasol/fx_v2/onmyoji-blossom-spin.png", 140.0, 136.0, 12, 16.0).await?,
-        top: Sheet::load("assets/parasol/fx_v2/parasol-top.png", 48.0, 48.0, 1, 1.0).await?,
-        ret: Sheet::load("assets/parasol/fx_v2/onmyoji-spirit-return.png", 85.0, 102.0, 10, 16.0).await?,
-        bloom: Sheet::load("assets/parasol/fx/sakura-bloom-pop.png", 64.0, 64.0, 8, 16.0).await?,
-        tempest: Sheet::load("assets/parasol/fx_v2/onmyoji-tempest.png", 152.0, 122.0, 20, 12.0).await?,
+        bolt: Sheet::load("assets/parasol/fx_v3/talisman-bolt.png", 54.0, 25.0, 8, 12.0).await?,
+        dash: Sheet::load("assets/parasol/fx_v3/petal-dash.png", 111.0, 42.0, 10, 16.0).await?,
+        blossom: Sheet::load("assets/parasol/fx_v3/blossom-spin.png", 157.0, 73.0, 12, 16.0).await?,
+        top: Sheet::load("assets/parasol/fx_v3/parasol-top.png", 64.0, 64.0, 1, 1.0).await?,
+        ret: Sheet::load("assets/parasol/fx_v3/spirit-return.png", 96.0, 104.0, 10, 16.0).await?,
+        bloom: Sheet::load("assets/parasol/fx_v3/bloom-pop.png", 48.0, 49.0, 8, 16.0).await?,
+        tempest: Sheet::load("assets/parasol/fx_v3/storm-burst.png", 171.0, 106.0, 16, 16.0).await?,
     };
     let fox = FoxFx {
         orb: Sheet::load("assets/fox/fx/fox-orb-v2.png", 61.0, 39.0, 24, 12.0).await?,

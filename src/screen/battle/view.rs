@@ -162,7 +162,8 @@ pub fn magic_circle(c: Vec2, r: f32, rot: f32, col: Color, a: f32, w: f32) {
 }
 
 pub fn draw_sprite(tex: &Texture2D, at: Vec2, tint: Color) {
-    let size = vec2(tex.width(), tex.height()) * SPRITE * S;
+    let hd = if tex.width() >= assets::HD_CELL { 0.5 } else { 1.0 };
+    let size = vec2(tex.width(), tex.height()) * SPRITE * S * hd;
     draw_texture_ex(tex, (at.x - size.x / 2.0).round(), (at.y - size.y / 2.0 - FOOT * S).round(), tint, DrawTextureParams { dest_size: Some(size), ..Default::default() });
 }
 

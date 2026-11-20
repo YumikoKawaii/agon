@@ -1,0 +1,443 @@
+{
+ "frames": [
+  {
+   "filename": "hikaru-storm-burst 0.png",
+   "frame": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 1.png",
+   "frame": {
+    "x": 171,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 2.png",
+   "frame": {
+    "x": 342,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 3.png",
+   "frame": {
+    "x": 513,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 4.png",
+   "frame": {
+    "x": 0,
+    "y": 106,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 5.png",
+   "frame": {
+    "x": 171,
+    "y": 106,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 6.png",
+   "frame": {
+    "x": 342,
+    "y": 106,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 7.png",
+   "frame": {
+    "x": 513,
+    "y": 106,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 8.png",
+   "frame": {
+    "x": 0,
+    "y": 212,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 9.png",
+   "frame": {
+    "x": 171,
+    "y": 212,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 10.png",
+   "frame": {
+    "x": 342,
+    "y": 212,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 11.png",
+   "frame": {
+    "x": 513,
+    "y": 212,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 12.png",
+   "frame": {
+    "x": 0,
+    "y": 318,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 13.png",
+   "frame": {
+    "x": 171,
+    "y": 318,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 14.png",
+   "frame": {
+    "x": 342,
+    "y": 318,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  },
+  {
+   "filename": "hikaru-storm-burst 15.png",
+   "frame": {
+    "x": 513,
+    "y": 318,
+    "w": 171,
+    "h": 106
+   },
+   "rotated": false,
+   "trimmed": false,
+   "spriteSourceSize": {
+    "x": 0,
+    "y": 0,
+    "w": 171,
+    "h": 106
+   },
+   "sourceSize": {
+    "w": 171,
+    "h": 106
+   },
+   "pivot": {
+    "x": 0.49707602339181284,
+    "y": 0.330188679245283
+   },
+   "duration": 63
+  }
+ ],
+ "meta": {
+  "app": "PixelLab VFX Creator",
+  "image": "hikaru-storm-burst.png",
+  "format": "RGBA8888",
+  "size": {
+   "w": 684,
+   "h": 424
+  },
+  "scale": "1",
+  "anchor": {
+   "kind": "origin",
+   "x": 85,
+   "y": 35
+  },
+  "frameTags": [
+   {
+    "name": "hikaru-storm-burst",
+    "from": 0,
+    "to": 15,
+    "direction": "forward"
+   }
+  ]
+ }
+}
